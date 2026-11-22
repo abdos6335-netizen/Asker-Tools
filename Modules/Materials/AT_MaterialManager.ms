@@ -161,7 +161,7 @@ struct AT_MaterialManagerStruct (
 
         local section = sectionName()
         local keys = getIniSetting settingsFile section
-        for hash in keys do (
+        for hash in keys where hash != "MapsFolder" do (
             local oldPath = getIniSetting settingsFile section hash
             if oldPath != "" and doesFileExist oldPath do (
                 local newPath = chosen + "\\" + getFilenameFile oldPath + getFilenameType oldPath
