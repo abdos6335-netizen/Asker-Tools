@@ -13,7 +13,7 @@ The validator checks required files, balanced MAXScript delimiters, and feature 
 2. Confirm startup log and settings file are created and all modules load.
 3. Run `AT_SceneAudit.show()` against a disposable scene with known duplicate names, a missing bitmap, and a zero-scale node.
 4. Run `AT_SceneManager.show()`; verify inventory metadata and node selection.
-5. Test layer selection and visibility helpers on a disposable scene; verify Unhide All restores visibility.
+5. Test layer selection and visibility helpers on a disposable scene; verify Restore Visibility returns every node to its original hidden state.
 6. Run `AT_AssetManager.show()` with existing and missing bitmap paths.
 7. Run `AT_Cleanup.show()`; verify it reports candidates and never deletes or modifies scene content.
 8. Repeat on each supported Max version; validate 2027 separately before marking it supported.
