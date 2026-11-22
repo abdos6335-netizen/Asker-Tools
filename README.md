@@ -19,7 +19,7 @@ Logs and settings are written under the same user scripts directory, in `AskerTo
 
 ## Safety notes
 
-All scans are read-only. Scene Manager visibility commands are explicit actions; Unhide All restores visibility for scene nodes. Cleanup only reports candidates and does not delete anything. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
+All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
 
 ## Repository layout
 
