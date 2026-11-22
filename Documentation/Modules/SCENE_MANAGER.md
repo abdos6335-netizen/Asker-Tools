@@ -3,7 +3,7 @@
 ## Scene Manager
 - Builds a read-only node inventory (name, class, layer, hidden/frozen state).
 - Selects nodes by class or layer.
-- Offers explicit hide-by-layer, isolate-nodes, and unhide-all commands.
+- Offers explicit hide-by-layer, isolate-nodes, and restoration of the pre-isolation visibility snapshot.
 - Inventory does not rename, regroup, re-layer, or otherwise rewrite the scene.
 
 ## Asset Manager
