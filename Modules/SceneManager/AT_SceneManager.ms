@@ -4,6 +4,7 @@
 global AT_SceneManager
 struct AT_SceneManagerStruct (
     lastInventory = #(),
+    visibilitySnapshot = #(),
     fn inventory = (
         local rows = #()
         for n in objects do (
@@ -30,6 +31,7 @@ struct AT_SceneManagerStruct (
         hits.count
     ),
     fn isolateNodes nodes = (
+        visibilitySnapshot = for n in objects collect #(n, n.isHidden)
         if nodes.count > 0 do (
             for n in objects do n.isHidden = true
             for n in nodes where isValidNode n do n.isHidden = false
@@ -38,7 +40,8 @@ struct AT_SceneManagerStruct (
         nodes.count
     ),
     fn restoreVisibility = (
-        for n in objects do n.isHidden = false
+        for item in visibilitySnapshot where isValidNode item[1] do item[1].isHidden = item[2]
+        visibilitySnapshot = #()
         true
     ),
     fn show = (
@@ -48,7 +51,7 @@ struct AT_SceneManagerStruct (
             label lblCount "No inventory yet" align:#left
             listbox lbNodes "Scene Nodes" items:#() width:395 height:17
             button btnSelect "Select Node" width:110 align:#left
-            button btnRestore "Unhide All" width:110 align:#left
+            button btnRestore "Restore Visibility" width:110 align:#left
             on btnRefresh pressed do (
                 local rows = AT_SceneManager.inventory()
                 lbNodes.items = for r in rows collect (r[2] + " | " + r[3] + " | " + r[4])
