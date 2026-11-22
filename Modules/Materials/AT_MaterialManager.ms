@@ -180,8 +180,8 @@ struct AT_MaterialManagerStruct (
 
     fn installCallbacks = (
         callbacks.removeScripts id:#AT_MaterialManager
-        callbacks.addScript #filePostMerge "AT_MaterialManager.processSceneAssets()" id:#AT_MaterialManager persistent:true
-        callbacks.addScript #filePostImport "AT_MaterialManager.processSceneAssets()" id:#AT_MaterialManager persistent:true
+        callbacks.addScript #filePostMerge "AT_MaterialManager.processSceneAssets()" id:#AT_MaterialManager persistent:false
+        callbacks.addScript #postImport "AT_MaterialManager.processSceneAssets()" id:#AT_MaterialManager persistent:false
         true
     ),
 
