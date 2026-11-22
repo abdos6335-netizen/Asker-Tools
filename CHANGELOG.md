@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 - Project Material & Map Manager
+- Added project-aware MAPS folder configuration persisted per project.
+- Added revision filename normalization for REV/REVISION numbered suffixes.
+- Added post-Merge and post-Import automatic bitmap collection.
+- Added SHA-256 content-based deduplication and relinking of all bitmap references.
+- Added configurable auto-collect preference and MAPS folder migration.
+- Added material manager documentation and static validation markers.
+- Updated core version to 0.4.0.
+
 ## 0.3.0 - Scene Manager & Asset Management
 - Added scene inventory with class/layer metadata and explicit selection and visibility helpers.
 - Added bitmap texture inventory and missing-file detection; no automatic relinking.
