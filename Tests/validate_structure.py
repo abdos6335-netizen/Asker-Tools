@@ -19,7 +19,7 @@ for rel in required:
 
 for path in ROOT.rglob('*.ms'):
     source = path.read_text(encoding='utf-8')
-    assert '\\x00' not in source, f'NUL byte in {path}'
+    assert '\x00' not in source, f'NUL byte in {path}'
     assert source.count('(') == source.count(')'), f'Unbalanced parentheses in {path}'
     assert source.count('[') == source.count(']'), f'Unbalanced brackets in {path}'
 
