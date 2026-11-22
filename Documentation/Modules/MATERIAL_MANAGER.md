@@ -6,7 +6,7 @@ The manager derives a project key from the saved MAX file name. Numbered suffixe
 The first setup requires the scene to be saved and the user to choose a central MAPS folder. That folder is stored in `Config/material_projects.ini` under the normalized project key. The MAPS location can be changed later from the manager.
 
 ## Automatic collection
-When enabled, callbacks run after Merge and Import. The manager scans bitmap texture references, copies external files into the configured MAPS folder, and updates the scene bitmap paths to the centralized copies.
+When enabled, callbacks run after Merge (`#filePostMerge`) and Import (`#postImport`). The manager scans bitmap texture references, copies external files into the configured MAPS folder, and updates the scene bitmap paths to the centralized copies.
 
 Each file is identified by a SHA-256 digest of its contents. If an identical digest is already registered and the central file still exists, the existing copy is reused. This deduplicates content even when source files have different names. The stored asset name is the digest plus the original extension.
 
