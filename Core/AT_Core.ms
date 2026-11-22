@@ -1,7 +1,7 @@
 /* Asker Tools Core - MAXScript */
 global AT_Core
 struct AT_CoreStruct (
-    version = "0.3.0",
+    version = "0.4.0",
     root = "",
     modules = #(),
     fn initRoot = (
