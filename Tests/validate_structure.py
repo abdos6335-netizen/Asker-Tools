@@ -31,7 +31,7 @@ checks = {
     'Modules/Assets/AT_AssetManager.ms': ['fn scan', 'doesFileExist', 'fn missing'],
     'Modules/Cleanup/AT_Cleanup.ms': ['UNASSIGNED_MATERIAL_CANDIDATE', 'HIDDEN_NODE', 'fn scan'],
     'Core/AT_Core.ms': ['version = "0.4.0"'],
-    'Modules/Materials/AT_MaterialManager.ms': ['#filePostMerge', '#filePostImport', 'SHA256', 'AutoCollect', 'REV(?:ISION)?', 'centralizeBitmap', 'changeMapsFolder'],
+    'Modules/Materials/AT_MaterialManager.ms': ['#filePostMerge', '#postImport', 'SHA256', 'AutoCollect', 'REV(?:ISION)?', 'centralizeBitmap', 'changeMapsFolder'],
 }
 for rel, tokens in checks.items():
     source = (ROOT / rel).read_text(encoding='utf-8')
