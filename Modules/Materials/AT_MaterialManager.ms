@@ -65,11 +65,13 @@ struct AT_MaterialManagerStruct (
     ),
 
     fn hashFile path = (
-        local sha = dotNetClass "System.Security.Cryptography.SHA256"
+        local shaClass = dotNetClass "System.Security.Cryptography.SHA256"
         local fileClass = dotNetClass "System.IO.File"
         local convert = dotNetClass "System.BitConverter"
         local bytes = fileClass.ReadAllBytes path
-        local digest = sha.Create().ComputeHash bytes
+        local shaObject = shaClass.Create()
+        local digest = shaObject.ComputeHash bytes
+        shaObject.Dispose()
         substituteString (toLower (convert.ToString digest)) "-" ""
     ),
 
@@ -101,7 +103,7 @@ struct AT_MaterialManagerStruct (
                 local ext = getFilenameType source
                 target = mapsFolder + "\\" + digest + ext
                 if (toLower source) != (toLower target) do (
-                    try (dotNetClass "System.IO.File").Copy source target true
+                    try ((dotNetClass "System.IO.File").Copy source target true)
                     catch (
                         AT_Logger.error ("Map copy failed: " + source + " -> " + target)
                         append lastReport #("COPY_ERROR", source, target)
@@ -165,7 +167,7 @@ struct AT_MaterialManagerStruct (
                 local newPath = chosen + "\\" + getFilenameFile oldPath + getFilenameType oldPath
                 if (toLower oldPath) != (toLower newPath) do (
                     try (
-                        if not doesFileExist newPath do (dotNetClass "System.IO.File").Copy oldPath newPath
+                        if not doesFileExist newPath do ((dotNetClass "System.IO.File").Copy oldPath newPath)
                         for b in (getClassInstances Bitmaptexture) where (try ((toLower b.filename) == (toLower oldPath)) catch false) do b.filename = newPath
                         setAssetManifest hash newPath
                     ) catch (AT_Logger.error ("Could not migrate map: " + oldPath))
