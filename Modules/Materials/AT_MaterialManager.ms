@@ -8,6 +8,7 @@ struct AT_MaterialManagerStruct (
     settingsFile = "",
     projectKey = "",
     mapsFolder = "",
+    autoCollect = true,
     lastReport = #(),
 
     fn init = (
@@ -131,17 +132,7 @@ struct AT_MaterialManagerStruct (
         lastReport = #()
         local maps = #()
         try (maps = getClassInstances Bitmaptexture) catch()
-        local processed = #()
-        for b in maps do (
-            local source = ""
-            try (source = b.filename) catch()
-            if source != "" do (
-                if (findItem processed source) == 0 do (
-                    append processed source
-                    centralizeBitmap b
-                )
-            )
-        )
+        for b in maps do centralizeBitmap b
         local copied = 0
         local reused = 0
         local missing = 0
@@ -213,8 +204,8 @@ struct AT_MaterialManagerStruct (
             )
             on AT_MaterialManagerRollout open do (
                 refreshLabels()
-                chkAuto.checked = true
-                AT_MaterialManager.installCallbacks()
+                chkAuto.checked = AT_MaterialManager.autoCollect
+                if AT_MaterialManager.autoCollect then AT_MaterialManager.installCallbacks() else callbacks.removeScripts id:#AT_MaterialManager
             )
             on btnSet pressed do (
                 if AT_MaterialManager.chooseMapsFolder() do refreshLabels()
@@ -229,6 +220,8 @@ struct AT_MaterialManagerStruct (
                 if AT_MaterialManager.changeMapsFolder() do refreshLabels()
             )
             on chkAuto changed state do (
+                AT_MaterialManager.autoCollect = state
+                setIniSetting AT_MaterialManager.settingsFile "General" "AutoCollect" (state as string)
                 if state then AT_MaterialManager.installCallbacks()
                 else callbacks.removeScripts id:#AT_MaterialManager
             )
@@ -237,4 +230,4 @@ struct AT_MaterialManagerStruct (
     )
 )
 AT_MaterialManager = AT_MaterialManagerStruct()
-try (AT_MaterialManager.init(); AT_MaterialManager.ensureProject(); AT_MaterialManager.installCallbacks()) catch()
+try (AT_MaterialManager.init(); AT_MaterialManager.ensureProject(); if AT_MaterialManager.autoCollect do AT_MaterialManager.installCallbacks()) catch()
