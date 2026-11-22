@@ -12,7 +12,7 @@ struct AT_MaterialManagerStruct (
 
     fn init = (
         local cfg = getDir #userScripts + "\\AskerTools\\Config"
-        if not doesFileExist cfg do makeDir cfg
+        if not doesDirectoryExist cfg do makeDir cfg
         settingsFile = cfg + "\\material_projects.ini"
         true
     ),
@@ -39,7 +39,7 @@ struct AT_MaterialManagerStruct (
         )
         projectKey = key
         local stored = getIniSetting settingsFile (sectionName()) "MapsFolder"
-        if stored != "" and doesFileExist stored then mapsFolder = stored
+        if stored != "" and doesDirectoryExist stored then mapsFolder = stored
         true
     ),
 
@@ -48,7 +48,7 @@ struct AT_MaterialManagerStruct (
         local startAt = if mapsFolder != "" then mapsFolder else maxFilePath
         local chosen = getSavePath caption:("Choose central MAPS folder for " + projectKey) initialDir:startAt
         if chosen == undefined or chosen == "" then return false
-        if not doesFileExist chosen do makeDir chosen
+        if not doesDirectoryExist chosen do makeDir chosen
         mapsFolder = chosen
         setIniSetting settingsFile (sectionName()) "MapsFolder" mapsFolder
         AT_Logger.info ("Project MAPS folder set: " + mapsFolder)
@@ -69,7 +69,7 @@ struct AT_MaterialManagerStruct (
         local convert = dotNetClass "System.BitConverter"
         local bytes = fileClass.ReadAllBytes path
         local digest = sha.Create().ComputeHash bytes
-        (toLower (convert.ToString digest)).Replace "-" ""
+        substituteString (toLower (convert.ToString digest)) "-" ""
     ),
 
     fn ensureMapsFolder = (
@@ -77,7 +77,7 @@ struct AT_MaterialManagerStruct (
             if not ensureProject() do return false
         )
         if mapsFolder == "" then false else (
-            if not doesFileExist mapsFolder do makeDir mapsFolder
+            if not doesDirectoryExist mapsFolder do makeDir mapsFolder
             true
         )
     ),
@@ -164,7 +164,7 @@ struct AT_MaterialManagerStruct (
         local chosen = getSavePath caption:("Move project MAPS location for " + projectKey) initialDir:oldFolder
         if chosen == undefined or chosen == "" then return false
         if (toLower chosen) == (toLower oldFolder) then return true
-        if not doesFileExist chosen do makeDir chosen
+        if not doesDirectoryExist chosen do makeDir chosen
 
         local section = sectionName()
         local keys = getIniSetting settingsFile section
