@@ -1,0 +1,5 @@
+*.log
+Config/settings.ini
+Logs/
+*.bak
+.DS_Store
