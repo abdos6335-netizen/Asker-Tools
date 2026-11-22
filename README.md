@@ -4,7 +4,7 @@ A modular MAXScript toolkit for Autodesk 3ds Max, designed around practical inte
 
 ## Release status
 
-**0.3.0 — Scene Manager & Asset Management.** Includes the v0.2.0 foundation and read-only Scene Audit, a scene-node inventory with explicit selection/visibility utilities, bitmap asset inventory with missing-file detection, and a non-destructive cleanup candidate review.
+**0.4.0 — Project Material & Map Manager.** Adds project-aware central MAPS storage, automatic collection after Merge/Import, SHA-256 content deduplication, revision-name association (REV-01, REV-02, etc.), persistent MAPS location settings, and a manual move/relink workflow. The v0.3.0 scene-management tools remain included.
 
 Target versions: 3ds Max 2022–2026. 3ds Max 2027 is pending validation. Corona and V-Ray are not yet certified; renderer integrations will be feature-specific and version-checked.
 
