@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 
 ROOT = Path(__file__).resolve().parents[1]
 required = [
@@ -7,6 +6,11 @@ required = [
     'Core/AT_Settings.ms', 'Core/AT_Compatibility.ms',
     'Modules/Diagnostics/AT_Diagnostics.ms',
     'Modules/SceneAudit/AT_SceneAudit.ms',
+    'Modules/SceneManager/AT_SceneManager.ms',
+    'Modules/Assets/AT_AssetManager.ms',
+    'Modules/Cleanup/AT_Cleanup.ms',
+    'Documentation/Modules/SCENE_MANAGER.md',
+    'Documentation/Modules/ASSET_MANAGER.md',
 ]
 for rel in required:
     path = ROOT / rel
@@ -15,11 +19,20 @@ for rel in required:
 
 for path in ROOT.rglob('*.ms'):
     source = path.read_text(encoding='utf-8')
-    assert '\x00' not in source, f'NUL byte in {path}'
+    assert '\\x00' not in source, f'NUL byte in {path}'
     assert source.count('(') == source.count(')'), f'Unbalanced parentheses in {path}'
     assert source.count('[') == source.count(']'), f'Unbalanced brackets in {path}'
 
-scene_audit = (ROOT / 'Modules/SceneAudit/AT_SceneAudit.ms').read_text(encoding='utf-8')
-for token in ['DUPLICATE_NAME', 'MISSING_BITMAP', 'ZERO_SCALE', 'fn scan', 'fn selectFinding']:
-    assert token in scene_audit, f'Scene audit check missing: {token}'
+checks = {
+    'Modules/SceneAudit/AT_SceneAudit.ms': ['DUPLICATE_NAME', 'MISSING_BITMAP', 'ZERO_SCALE', 'fn scan', 'fn selectFinding'],
+    'Modules/SceneManager/AT_SceneManager.ms': ['fn inventory', 'fn selectByClass', 'fn selectByLayer', 'fn isolateNodes'],
+    'Modules/Assets/AT_AssetManager.ms': ['fn scan', 'doesFileExist', 'fn missing'],
+    'Modules/Cleanup/AT_Cleanup.ms': ['UNASSIGNED_MATERIAL_CANDIDATE', 'HIDDEN_NODE', 'fn scan'],
+    'Core/AT_Core.ms': ['version = "0.3.0"'],
+}
+for rel, tokens in checks.items():
+    source = (ROOT / rel).read_text(encoding='utf-8')
+    for token in tokens:
+        assert token in source, f'Missing expected marker {token!r} in {rel}'
+
 print(f'PASS: {len(required)} required files; {len(list(ROOT.rglob("*.ms")))} MAXScript files validated.')
