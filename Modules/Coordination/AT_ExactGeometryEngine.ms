@@ -3,7 +3,7 @@
 */
 global AT_ExactGeometryEngine
 struct AT_ExactTriangle (a=[0,0,0], b=[0,0,0], c=[0,0,0], minimum=[0,0,0], maximum=[0,0,0], faceIndex=0)
-struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0, validFaceCount=0, invalidFaceCount=0, requiredClearance=undefined, isClosed=false, isManifold=false, topologyChecked=false)
+struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, sourcePivot=[0,0,0], elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0, validFaceCount=0, invalidFaceCount=0, requiredClearance=undefined, isClosed=false, isManifold=false, topologyChecked=false)
 struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", status="SEPARATED", minimumDistance=undefined, minimumDistanceKnown=false, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
 struct AT_ExactGeometryEngineStruct (
  version="0.1.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
@@ -130,7 +130,7 @@ struct AT_ExactGeometryEngineStruct (
  ),
  fn buildMeshRecord node = (
   local record=AT_ExactMeshRecord()
-  record.nodeRef=node; record.sourceTransform=node.transform; record.elementId=idForNode node; record.nodeName=node.name
+  record.nodeRef=node; record.sourceTransform=node.transform; record.sourcePivot=node.pivot; record.elementId=idForNode node; record.nodeName=node.name
   local meshValue=snapshotAsMesh node
   if meshValue==undefined then throw "MESH_SNAPSHOT_FAILED"
   local faceTotal=getNumFaces meshValue; record.faceCount=faceTotal
