@@ -1,3 +1,6 @@
+# Coordination geometry regression coverage — 2026-11-23
+- Extended the segment-distance regression suite with point-to-segment perpendicular distance, zero-length segment handling, and skew segments whose closest points lie in both segment interiors.
+
 # Coordination geometry — 2026-11-23
 - Fixed the parallel-segment distance degeneracy in the exact mesh narrow phase. The prior closest-point calculation could miss an interior overlap when parallel segment projections overlapped but the first endpoint projected outside the opposite segment, overstating mesh clearance.
 - Added a dedicated point-to-segment distance primitive and a stable parallel fallback using all four endpoint projections; retained the interior closest-point solution for non-parallel segments.
