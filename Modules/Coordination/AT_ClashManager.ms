@@ -121,7 +121,7 @@ struct AT_ClashManagerStruct (
    if elementA==undefined or elementB==undefined or elementA.discipline=="UNKNOWN" or elementB.discipline=="UNKNOWN" then append lastRuleMissingPairs #(meshA.elementId,meshB.elementId,"","DISCIPLINE_CLASSIFICATION_REQUIRED")
    else (
     local pair=AT_ExactClashRecord elementA:meshA.elementId elementB:meshB.elementId disciplineA:elementA.discipline disciplineB:elementB.discipline
-    local evaluations=AT_RuleEngine.evaluateClash pair jurisdiction:jurisdiction
+    local evaluations=AT_RuleEngine.evaluateClash pair jurisdiction:jurisdiction recordResults:false
     local ruleIds=#(); local pairSeverity="INFORMATION"
     for evaluation in evaluations do (
      if evaluation.status!="RULE_FOUND" then append lastRuleMissingPairs #(meshA.elementId,meshB.elementId,evaluation.checkType,evaluation.reason)
