@@ -44,3 +44,6 @@ The Discipline Manager provides exact mapping by user property, layer, class or 
 
 
 Per-element envelope overrides can store three independent numeric clearances—general, service, and installation—entered in mm/cm/m/in/ft/system units and converted to 3ds Max master units. Service/installation envelope references may also be stored as metadata; those references are not yet converted into volumetric geometry. The numeric clearances participate conservatively in exact surface-distance checks.
+
+
+The geometric clearance validator supports `CLEARANCE`, `SERVICE_CLEARANCE`, and `INSTALLATION_CLEARANCE`. All three use measured triangle-surface distance and explicit rule values; per-element general/service/installation clearance overrides are combined conservatively using the strictest applicable distance. Other check types remain blocked until a dedicated validator is implemented.
