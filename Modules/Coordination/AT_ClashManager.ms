@@ -151,6 +151,7 @@ struct AT_ClashManagerStruct (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   lastPairClearances=#(); lastRuleMissingPairs=#()
   AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
+  AT_CoordinationSimulation.clear(); AT_RuleEngine.clearEvaluations()
   lastScanRuleRevision=AT_RuleEngine.registryRevision
   lastScanJurisdiction=jurisdiction
   lastScanRequiredChecks=AT_RuleEngine.requiredCheckTypes
