@@ -3,7 +3,7 @@
 */
 global AT_CoordinationSimulation
 struct AT_CoordinationSimulationResult (
- simulationId="", movingElementId="", actionType="TRANSLATE", sourceTransform=undefined, offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
+ simulationId="", movingElementId="", actionType="TRANSLATE", sourceTransform=undefined, sourcePivot=[0,0,0], sourcePivot=[0,0,0], offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
  resolvedClashIds=#(), introducedClashIds=#(), remainingClashIds=#(),
  ruleMissingIds=#(), criticalViolationIds=#(), affectedElementIds=#(),
  beforeCount=0, afterCount=0, diagnostics=#()
@@ -13,7 +13,7 @@ struct AT_CoordinationSimulationStruct (
  fn translatedPoint p offset = (p+offset),
  fn cloneTranslatedMesh source offset = (
   local copy=AT_ExactMeshRecord()
-  copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.elementId=source.elementId; copy.nodeName=source.nodeName
+  copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.sourcePivot=source.sourcePivot; copy.elementId=source.elementId; copy.nodeName=source.nodeName
   copy.faceCount=source.faceCount; copy.requiredClearance=source.requiredClearance
   copy.minimum=source.minimum+offset; copy.maximum=source.maximum+offset
   for t in source.triangles do append copy.triangles (AT_ExactTriangle a:(translatedPoint t.a offset) b:(translatedPoint t.b offset) c:(translatedPoint t.c offset) minimum:(t.minimum+offset) maximum:(t.maximum+offset) faceIndex:t.faceIndex)
@@ -25,7 +25,7 @@ struct AT_CoordinationSimulationStruct (
  ),
  fn cloneRotatedMesh source axis angleDegrees pivot = (
   local copy=AT_ExactMeshRecord()
-  copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.elementId=source.elementId; copy.nodeName=source.nodeName
+  copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.sourcePivot=source.sourcePivot; copy.elementId=source.elementId; copy.nodeName=source.nodeName
   copy.faceCount=source.faceCount; copy.validFaceCount=source.validFaceCount; copy.invalidFaceCount=source.invalidFaceCount
   copy.requiredClearance=source.requiredClearance; copy.isClosed=source.isClosed; copy.isManifold=source.isManifold; copy.topologyChecked=source.topologyChecked
   local minPoint=[1.0e30,1.0e30,1.0e30]; local maxPoint=[-1.0e30,-1.0e30,-1.0e30]
@@ -90,7 +90,7 @@ struct AT_CoordinationSimulationStruct (
   for clash in beforeRecords do append before clash.clashId
   local simulated=#(); local found=false
   for source in records do (
-   if source.elementId==movingElementId then (result.sourceTransform=source.sourceTransform; append simulated (cloneActionMesh source actionType offset rotationAxis angleDegrees pivot); found=true)
+   if source.elementId==movingElementId then (result.sourceTransform=source.sourceTransform; result.sourcePivot=source.sourcePivot; append simulated (cloneActionMesh source actionType offset rotationAxis angleDegrees pivot); found=true)
    else append simulated source
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
