@@ -132,6 +132,7 @@ struct AT_CoordinationProjectStoreStruct (
     local valueText=getAttribute node "value"
     local value=if valueText=="" then undefined else (valueText as float)
     local rule=AT_CoordinationRule ruleId:(getAttribute node "ruleId") disciplineA:(getAttribute node "disciplineA") disciplineB:(getAttribute node "disciplineB") checkType:(getAttribute node "checkType") value:value unit:(getAttribute node "unit") severity:(getAttribute node "severity") sourceType:(getAttribute node "sourceType") sourceName:(getAttribute node "sourceName") revision:(getAttribute node "revision") jurisdiction:(getAttribute node "jurisdiction") approved:((toLower (getAttribute node "approved"))=="true") mandatory:((toLower (getAttribute node "mandatory"))=="true") effectiveDate:(getAttribute node "effectiveDate") notes:(getAttribute node "notes")
+    for existing in loadedRules where existing.ruleId==rule.ruleId do throw ("DUPLICATE_STORED_RULE_"+rule.ruleId)
     append loadedRules rule
    )
    local loadedChecks=#()
@@ -142,6 +143,7 @@ struct AT_CoordinationProjectStoreStruct (
    for node in mappingNodes do (
     local mapping=AT_DisciplineMapping matchKind:(getAttribute node "matchKind") matchValue:(getAttribute node "matchValue") discipline:(getAttribute node "discipline") elementType:(getAttribute node "elementType") sourceLabel:(getAttribute node "sourceLabel") revision:(getAttribute node "revision")
     if (findItem #("USER_PROPERTY","LAYER","CLASS","NODE_NAME") mapping.matchKind)==0 or mapping.matchValue=="" or not AT_DisciplineAdapter.validDiscipline mapping.discipline then throw "INVALID_STORED_DISCIPLINE_MAPPING"
+    for existing in loadedMappings where existing.matchKind==mapping.matchKind and existing.matchValue==mapping.matchValue do throw "DUPLICATE_STORED_DISCIPLINE_MAPPING"
     append loadedMappings mapping
    )
    local loadedOverrides=#()
@@ -149,7 +151,10 @@ struct AT_CoordinationProjectStoreStruct (
    for node in overrideNodes do (
     local clearanceText=getAttribute node "requiredClearance"
     local clearance=if clearanceText=="" then undefined else (clearanceText as float)
+    local elementId=getAttribute node "elementId"
+    if elementId=="" then throw "INVALID_STORED_DISCIPLINE_OVERRIDE_ID"
     if clearance!=undefined and clearance<0 then throw "INVALID_STORED_DISCIPLINE_CLEARANCE"
+    for existing in loadedOverrides where existing.elementId==elementId do throw "DUPLICATE_STORED_DISCIPLINE_OVERRIDE"
     append loadedOverrides (AT_DisciplineEnvelopeOverride elementId:(getAttribute node "elementId") requiredClearance:clearance serviceEnvelope:(getAttribute node "serviceEnvelope") installationEnvelope:(getAttribute node "installationEnvelope"))
    )
    local loadedTracking=#()
