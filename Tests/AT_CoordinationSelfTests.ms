@@ -41,10 +41,16 @@ struct AT_CoordinationSelfTestsStruct (
    append testNodes rotationNode; rotationNode.name=uniqueName "AT_QA_Rotation_Snapshot_"; convertToMesh rotationNode
    local rotationRecords=AT_ExactGeometryEngine.inspect #(rotationNode)
    local originalTransform=rotationNode.transform
-   local rotatedSnapshot=AT_CoordinationSimulation.cloneRotatedMesh rotationRecords[1] [0,0,1] 45.0 rotationRecords[1].sourceTransform.row4
+   local rotatedSnapshot=AT_CoordinationSimulation.cloneRotatedMesh rotationRecords[1] [0,0,1] 45.0 rotationRecords[1].sourcePivot
    local originalWidth=rotationRecords[1].maximum.x-rotationRecords[1].minimum.x
    local rotatedWidth=rotatedSnapshot.maximum.x-rotatedSnapshot.minimum.x
    addResult results "ROTATION_SNAPSHOT_NON_DESTRUCTIVE" (rotatedWidth>originalWidth*1.3 and rotationNode.transform==originalTransform) rotatedWidth originalWidth
+   local beforeMoveRecords=AT_ExactGeometryEngine.inspect #(rotationNode)
+   in coordsys world move rotationNode [5,0,0]
+   local afterMoveRecords=AT_ExactGeometryEngine.inspect #(rotationNode)
+   local staleDetected=not AT_ClashManager.meshInventoryMatches beforeMoveRecords afterMoveRecords
+   addResult results "STALE_GEOMETRY_SNAPSHOT_DETECTED" staleDetected staleDetected true
+   rotationNode.transform=originalTransform
    local gapA=box length:10 width:10 height:10 pos:[0,30,0]
    append testNodes gapA; gapA.name=uniqueName "AT_QA_Clearance_A_"; convertToMesh gapA
    local gapB=box length:10 width:10 height:10 pos:[12,30,0]
