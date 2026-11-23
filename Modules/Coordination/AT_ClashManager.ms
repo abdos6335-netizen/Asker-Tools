@@ -61,7 +61,11 @@ struct AT_ClashManagerStruct (
  fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   if index<1 or index>clashes.count or AT_ExactGeometryEngine.lastMeshes.count==0 then return #()
-  if lastScanRuleRevision!=AT_RuleEngine.registryRevision then (lastError="RULES_CHANGED_RESCAN_REQUIRED"; return #())
+  if lastScanRuleRevision!=AT_RuleEngine.registryRevision then (
+   lastError="RULES_CHANGED_RESCAN_REQUIRED"
+   AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
+   return #()
+  )
   local required=amax clearance clashes[index].requiredClearance
   AT_CoordinationSolutionGenerator.generateAllAlternatives AT_ExactGeometryEngine.lastMeshes #(clashes[index]) clearance:required angles:angles
  ),
@@ -101,6 +105,7 @@ struct AT_ClashManagerStruct (
  fn scan requiredClearance:0.0 jurisdiction:"" = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   lastPairClearances=#(); lastRuleMissingPairs=#()
+  AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
   lastScanRuleRevision=AT_RuleEngine.registryRevision
   lastScanJurisdiction=jurisdiction
   lastScanRequiredChecks=AT_RuleEngine.requiredCheckTypes
@@ -187,6 +192,7 @@ struct AT_ClashManagerStruct (
    on btnLoadProject pressed do (
     local ok=AT_CoordinationProjectStore.load edtStorePath.text
     lblSummary.text=if ok then "Project data loaded; rule and tracking state restored" else "Project load failed; prior state retained"
+    if ok then (lbClashes.items=#(); lbSolutions.items=#(); lblCounts.text=AT_ClashManager.countsLabel(); lblRuleMissing.text="Missing rule checks: 0")
    )
    on btnRules pressed do AT_RuleManager.show()
    on btnScan pressed do (
@@ -201,7 +207,7 @@ struct AT_ClashManagerStruct (
     local actions=AT_ClashManager.generateAlternatives lbClashes.selection
     local ranked=AT_ClashManager.rankAlternatives()
     lbSolutions.items=for item in ranked collect (item.description+" | "+(item.reasons as string))
-    lblSummary.text=actions.count as string+" alternatives generated; all await exact simulation and engineering approval"
+    lblSummary.text=if actions.count>0 then (actions.count as string+" alternatives generated; simulation and approval required") else (if AT_ClashManager.lastError!="" then AT_ClashManager.lastError else "No alternatives generated")
    )
    on btnSimulate pressed do (
     local result=AT_ClashManager.simulateAlternative lbSolutions.selection jurisdiction:edtJurisdiction.text
