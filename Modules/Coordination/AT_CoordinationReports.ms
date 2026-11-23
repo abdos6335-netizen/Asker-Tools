@@ -45,8 +45,8 @@ struct AT_CoordinationReportsStruct (
   lastRows=rows; rows
  ),
  fn buildApprovalRows approvals = (
-  local rows=#(#("Proposal ID","Approved","Approver","Approval Date","Reason","Simulation ID"))
-  for item in approvals do append rows #(item.proposalId,item.approved,item.approver,item.approvalDate,item.reason,item.simulationId)
+  local rows=#(#("Proposal ID","Approved","Consumed","Action Type","Element ID","Approver","Approval Date","Reason","Simulation ID"))
+  for item in approvals do append rows #(item.proposalId,item.approved,item.consumed,item.actionType,item.elementId,item.approver,item.approvalDate,item.reason,item.simulationId)
   lastRows=rows; rows
  ),
  fn buildRevisionRows history = (
