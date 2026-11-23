@@ -109,6 +109,23 @@ struct AT_CoordinationSelfTestsStruct (
    local sharedVertexHitA=AT_ExactGeometryEngine.rayHitDistance [0,0,-1] [0,0,1] vertexHitTriA
    local sharedVertexHitB=AT_ExactGeometryEngine.rayHitDistance [0,0,-1] [0,0,1] vertexHitTriB
    addResult results "SHARED_VERTEX_RAY_HIT_INCLUSIVE" (sharedVertexHitA!=undefined and sharedVertexHitB!=undefined and abs(sharedVertexHitA-sharedVertexHitB)<=1.0e-8) #(sharedVertexHitA,sharedVertexHitB) "same positive hit distance"
+   local satBase=AT_ExactGeometryEngine.makeTriangle [0,0,0] [2,0,0] [0,2,0] 10
+   local coplanarOverlap=AT_ExactGeometryEngine.makeTriangle [0.5,0.5,0] [2,0.5,0] [0.5,2,0] 11
+   local coplanarGap=AT_ExactGeometryEngine.makeTriangle [3,0,0] [4,0,0] [3,1,0] 12
+   local vertexTouch=AT_ExactGeometryEngine.makeTriangle [2,0,0] [3,0,0] [2,-1,0] 13
+   local edgeTouch=AT_ExactGeometryEngine.makeTriangle [0,0,0] [2,0,0] [1,-1,0] 14
+   addResult results "SAT_COPLANAR_OVERLAP" (AT_ExactGeometryEngine.trianglesIntersect satBase coplanarOverlap) true true
+   addResult results "SAT_COPLANAR_SEPARATION" (not AT_ExactGeometryEngine.trianglesIntersect satBase coplanarGap) false false
+   addResult results "SAT_VERTEX_TOUCH" (AT_ExactGeometryEngine.trianglesIntersect satBase vertexTouch) true true
+   addResult results "SAT_EDGE_TOUCH" (AT_ExactGeometryEngine.trianglesIntersect satBase edgeTouch) true true
+   local nearParallel=AT_ExactGeometryEngine.makeTriangle [0,0,0.0001] [2,0,0.0001] [0,2,0.0001001] 15
+   addResult results "SAT_NEAR_PARALLEL_SEPARATED" (not AT_ExactGeometryEngine.trianglesIntersect satBase nearParallel epsilon:1.0e-7) false false
+   local tinyA=AT_ExactGeometryEngine.makeTriangle [0,0,0] [0.000001,0,0] [0,0.000001,0] 16
+   local tinyOverlap=AT_ExactGeometryEngine.makeTriangle [0.0000001,0.0000001,0] [0.0000008,0.0000001,0] [0.0000001,0.0000008,0] 17
+   addResult results "SAT_TINY_TRIANGLE_OVERLAP" (AT_ExactGeometryEngine.trianglesIntersect tinyA tinyOverlap epsilon:1.0e-12) true true
+   local longThinA=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1000000,0,0] [0,0.001,0] 18
+   local longThinB=AT_ExactGeometryEngine.makeTriangle [100,0.0002,0] [200,0.0002,0] [100,0.0008,0] 19
+   addResult results "SAT_HIGH_ASPECT_RATIO_OVERLAP" (AT_ExactGeometryEngine.trianglesIntersect longThinA longThinB epsilon:1.0e-9) true true
    local parallelOverlap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,0,0] [15,0,0]
    local parallelGap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,2,0] [15,2,0]
    addResult results "PARALLEL_OVERLAPPING_SEGMENTS_ZERO_DISTANCE" (parallelOverlap<=1.0e-8) parallelOverlap 0.0
