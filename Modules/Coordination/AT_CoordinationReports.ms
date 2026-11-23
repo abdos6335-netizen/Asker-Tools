@@ -72,29 +72,32 @@ struct AT_CoordinationReportsStruct (
    local ch=substring s i 1
    if ch=="\"" then escaped+="\"\"" else escaped+=ch
   )
-  if (findString s ",")!=undefined or (findString s "\"")!=undefined or (findString s "\n")!=undefined or (findString s "\r")!=undefined then "\"" + escaped + "\"" else escaped
+  if (findString s ",")!=undefined or (findString s "\"")!=undefined or (findString s "\n")!=undefined or (findString s "\r")!=undefined or (findString s "\r")!=undefined then "\"" + escaped + "\"" else escaped
  ),
  fn exportCSV rows path = (
   if rows.count==0 or path=="" then return false
-  local stream=undefined
+  local writer=undefined
   try (
-   stream=createFile path
+   local writerClass=dotNetClass "System.IO.StreamWriter"
+   local encodingClass=dotNetClass "System.Text.UTF8Encoding"
+   local encoding=encodingClass true
+   writer=writerClass path false encoding
    for row in rows do (
     local line=""
     for i=1 to row.count do (
      if i>1 then line+=","
      line+=csvEscape row[i]
     )
-    format "%\n" line to:stream
+    writer.WriteLine line
    )
-   close stream
+   writer.Close()
    true
   ) catch (
-   if stream!=undefined do try (close stream) catch()
+   if writer!=undefined do try (writer.Close()) catch()
    append lastErrors #(path,getCurrentException())
    false
   )
  ),
- fn clear = (lastRows=#(); lastErrors=#(); true)
+  fn clear = (lastRows=#(); lastErrors=#(); true)
 )
 AT_CoordinationReports=AT_CoordinationReportsStruct()
