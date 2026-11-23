@@ -1,3 +1,10 @@
+# Coordination service and installation clearance integration — 2026-11-23
+- Fixed the discipline element record to carry service and installation clearance fields and corrected `setEnvelope` so both values are stored on the live inventory record and persistent override.
+- Fixed Clash Manager scan integration: removed a call to a geometry-engine method that did not exist and explicitly copies general, service and installation numeric clearances into each immutable mesh scan record.
+- Exact pair-clearance evaluation now uses the maximum applicable general, service and installation numeric clearance from either element and its inventory metadata; simulation snapshots already preserve these fields.
+- Added regression cases for setting, applying, taking the maximum of, and clearing service/installation clearances, plus static validation against the previously missing method call.
+- Textual envelope references remain metadata; geometric expansion of arbitrary service/installation envelope shapes is still not implemented and is not inferred.
+
 # Triangle surface-distance regression coverage — 2026-11-23
 - Added direct triangle-to-triangle minimum-distance regression cases for parallel offset surfaces and coplanar separated triangles with known expected distances.
 
