@@ -33,3 +33,7 @@ These modules have been added as source-level implementation. MAXScript runtime 
 
 ## Project rule manager UI (0.1.0)
 The Rule Manager rollout provides explicit entry/edit-by-rule-ID, removal, authority/source metadata, jurisdiction, approval flag, mandatory flag, severity, numeric value/unit, and project-required check-type configuration. It ships no assumed building-code values. Rule entries should be transcribed from approved project/authority/manufacturer documents and retain their source name, revision, and jurisdiction. Unapproved higher-priority entries continue to block lower-priority fallback.
+
+
+## Rule measurement units
+Length-based check types (`CLEARANCE`, `MIN_CLEARANCE`, `SERVICE_CLEARANCE`, `INSTALLATION_CLEARANCE`) require an explicit numeric value and supported unit. The unit adapter converts tagged mm/cm/m/km/in/ft values through 3ds Max `units.decodeValue` into internal master units; `system`/ `master` explicitly means the caller already supplied master units. Unknown units or missing values produce `RULE_MISSING` and block simulation. Other check types retain their typed source value and are not silently converted as lengths.
