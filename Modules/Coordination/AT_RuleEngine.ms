@@ -33,6 +33,7 @@ struct AT_RuleEngineStruct (
         rule.checkType=toUpper rule.checkType
         rule.sourceType=toUpper rule.sourceType
         rule.severity=toUpper rule.severity
+        rule.jurisdiction=toUpper rule.jurisdiction
         for i=rules.count to 1 by -1 where rules[i].ruleId==rule.ruleId do deleteItem rules i
         append rules rule
         registryRevision+=1
@@ -50,8 +51,11 @@ struct AT_RuleEngineStruct (
         ((rule.disciplineA=="*" or rule.disciplineA==dB) and (rule.disciplineB=="*" or rule.disciplineB==dA))
     ),
     fn evaluate dA dB checkType jurisdiction:"" recordResult:true = (
+        dA=toUpper dA; dB=toUpper dB; checkType=toUpper checkType; jurisdiction=toUpper jurisdiction
         local jurisdictionSpecific=#()
-        if jurisdiction=="" do for r in rules where r.checkType==checkType and pairMatches r dA dB and r.jurisdiction!="" do append jurisdictionSpecific r
+        if jurisdiction=="" do (
+            for r in rules where r.checkType==checkType and pairMatches r dA dB and r.jurisdiction!="" do append jurisdictionSpecific r
+        )
         if jurisdictionSpecific.count>0 then (
             local missing=AT_RuleEvaluation checkType:checkType reason:"JURISDICTION_REQUIRED"
             missing.ruleId=jurisdictionSpecific[1].ruleId
@@ -140,9 +144,13 @@ struct AT_RuleEngineStruct (
             return #(missing)
         )
         if clash.disciplineA=="UNKNOWN" or clash.disciplineB=="UNKNOWN" then (
-            local missing=AT_RuleEvaluation checkType:requestedChecks[1] reason:"DISCIPLINE_CLASSIFICATION_REQUIRED"
-            if recordResults do append lastEvaluations missing
-            return #(missing)
+            local missingResults=#()
+            for checkType in requestedChecks do (
+                local missing=AT_RuleEvaluation checkType:checkType reason:"DISCIPLINE_CLASSIFICATION_REQUIRED"
+                if recordResults do append lastEvaluations missing
+                append missingResults missing
+            )
+            return missingResults
         )
         local results=#()
         for checkType in requestedChecks do append results (evaluate clash.disciplineA clash.disciplineB checkType jurisdiction:jurisdiction recordResult:recordResults)
