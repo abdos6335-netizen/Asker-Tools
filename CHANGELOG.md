@@ -1,3 +1,8 @@
+# Coordination solution proposal integrity — 2026-11-23
+- Hardened candidate validation to reject empty or duplicate IDs across target, resolved, introduced, critical, missing-rule and affected-element sets; target and affected-element sets are required.
+- Hardened proposal validation to reject unsupported action types, malformed transform parameters, duplicate/empty ID sets, and any count that does not match its corresponding ID array.
+- Added in-host regression cases for duplicate target IDs and tampered proposal counts, and expanded static validator and QA coverage.
+
 # Coordination integration revision safety — 2026-11-23
 - Provider re-registration with a changed revision no longer carries forward the previous provider revision's sync token. The revision change is recorded, and a matching persisted token for the new revision may still be restored explicitly.
 - Added an in-host regression case ensuring a token from provider revision r1 is not reused by revision r2; added static validation and QA coverage.
