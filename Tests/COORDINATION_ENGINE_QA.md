@@ -87,3 +87,10 @@ Do not label this engine production-ready or merge it to main until all critical
 
 ## In-host self-test harness
 Run `fileIn (getDir #userScripts + "\\\\AskerTools\\\\Tests\\\\AT_CoordinationSelfTests.ms")` after the coordination modules are loaded, then run `AT_CoordinationSelfTests.run()` and inspect `AT_CoordinationSelfTests.summary()` plus `lastResults`. The harness creates uniquely named temporary boxes and a plane, deletes only those test nodes, and restores the prior geometry/rule-engine result arrays and rule registry. Run it on a disposable scene first; confirm no test objects remain afterward.
+
+
+### Closed-mesh ray parity boundary handling — 2026-11-23
+- Replaced strict-interior-only ray/triangle hit testing with scale-relative determinant rejection and inclusive barycentric edge/vertex hits.
+- Closed-mesh parity now normalizes its three deterministic ray directions and deduplicates coincident hit distances, preventing a shared triangulation edge or vertex from being counted twice.
+- Added in-host regression cases for a ray passing exactly through a shared triangle edge and shared vertex. These cases validate equal hit parameters from adjacent faces; full containment parity still requires 3ds Max runtime execution.
+- This is a robustness improvement, not a watertight-predicate guarantee. Extremely ill-conditioned triangles, near-coincident distinct surfaces, and adversarial mesh topology still require runtime/numerical QA.
