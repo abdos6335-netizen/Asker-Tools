@@ -32,6 +32,7 @@ struct AT_RuleEngineStruct (
         for i=rules.count to 1 by -1 where rules[i].ruleId==ruleId do (deleteItem rules i; removed=true)
         removed
     ),
+    fn specificity rule jurisdiction = ((if rule.disciplineA=="*" then 0 else 1)+(if rule.disciplineB=="*" then 0 else 1))*2+(if rule.jurisdiction!="" and rule.jurisdiction==jurisdiction then 1 else 0),
     fn pairMatches rule dA dB = (
         ((rule.disciplineA=="*" or rule.disciplineA==dA) and (rule.disciplineB=="*" or rule.disciplineB==dB)) or
         ((rule.disciplineA=="*" or rule.disciplineA==dB) and (rule.disciplineB=="*" or rule.disciplineB==dA))
@@ -39,7 +40,7 @@ struct AT_RuleEngineStruct (
     fn evaluate dA dB checkType jurisdiction:"" = (
         local candidates=#()
         for r in rules where r.checkType==checkType and pairMatches r dA dB and
-            (not r.approved or r.jurisdiction=="" or jurisdiction=="" or r.jurisdiction==jurisdiction) do append candidates r
+            (r.jurisdiction=="" or (jurisdiction!="" and r.jurisdiction==jurisdiction)) do append candidates r
         if candidates.count==0 then (
             local missing=AT_RuleEvaluation reason:"NO_RULE_REGISTERED"
             append lastEvaluations missing
@@ -59,8 +60,26 @@ struct AT_RuleEngineStruct (
             append lastEvaluations missing
             return missing
         )
-        local selected=approvedHighest[1]
-        for r in approvedHighest where r.ruleId < selected.ruleId do selected=r
+        local bestSpecificity=-1
+        for r in approvedHighest do bestSpecificity=amax bestSpecificity (specificity r jurisdiction)
+        local bestRules=#()
+        for r in approvedHighest where specificity r jurisdiction==bestSpecificity do append bestRules r
+        if bestRules.count>1 then (
+            local first=bestRules[1]
+            local conflict=false
+            for r in bestRules where r.value!=first.value or r.unit!=first.unit or r.severity!=first.severity or r.mandatory!=first.mandatory do conflict=true
+            if conflict then (
+                local ambiguous=AT_RuleEvaluation()
+                ambiguous.reason="CONFLICTING_SAME_PRIORITY_RULES"
+                ambiguous.sourceType=first.sourceType
+                ambiguous.sourceName=first.sourceName
+                ambiguous.ruleId=first.ruleId
+                append lastEvaluations ambiguous
+                return ambiguous
+            )
+        )
+        local selected=bestRules[1]
+        for r in bestRules where r.ruleId < selected.ruleId do selected=r
         local result=AT_RuleEvaluation status:"RULE_FOUND" ruleId:selected.ruleId value:selected.value unit:selected.unit severity:selected.severity sourceType:selected.sourceType sourceName:selected.sourceName reason:"APPROVED_RULE_SELECTED" blocking:false
         append lastEvaluations result
         result
