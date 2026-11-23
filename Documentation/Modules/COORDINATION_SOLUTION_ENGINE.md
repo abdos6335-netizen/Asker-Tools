@@ -9,7 +9,7 @@ Each `AT_CoordinationActionCandidate` includes:
 - Target clash IDs and the clash IDs the action is predicted to resolve.
 - Predicted newly introduced clash IDs.
 - Critical rule violation IDs and missing required rule IDs.
-- Affected element IDs and a normalized non-negative risk score.
+- Affected element IDs, a non-negative risk value, and an explicit `riskAssessed` flag.
 - Engineering approval flag.
 - `simulationValidated`: true only after a geometry/rules simulation has completed successfully.
 
@@ -34,9 +34,9 @@ Ineligible proposals remain visible with reason codes. Engineering approval is e
 ## Deterministic ranking
 Eligible proposals receive:
 
-`score = resolvedClashes × resolvedWeight - newClashes × newClashWeight - risk × riskWeight - affectedElements × affectedWeight`
+`score = resolvedClashes × resolvedWeight - newClashes × newClashWeight - (riskAssessed ? risk × riskWeight : 0) - affectedElements × affectedWeight`
 
-Default weights are 100, 200, 20, and 2. These are prioritization weights, not engineering limits or code values. Projects may replace them using `setWeights`. Equal scores are ordered by stable proposal ID.
+Default weights are 100, 200, 20, and 2. These are prioritization weights, not engineering limits or code values. If risk is not assessed, the risk penalty is omitted and the result is labeled `NOT_ASSESSED`; it is never represented as zero risk. Projects may replace weights using `setWeights`. Equal scores are ordered by stable proposal ID.
 
 ## API
 - `AT_SolutionEngine.validateCandidate candidate`
@@ -49,7 +49,7 @@ Default weights are 100, 200, 20, and 2. These are prioritization weights, not e
 - `AT_SolutionEngine.setWeights resolvedWeight newClashWeight riskWeight affectedWeight`
 - `AT_SolutionEngine.clearResults()`
 
-Results expose eligibility, score, rank, approval requirement, and reason codes. `lastRejectedCandidates` stores rejected input records and their validation reasons.
+Results expose eligibility, score, rank, approval requirement, risk assessment state, and reason codes. `lastRejectedCandidates` stores rejected input records and their validation reasons.
 
 ## Safety and integration boundary
 - The evaluator is read-only; it never applies proposals.
@@ -57,8 +57,10 @@ Results expose eligibility, score, rank, approval requirement, and reason codes.
 - Missing rule data blocks eligibility; no guessed value is substituted.
 - Critical violations and newly introduced clashes block eligibility.
 - Engineering approval remains mandatory where flagged.
-- A future Resolution Workspace must require explicit approval and use the Sync Engine transaction/rollback mechanism before applying a chosen proposal.
-- This milestone does not yet include 3D clash calculation, discipline-specific geometry simulation, automatic movement generation, visual preview, or model edit/rollback integration. Those require adapters connected to the actual 3ds Max scene and validated rule library.
+- The initial Clash Manager workspace exposes exact-mesh scanning, filters, alternative generation, simulation, named approval, explicit apply, and rollback.
+- The proposal evaluator remains read-only; all scene edits are performed only by the separate governance transaction layer after a validated simulation and approval.
+- Translation and pivot-rotation candidates are implemented. Path rerouting, redistribution, discipline-specific geometric envelopes, and non-clearance rule validators remain incomplete.
+- The current integration registry is a revision-aware contract; it is not yet a live connection to every Asker Tools drawing/ceiling/MEP/shop-drawing/BOQ module.
 
 ## Validation
 Static checks verify required files, API markers, and balanced delimiters. MAXScript runtime behavior remains unverified until executed in supported 3ds Max installations.
@@ -68,7 +70,7 @@ Static checks verify required files, API markers, and balanced delimiters. MAXSc
 
 `Modules/Coordination/AT_CoordinationGeometryAdapter.ms` adds a first scene-connected milestone:
 
-- `inspect` reads world-space node bounding boxes using the node transform. It is read-only and does not clone or move scene nodes.
+- `inspect` reads world-space node bounding boxes using the node objectTransform (including parent and object-offset effects). It is read-only and does not clone or move scene nodes.
 - `detectClashes` reports broad-phase axis-aligned bounding-box (AABB) overlaps with stable IDs derived from 3ds Max node handles.
 - `generateMoveCandidates` derives six axis-aligned translation candidates for each side of each detected pair. The requested clearance defaults to zero; callers must supply a project-approved clearance when one is required.
 - Each candidate is checked against the other inventoried AABBs. The adapter records target overlaps resolved and new AABB overlaps introduced.
@@ -110,10 +112,10 @@ This is triangle-surface intersection for the mesh snapshot supplied by 3ds Max,
 
 
 ## Closed-mesh containment extension (0.2.0)
-The geometry snapshot now records undirected edge incidence to distinguish closed two-manifold meshes from open or non-manifold surfaces. When two mesh AABBs are nested and their triangle surfaces do not intersect, a three-direction ray-parity check tests whether a representative inner-mesh vertex lies inside the outer closed mesh. Confirmed containment is reported as `SOLID_CONTAINMENT_INTERFERENCE`; nested AABBs involving open/non-manifold meshes are reported as `CONTAINMENT_UNVERIFIED`. The simulation blocks when an unverified-containment condition is present before or after a proposed move. This remains a triangle-mesh method, not a certified B-rep solid kernel; nested shells, self-intersections, inconsistent topology, and pathological tessellation still require in-host test scenes.
+The geometry snapshot now records undirected edge incidence and connected cyclic vertex links to distinguish closed two-manifold meshes from open or non-manifold surfaces. When two mesh AABBs are nested and their triangle surfaces do not intersect, a three-direction ray-parity check tests whether a representative inner-mesh vertex lies inside the outer closed mesh. Confirmed containment is reported as `SOLID_CONTAINMENT_INTERFERENCE`; nested AABBs involving open/non-manifold meshes are reported as `CONTAINMENT_UNVERIFIED`. The simulation blocks when an unverified-containment condition is present before or after a proposed move. This remains a triangle-mesh method, not a certified B-rep solid kernel; nested shells, self-intersections, inconsistent topology, and pathological tessellation still require in-host test scenes.
 
 
-Degenerate zero-area triangles are excluded from distance/intersection calculations and counted. A mesh with no valid triangles is rejected from the geometry inventory; any mesh with skipped faces is not considered closed/manifold for containment validation.
+Degenerate zero-area triangles are excluded from distance/intersection calculations and counted. A mesh with no valid triangles is rejected from the geometry inventory; any mesh with skipped faces is not considered closed/manifold for containment validation. Cameras, lights and helper nodes are excluded; supported geometry and shape nodes are scanned consistently, with non-renderable shapes reported as inspection errors.
 
 
 Minimum surface distance is only populated when the triangle-level broad phase evaluated at least one pair within the requested clearance tolerance. Otherwise `minimumDistanceKnown=false` and the value remains undefined rather than reporting an invented large distance. A separated pair can therefore be known to exceed the requested clearance without claiming its exact minimum distance.
