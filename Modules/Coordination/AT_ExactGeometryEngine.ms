@@ -168,7 +168,7 @@ struct AT_ExactGeometryEngineStruct (
  fn inspect nodes:undefined includeHidden:false = (
   local sourceNodes=if nodes==undefined then objects as array else nodes
   local records=#(); lastErrors=#()
-  for node in sourceNodes where isValidNode node do if includeHidden or not node.isHidden do (
+  for node in sourceNodes where isValidNode node do if isSupportedNode node and (includeHidden or not node.isHidden) do (
    try (append records (buildMeshRecord node))
    catch (append lastErrors #((idForNode node),"MESH_INSPECTION_FAILED"))
   )
