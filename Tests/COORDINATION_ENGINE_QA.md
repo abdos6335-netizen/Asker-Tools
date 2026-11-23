@@ -23,6 +23,11 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Missing bounds, hidden nodes, deleted nodes, duplicate names and stable handles.
 - Explicit service/installation envelopes and missing-envelope warnings.
 
+## Units and validator coverage
+- Verify mm/cm/m/km/in/ft values convert through `units.decodeValue` to master units for different scene display-unit settings.
+- Unsupported unit identifiers and malformed numeric values block rule evaluation.
+- Non-clearance rule types without a registered geometry/semantic validator must remain blocked, not be treated as passed.
+
 ## Rules
 - Verify source precedence and jurisdiction filtering.
 - Mandatory law/code, authority approval, manufacturer, project specification, defaults.
