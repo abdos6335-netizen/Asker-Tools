@@ -13,7 +13,7 @@ struct AT_RuleManagerStruct (
   true
  ),
  fn addRule ruleId disciplineA disciplineB checkType value unit severity sourceType sourceName revision jurisdiction approved mandatory effectiveDate notes = (
-  if ruleId=="" or checkType=="" or sourceName=="" then return false
+  if ruleId=="" or checkType=="" or sourceName=="" or (value!=undefined and unit=="") then return false
   local rule=AT_CoordinationRule ruleId:ruleId disciplineA:disciplineA disciplineB:disciplineB checkType:checkType value:value unit:unit severity:severity sourceType:sourceType sourceName:sourceName revision:revision jurisdiction:jurisdiction approved:approved mandatory:mandatory effectiveDate:effectiveDate notes:notes
   AT_RuleEngine.registerRule rule
  ),
@@ -62,7 +62,10 @@ struct AT_RuleManagerStruct (
    )
    on btnRegister pressed do (
     local value=undefined
-    if edtValue.text!="" do try (value=edtValue.text as float) catch (lblStatus.text="Numeric rule value is invalid"; return())
+    local valueValid=true
+    if edtValue.text!="" do try (value=edtValue.text as float) catch (valueValid=false)
+    if not valueValid then lblStatus.text="Numeric rule value is invalid"
+    else (
     local dA=ddlDisciplineA.items[amax 1 ddlDisciplineA.selection]
     local dB=ddlDisciplineB.items[amax 1 ddlDisciplineB.selection]
     local source=ddlSource.items[amax 1 ddlSource.selection]
@@ -70,6 +73,7 @@ struct AT_RuleManagerStruct (
     local ok=AT_RuleManager.addRule edtRuleId.text dA dB edtCheckType.text value edtUnit.text severity source edtSourceName.text edtRevision.text edtJurisdiction.text chkApproved.checked chkMandatory.checked edtEffectiveDate.text edtNotes.text
     refreshList lbRules
     lblStatus.text=if ok then "Rule registered" else "Rule rejected; check ID, type, source and value"
+    )
    )
    on btnRemove pressed do (
     local ok=AT_RuleManager.removeRule lbRules.selection
