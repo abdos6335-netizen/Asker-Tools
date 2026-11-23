@@ -50,7 +50,6 @@ struct AT_SolutionEngineStruct (
             for resolvedID in candidate.resolvedClashIds where (findItem candidate.targetClashIds resolvedID) == 0 do
                 appendIfUnique issues "RESOLVED_CLASH_NOT_IN_TARGET_SET"
             if not validNonNegative candidate.risk do append issues "INVALID_RISK_VALUE"
-            if candidate.simulationValidated != true do append issues "SIMULATION_NOT_VALIDATED"
         )
         issues
     ),
