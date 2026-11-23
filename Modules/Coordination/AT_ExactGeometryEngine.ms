@@ -53,7 +53,7 @@ struct AT_ExactGeometryEngineStruct (
   local edge1=tri.b-tri.a; local edge2=tri.c-tri.a
   local directionLength=length direction
   local edgeScale=(length edge1)*(length edge2)*directionLength
-  if edgeScale<=1.0e-20 then return undefined
+  if edgeScale<=1.0e-30 then return undefined
   local h=cross direction edge2; local determinant=dot edge1 h
   if abs determinant<=epsilon*edgeScale then return undefined
   local inverse=1.0/determinant
@@ -163,7 +163,7 @@ struct AT_ExactGeometryEngineStruct (
  fn pointSegmentDistanceSquared point startPoint endPoint = (
   local direction=endPoint-startPoint
   local lengthSquared=dot direction direction
-  if lengthSquared<=1.0e-12 then (
+  if lengthSquared<=1.0e-24 then (
    local delta=point-startPoint; return (dot delta delta)
   )
   local parameter=amax 0.0 (amin 1.0 ((dot (point-startPoint) direction)/lengthSquared))
@@ -173,8 +173,8 @@ struct AT_ExactGeometryEngineStruct (
  fn segmentDistanceSquared p1 q1 p2 q2 = (
   local d1=q1-p1; local d2=q2-p2; local r=p1-p2
   local aa=dot d1 d1; local ee=dot d2 d2
-  if aa<=1.0e-12 then return (pointSegmentDistanceSquared p1 p2 q2)
-  if ee<=1.0e-12 then return (pointSegmentDistanceSquared p2 p1 q1)
+  if aa<=1.0e-24 then return (pointSegmentDistanceSquared p1 p2 q2)
+  if ee<=1.0e-24 then return (pointSegmentDistanceSquared p2 p1 q1)
   local bb=dot d1 d2; local cc=dot d1 r; local ff=dot d2 r
   local denom=aa*ee-bb*bb
   if abs denom<=1.0e-12*aa*ee then (
@@ -215,8 +215,10 @@ struct AT_ExactGeometryEngineStruct (
    local p1=getVert meshValue face.x
    local p2=getVert meshValue face.y
    local p3=getVert meshValue face.z
-   local faceArea2=length (cross (p2-p1) (p3-p1))
-   if faceArea2<=1.0e-10 then record.invalidFaceCount+=1
+   local edgeAB=p2-p1; local edgeBC=p3-p2; local edgeCA=p1-p3
+   local maxEdgeSquared=amax (dot edgeAB edgeAB) (amax (dot edgeBC edgeBC) (dot edgeCA edgeCA))
+   local faceArea2=length (cross edgeAB (p3-p1))
+   if maxEdgeSquared<=1.0e-24 or faceArea2<=1.0e-12*maxEdgeSquared then record.invalidFaceCount+=1
    else (
     append record.triangles (makeTriangle p1 p2 p3 faceIndex)
     record.validFaceCount+=1
