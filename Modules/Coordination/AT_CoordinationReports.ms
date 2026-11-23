@@ -5,8 +5,8 @@ global AT_CoordinationReports
 struct AT_CoordinationReportsStruct (
  version="0.1.0", lastRows=#(), lastErrors=#(),
  fn buildClashRows clashes = (
-  local rows=#(#("Clash ID","Element A","Element B","Status","Minimum Distance","Required Clearance","Shortfall","Severity"))
-  for c in clashes do append rows #(c.clashId,c.elementA,c.elementB,c.status,c.minimumDistance,c.requiredClearance,c.clearanceShortfall,if c.status=="EXACT_MESH_INTERFERENCE" or c.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH" else if c.status=="CLEARANCE_VIOLATION" then "MEDIUM" else "INFORMATION")
+  local rows=#(#("Clash ID","Element A","Element B","Status","Minimum Distance","Distance Measured","Required Clearance","Shortfall","Severity"))
+  for c in clashes do append rows #(c.clashId,c.elementA,c.elementB,c.status,c.minimumDistance,c.minimumDistanceKnown,c.requiredClearance,c.clearanceShortfall,if c.status=="EXACT_MESH_INTERFERENCE" or c.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH" else if c.status=="CLEARANCE_VIOLATION" then "MEDIUM" else "INFORMATION")
   lastRows=rows; rows
  ),
  fn buildProposalRows results = (
@@ -44,7 +44,13 @@ struct AT_CoordinationReportsStruct (
   for item in audit do append rows #(item[1],item as string)
   lastRows=rows; rows
  ),
+ fn buildCriticalRows results = (
+  local rows=#(#("Proposal ID","Description","Critical Issue","Reasons"))
+  for item in results where (findItem item.reasons "CRITICAL_RULE_VIOLATION")>0 do append rows #(item.proposalId,item.description,"CRITICAL_RULE_VIOLATION",item.reasons as string)
+  lastRows=rows; rows
+ ),
  fn csvEscape value = (
+  if value==undefined then return ""
   local s=value as string
   local escaped=""
   for i=1 to s.count do (
