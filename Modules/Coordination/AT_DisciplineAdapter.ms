@@ -51,7 +51,7 @@ struct AT_DisciplineAdapterStruct (
     fn findMapping node = (
         local userDiscipline=""
         try (userDiscipline=getUserProp node "AT_DISCIPLINE") catch()
-        if userDiscipline!="" and validDiscipline userDiscipline do
+        if classOf userDiscipline==String and userDiscipline!="" and validDiscipline userDiscipline do
             for m in mappings where m.matchKind=="USER_PROPERTY" and m.matchValue==toUpper userDiscipline do return m
         local layerName=""
         try (layerName=node.layer.name) catch()
