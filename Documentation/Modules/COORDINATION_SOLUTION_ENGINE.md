@@ -1,54 +1,64 @@
-# AT Coordination Solution Engine (foundation 0.1.0)
+# AT Coordination Solution Engine (foundation 0.2.0)
 
 ## Purpose
-The engine evaluates and ranks proposed resolutions supplied by the Coordination & Clash Detection Engine. It is deterministic and advisory: it does not modify scene geometry, move elements, waive code requirements, or approve engineering changes.
+Builds structured resolution proposals from action candidates supplied by discipline-specific coordination adapters, then deterministically evaluates and ranks them. It is advisory and read-only: it does not move scene geometry, waive requirements, or approve engineering changes.
 
-## Proposal contract
-Each proposal contains:
-- Stable proposal ID and human-readable description.
-- Number of clashes it resolves.
-- Number of new clashes it introduces.
-- Count of critical rule violations.
-- Count of required rules that are missing.
-- A normalized risk value (0 or greater).
-- Number of affected elements.
-- Whether engineering approval is required.
+## Candidate input contract
+Each `AT_CoordinationActionCandidate` includes:
+- Stable action ID and description.
+- Target clash IDs and the clash IDs the action is predicted to resolve.
+- Predicted newly introduced clash IDs.
+- Critical rule violation IDs and missing required rule IDs.
+- Affected element IDs and a normalized non-negative risk score.
+- Engineering approval flag.
+- `simulationValidated`: true only after a geometry/rules simulation has completed successfully.
 
-The geometry/clash engine is responsible for calculating these facts from validated project data. The solution evaluator must not infer dimensions, clearances, code requirements, or physical feasibility.
+Resolved clash IDs must be a subset of target clash IDs. Candidate IDs must be unique. Duplicate or malformed candidates are retained in `lastRejectedCandidates` with reason codes; they are not silently accepted.
+
+## Proposal generation
+- `generateProposals candidates` converts candidate records into proposals and derives unique counts from their ID arrays.
+- `generateAndRank candidates` generates proposals and immediately evaluates/ranks them.
+- Unvalidated candidates remain visible as proposals but are ineligible with `SIMULATION_NOT_VALIDATED`.
+- Candidate generation does not invent offsets, clearances, code requirements, or geometry changes. A discipline-specific adapter must produce candidate actions and supply measured simulation results.
 
 ## Eligibility gates
 A proposal is ineligible when:
 - Its input schema is invalid.
+- Its simulation has not been validated.
 - It introduces one or more new clashes.
 - It violates a critical rule.
 - A required rule is missing.
 
-An ineligible proposal remains visible in results with reasons; it is not silently discarded. Engineering approval is explicitly surfaced as a reason and never treated as automatic authorization.
+Ineligible proposals remain visible with reason codes. Engineering approval is explicitly surfaced and is never treated as automatic authorization.
 
 ## Deterministic ranking
-Eligible proposals receive a score:
+Eligible proposals receive:
 
-score = resolvedClashes × resolvedWeight - newClashes × newClashWeight - risk × riskWeight - affectedElements × affectedWeight
+`score = resolvedClashes × resolvedWeight - newClashes × newClashWeight - risk × riskWeight - affectedElements × affectedWeight`
 
-Default weights are 100, 200, 20, and 2 respectively. These are prioritization weights, not engineering limits or code values. Projects may replace them using setWeights. Equal scores are ordered by stable proposal ID, so identical inputs produce identical ordering.
+Default weights are 100, 200, 20, and 2. These are prioritization weights, not engineering limits or code values. Projects may replace them using `setWeights`. Equal scores are ordered by stable proposal ID.
 
 ## API
-- AT_SolutionEngine.validateProposal proposal
-- AT_SolutionEngine.evaluateProposal proposal
-- AT_SolutionEngine.evaluate proposals
-- AT_SolutionEngine.setWeights resolvedWeight newClashWeight riskWeight affectedWeight
-- AT_SolutionEngine.clearResults()
+- `AT_SolutionEngine.validateCandidate candidate`
+- `AT_SolutionEngine.buildProposal candidate`
+- `AT_SolutionEngine.generateProposals candidates`
+- `AT_SolutionEngine.validateProposal proposal`
+- `AT_SolutionEngine.evaluateProposal proposal`
+- `AT_SolutionEngine.evaluate proposals`
+- `AT_SolutionEngine.generateAndRank candidates`
+- `AT_SolutionEngine.setWeights resolvedWeight newClashWeight riskWeight affectedWeight`
+- `AT_SolutionEngine.clearResults()`
 
-evaluate returns result structs with proposal ID, description, eligibility, score, rank, and reason codes.
+Results expose eligibility, score, rank, approval requirement, and reason codes. `lastRejectedCandidates` stores rejected input records and their validation reasons.
 
 ## Safety and integration boundary
-- The evaluator is read-only.
-- It does not apply any proposal.
-- It does not bypass the approved source hierarchy or mandatory codes.
-- Missing rule data blocks eligibility rather than substituting guessed values.
-- Critical violations block eligibility.
-- A future Resolution Workspace must require explicit user approval and use the Sync Engine's transaction/rollback mechanism before applying a chosen proposal.
-- Proposal generation, 3D clash calculation, geometry preview, and automatic model edits are not part of this foundation milestone.
+- The evaluator is read-only; it never applies proposals.
+- It does not bypass mandatory codes or approved source hierarchy.
+- Missing rule data blocks eligibility; no guessed value is substituted.
+- Critical violations and newly introduced clashes block eligibility.
+- Engineering approval remains mandatory where flagged.
+- A future Resolution Workspace must require explicit approval and use the Sync Engine transaction/rollback mechanism before applying a chosen proposal.
+- This milestone does not yet include 3D clash calculation, discipline-specific geometry simulation, automatic movement generation, visual preview, or model edit/rollback integration. Those require adapters connected to the actual 3ds Max scene and validated rule library.
 
 ## Validation
-Static validation checks required API markers and balanced delimiters. MAXScript execution and 3ds Max UI/runtime behavior remain unverified until tested inside supported 3ds Max installations.
+Static checks verify required files, API markers, and balanced delimiters. MAXScript runtime behavior remains unverified until executed in supported 3ds Max installations.
