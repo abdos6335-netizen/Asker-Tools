@@ -102,7 +102,7 @@ struct AT_ClashManagerStruct (
  ),
  fn show = (
   try (destroyDialog AT_ClashManagerRollout) catch()
-  rollout AT_ClashManagerRollout "Asker Tools | Clash Manager" width:650 height:430 (
+  rollout AT_ClashManagerRollout "Asker Tools | Clash Manager" width:760 height:900 (
    button btnScan "Detect Exact Mesh Clashes" width:190 height:28 align:#left
    button btnRules "Manage Project Rules" width:190 height:28 align:#left
    label lblSummary "Ready" align:#left
