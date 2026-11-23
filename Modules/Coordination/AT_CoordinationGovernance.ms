@@ -41,8 +41,8 @@ struct AT_CoordinationGovernanceStruct (
   append transactions tx
   try (
    undo ("Asker Tools Coordination Apply "+proposalId) on (
-    if a.actionType=="TRANSLATE" then in coordsys world (move nodeRef a.offset)
-    else if a.actionType=="ROTATE" then in coordsys world (rotate nodeRef (angleAxis a.angleDegrees a.rotationAxis))
+    if a.actionType=="TRANSLATE" then (in coordsys world (move nodeRef a.offset))
+    else if a.actionType=="ROTATE" then (in coordsys world (rotate nodeRef (angleAxis a.angleDegrees a.rotationAxis)))
     else throw "UNSUPPORTED_APPROVED_ACTION"
    )
    tx.afterTransform=nodeRef.transform
