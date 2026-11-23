@@ -43,6 +43,7 @@ struct AT_ClashManagerStruct (
  fn scan requiredClearance:0.0 = (
   AT_DisciplineAdapter.inspect()
   AT_ExactGeometryEngine.inspect()
+  for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do meshRecord.requiredClearance=element.requiredClearance
   local found=AT_ExactGeometryEngine.detectClashesWithClearances AT_DisciplineAdapter.lastInventory defaultClearance:requiredClearance
   for clash in found do (
    for element in AT_DisciplineAdapter.lastInventory do (
