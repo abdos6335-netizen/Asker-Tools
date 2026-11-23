@@ -46,18 +46,18 @@ struct AT_CoordinationSimulationStruct (
   else undefined
  ),
  fn clashKey a b = (if a<b then "MESH_"+a+"_"+b else "MESH_"+b+"_"+a),
- fn collectClashRecords records clearance epsilon = (
+ fn collectClashRecords records clearance epsilon pairOverrides:#() = (
   local found=#()
   for i=1 to records.count do for j=i+1 to records.count do (
-   local pairRequired=AT_ExactGeometryEngine.pairClearance records[i] records[j] AT_DisciplineAdapter.lastInventory clearance
+   local pairRequired=AT_ExactGeometryEngine.pairClearance records[i] records[j] AT_DisciplineAdapter.lastInventory clearance pairOverrides:pairOverrides
    local r=AT_ExactGeometryEngine.inspectPair records[i] records[j] requiredClearance:pairRequired epsilon:epsilon
    if r.status!="SEPARATED" do append found r
   )
   found
  ),
- fn collectClashes records clearance epsilon = (
+ fn collectClashes records clearance epsilon pairOverrides:#() = (
   local ids=#()
-  for r in (collectClashRecords records clearance epsilon) do append ids r.clashId
+  for r in (collectClashRecords records clearance epsilon pairOverrides:pairOverrides) do append ids r.clashId
   ids
  ),
  fn simulateAction records movingElementId actionType:"TRANSLATE" offset:[0,0,0] rotationAxis:[0,0,1] angleDegrees:0.0 pivot:[0,0,0] targetClashId:"" requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
@@ -79,7 +79,7 @@ struct AT_CoordinationSimulationStruct (
    append lastResults result
    return result
   )
-  local beforeRecords=collectClashRecords records requiredClearance 1.0e-6
+  local beforeRecords=collectClashRecords records requiredClearance 1.0e-6 pairOverrides:AT_ClashManager.lastPairClearances
   for clash in beforeRecords where clash.status=="CONTAINMENT_UNVERIFIED" and (clash.elementA==movingElementId or clash.elementB==movingElementId or clash.clashId==targetClashId) do (
    result.status="BLOCKED_UNVERIFIED_GEOMETRY"
    append result.diagnostics ("Containment could not be verified for "+clash.clashId)
@@ -94,7 +94,7 @@ struct AT_CoordinationSimulationStruct (
    else append simulated source
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
-  local afterRecords=collectClashRecords simulated requiredClearance 1.0e-6
+  local afterRecords=collectClashRecords simulated requiredClearance 1.0e-6 pairOverrides:AT_ClashManager.lastPairClearances
   for clash in afterRecords where clash.status=="CONTAINMENT_UNVERIFIED" and (clash.elementA==movingElementId or clash.elementB==movingElementId) do (
    result.status="BLOCKED_UNVERIFIED_GEOMETRY"
    append result.diagnostics ("Containment could not be verified for "+clash.clashId)
