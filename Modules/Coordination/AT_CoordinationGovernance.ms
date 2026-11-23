@@ -18,6 +18,10 @@ struct AT_CoordinationGovernanceStruct (
  fn approve candidate simulation approver reason approvalDate = (
   if candidate==undefined or simulation==undefined or approver=="" or reason=="" or approvalDate=="" then return false
   if not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
+  local proposal=AT_SolutionEngine.buildProposal candidate
+  if proposal==undefined then return false
+  local evaluation=AT_SolutionEngine.evaluateProposal proposal
+  if not evaluation.eligible then return false
   if candidate.actionId!=simulation.simulationId or candidate.actionType!=simulation.actionType or simulation.ruleRevision!=AT_RuleEngine.registryRevision then return false
   if candidate.affectedElementIds.count!=1 or candidate.affectedElementIds[1]!=simulation.movingElementId then return false
   if candidate.offset!=simulation.offset or candidate.rotationAxis!=simulation.rotationAxis or candidate.angleDegrees!=simulation.angleDegrees or candidate.pivot!=simulation.pivot then return false
