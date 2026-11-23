@@ -17,7 +17,7 @@ struct AT_CoordinationGovernanceStruct (
  fn findApproval proposalId = (for a in approvals where a.proposalId==proposalId do return a; undefined),
  fn approve candidate simulation approver reason approvalDate = (
   if candidate==undefined or simulation==undefined or approver=="" or reason=="" or approvalDate=="" then return false
-  if not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
+  if not candidate.requiresEngineeringApproval or not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
   if not AT_ClashManager.validateCurrentScene jurisdiction:AT_ClashManager.lastScanJurisdiction then return false
   local proposal=AT_SolutionEngine.buildProposal candidate
   if proposal==undefined then return false
