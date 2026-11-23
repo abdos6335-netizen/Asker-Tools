@@ -1,6 +1,6 @@
 # Coordination solution proposal integrity — 2026-11-23
 - Hardened candidate validation to reject empty or duplicate IDs across target, resolved, introduced, critical, missing-rule and affected-element sets; target and affected-element sets are required.
-- Hardened proposal validation to reject unsupported action types, malformed transform parameters, duplicate/empty ID sets, and any count that does not match its corresponding ID array.
+- Hardened proposal validation to reject unsupported action types, malformed transform parameters, duplicate/empty ID sets, malformed non-array ID fields, and any count that does not match its corresponding ID array.
 - Added in-host regression cases for duplicate target IDs and tampered proposal counts, and expanded static validator and QA coverage.
 
 # Coordination integration revision safety — 2026-11-23
