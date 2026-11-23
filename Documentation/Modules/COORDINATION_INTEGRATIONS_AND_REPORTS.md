@@ -3,7 +3,7 @@
 ## Integration registry (0.1.0)
 The integration bridge registers providers by module name and revision, declares supported operation capabilities, and exchanges payloads only when the caller supplies a source revision, the operation is explicitly supported, and the expected previous revision matches the last synchronized token. A mismatch returns `REVISION_CONFLICT` without calling the provider. The provider receives both the new source revision and the expected previous revision for its own transactional checks. This is a contract layer, not a completed adapter for every Asker Tools module.
 
-Planned provider connections include Architectural Plan Builder, Ceiling Builder, Electrical/HVAC/Fire Fighting/Plumbing/Low Current tools, Shop Drawing workflows, and quantity takeoff/BOQ. Until a provider is registered, the integration remains unavailable; no module is assumed to exist or silently synchronized. Revision tokens and exchange history are retained in memory.
+Planned provider connections include Architectural Plan Builder, Ceiling Builder, Electrical/HVAC/Fire Fighting/Plumbing/Low Current tools, Shop Drawing workflows, and quantity takeoff/BOQ. Until a provider is registered, the integration remains unavailable; no module is assumed to exist or silently synchronized. The last source-revision token is preserved when a provider is re-registered during the same session, and exchange history is retained in memory.
 
 API: `register moduleName revision provider capabilities:<array>`, `unregister integrationId`, `get integrationId`, `exchange integrationId operation payload sourceRevision expectedPreviousRevision:<string>`.
 
