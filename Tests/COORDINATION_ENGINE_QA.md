@@ -47,7 +47,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Six translation candidates for each side of a clash.
 - Target clash resolution, remaining clashes, introduced clashes.
 - Exact mesh simulation against every other inventory element.
-- Clearance enforcement and invalid negative/non-numeric inputs.
+- General, service and installation clearance enforcement with unit conversion and invalid negative/non-numeric inputs.
 - Rule-missing and critical-rule blocks.
 - Confirm source scene transforms and geometry remain unchanged during simulation.
 - Change a node transform, pivot, vertex position, classification, mapping or envelope between scan/simulation/approval/apply; every stale snapshot must be blocked.
