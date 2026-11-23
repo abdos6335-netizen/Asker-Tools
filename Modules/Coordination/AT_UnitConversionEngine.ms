@@ -25,9 +25,9 @@ struct AT_UnitConversionEngineStruct (
    "in":"\""
    "inch":"\""
    "inches":"\""
-   "ft":"' "
-   "foot":"' "
-   "feet":"' "
+   "ft":"'"
+   "foot":"'"
+   "feet":"'"
    "system":""
    "master":""
    default:undefined
