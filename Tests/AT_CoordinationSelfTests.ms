@@ -11,6 +11,7 @@ struct AT_CoordinationSelfTestsStruct (
  fn run = (
   local results=#()
   local testNodes=#()
+  local savedSelection=selection as array
   local savedMeshes=AT_ExactGeometryEngine.lastMeshes
   local savedGeometryResults=AT_ExactGeometryEngine.lastResults
   local savedGeometryErrors=AT_ExactGeometryEngine.lastErrors
@@ -77,6 +78,8 @@ struct AT_CoordinationSelfTestsStruct (
    addResult results "HARNESS_EXCEPTION" false (getCurrentException()) "NO_EXCEPTION"
   )
   for n in testNodes where isValidNode n do try (delete n) catch()
+  select #()
+  for n in savedSelection where isValidNode n do selectMore n
   AT_ExactGeometryEngine.lastMeshes=savedMeshes
   AT_ExactGeometryEngine.lastResults=savedGeometryResults
   AT_ExactGeometryEngine.lastErrors=savedGeometryErrors
