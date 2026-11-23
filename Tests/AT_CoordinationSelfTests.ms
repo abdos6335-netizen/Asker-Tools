@@ -132,6 +132,13 @@ struct AT_CoordinationSelfTestsStruct (
    local longThinA=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1000000,0,0] [0,0.001,0] 18
    local longThinB=AT_ExactGeometryEngine.makeTriangle [100,0.0002,0] [200,0.0002,0] [100,0.0008,0] 19
    addResult results "SAT_HIGH_ASPECT_RATIO_OVERLAP" (AT_ExactGeometryEngine.trianglesIntersect longThinA longThinB epsilon:1.0e-9) true true
+   local distanceBase=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,0,0] [0,1,0] 20
+   local distanceParallel=AT_ExactGeometryEngine.makeTriangle [0,0,2] [1,0,2] [0,1,2] 21
+   local distanceCoplanarGap=AT_ExactGeometryEngine.makeTriangle [2,0,0] [3,0,0] [2,1,0] 22
+   local parallelTriangleDistance=AT_ExactGeometryEngine.triangleDistanceSquared distanceBase distanceParallel
+   local coplanarTriangleDistance=AT_ExactGeometryEngine.triangleDistanceSquared distanceBase distanceCoplanarGap
+   addResult results "TRIANGLE_DISTANCE_PARALLEL_SURFACES" (abs(parallelTriangleDistance-4.0)<=1.0e-8) parallelTriangleDistance 4.0
+   addResult results "TRIANGLE_DISTANCE_COPLANAR_GAP" (abs(coplanarTriangleDistance-1.0)<=1.0e-8) coplanarTriangleDistance 1.0
    local parallelOverlap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,0,0] [15,0,0]
    local parallelGap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,2,0] [15,2,0]
    addResult results "PARALLEL_OVERLAPPING_SEGMENTS_ZERO_DISTANCE" (parallelOverlap<=1.0e-8) parallelOverlap 0.0
