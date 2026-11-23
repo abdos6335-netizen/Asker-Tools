@@ -44,6 +44,18 @@ struct AT_ClashManagerStruct (
   )
   true
  ),
+ fn countsLabel = (
+  local values=counts()
+  "HIGH "+(values[1][2] as string)+" | MEDIUM "+(values[2][2] as string)+" | LOW "+(values[3][2] as string)+" | INFO "+(values[4][2] as string)
+ ),
+ fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
+  if index<1 or index>clashes.count or AT_ExactGeometryEngine.lastMeshes.count==0 then return #()
+  AT_CoordinationSolutionGenerator.generateAllAlternatives AT_ExactGeometryEngine.lastMeshes #(clashes[index]) clearance:clearance angles:angles
+ ),
+ fn rankAlternatives = (
+  local candidates=AT_CoordinationSolutionGenerator.toProposalCandidates()
+  AT_SolutionEngine.generateAndRank candidates
+ ),
  fn scan requiredClearance:0.0 = (
   AT_DisciplineAdapter.inspect()
   AT_ExactGeometryEngine.inspect()
@@ -63,8 +75,11 @@ struct AT_ClashManagerStruct (
   rollout AT_ClashManagerRollout "Asker Tools | Clash Manager" width:650 height:430 (
    button btnScan "Detect Exact Mesh Clashes" width:190 height:28 align:#left
    label lblSummary "Ready" align:#left
+   label lblCounts "HIGH 0 | MEDIUM 0 | LOW 0 | INFO 0" align:#left
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
+   button btnGenerate "Generate Solution Alternatives" width:220 height:28 align:#left
+   listbox lbSolutions "Generated alternatives (simulation required)" items:#() width:620 height:8
    group "Assignment and status" (
     editText edtOwner "Owner" text:"" width:300
     dropdownList ddlStatus "Status" items:#("OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") width:300
@@ -75,7 +90,15 @@ struct AT_ClashManagerStruct (
    on btnScan pressed do (
     local found=AT_ClashManager.scan()
     lbClashes.items=for c in found collect (AT_ClashManager.clashLabel c)
-    lblSummary.text=found.count as string+" clashes | exact mesh surface analysis"
+    lblSummary.text=found.count as string+" clashes | exact mesh analysis"
+    lblCounts.text=AT_ClashManager.countsLabel()
+    lbSolutions.items=#()
+   )
+   on btnGenerate pressed do (
+    local actions=AT_ClashManager.generateAlternatives lbClashes.selection
+    local ranked=AT_ClashManager.rankAlternatives()
+    lbSolutions.items=for item in ranked collect (item.description+" | "+(item.reasons as string))
+    lblSummary.text=actions.count as string+" alternatives generated; all await exact simulation and engineering approval"
    )
    on btnSelect pressed do AT_ClashManager.selectClash lbClashes.selection
    on lbClashes selected index do (
