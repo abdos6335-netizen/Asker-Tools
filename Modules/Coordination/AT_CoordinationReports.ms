@@ -152,6 +152,7 @@ struct AT_CoordinationReportsStruct (
    #("Discipline Inspection Errors",buildDisciplineErrorRows AT_ClashManager.lastDisciplineErrors),
    #("Clash Tracking",buildTrackingRows AT_ClashManager.tracking),
    #("Engineering Approvals",buildApprovalRows AT_CoordinationGovernance.approvals),
+   #("Critical Proposal Issues",buildCriticalRows AT_SolutionEngine.lastResults),
    #("Solution Proposals",buildProposalRows AT_SolutionEngine.lastResults),
    #("Governance Audit",buildAuditRows AT_CoordinationGovernance.auditLog),
    #("Integration Revision History",buildRevisionRows AT_CoordinationIntegrations.syncHistory)
