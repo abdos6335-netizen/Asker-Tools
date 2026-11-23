@@ -3,7 +3,7 @@
 */
 global AT_CoordinationGovernance
 struct AT_CoordinationApproval (
- proposalId="", approved=false, approver="", approvalDate="", reason="",
+ proposalId="", approved=false, consumed=false, approver="", approvalDate="", reason="",
  simulationId="", elementId="", ruleRevision=0, actionType="TRANSLATE", sourceTransform=undefined, sourcePivot=[0,0,0],
  offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], candidate=undefined
 )
@@ -39,13 +39,15 @@ struct AT_CoordinationGovernanceStruct (
  ),
  fn applyAction proposalId nodeRef transactionId = (
   local a=findApproval proposalId
-  if a==undefined or not a.approved or not isValidNode nodeRef or transactionId=="" then return undefined
+  if a==undefined or not a.approved or a.consumed or not isValidNode nodeRef or transactionId=="" then return undefined
   if not AT_ClashManager.validateCurrentScene jurisdiction:AT_ClashManager.lastScanJurisdiction then (append auditLog #("APPLY_BLOCKED_STALE_SCENE",proposalId); return undefined)
   local expectedId=try ((getHandleByAnim nodeRef) as string) catch ("")
   if expectedId!=a.elementId then return undefined
   if a.ruleRevision!=AT_RuleEngine.registryRevision then (append auditLog #("APPLY_BLOCKED_RULES_CHANGED",proposalId); return undefined)
   if nodeRef.objectTransform!=a.sourceTransform or nodeRef.pivot!=a.sourcePivot then (append auditLog #("APPLY_BLOCKED_STALE_SCENE",proposalId,expectedId); return undefined)
   for existing in transactions where existing.transactionId==transactionId do return undefined
+  a.consumed=true
+  append auditLog #("APPROVAL_CONSUMED",proposalId,transactionId)
   local tx=AT_CoordinationTransaction transactionId:transactionId proposalId:proposalId elementId:expectedId actionType:a.actionType nodeRef:nodeRef beforeTransform:nodeRef.transform beforeObjectTransform:nodeRef.objectTransform beforePivot:nodeRef.pivot state:"PREPARED"
   append transactions tx
   try (
