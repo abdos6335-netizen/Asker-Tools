@@ -99,6 +99,8 @@ struct AT_CoordinationProjectStoreStruct (
     local node=addChild xml overridesNode "Element"
     setAttribute node "elementId" override.elementId
     setAttribute node "requiredClearance" override.requiredClearance
+    setAttribute node "serviceClearance" override.serviceClearance
+    setAttribute node "installationClearance" override.installationClearance
     setAttribute node "serviceEnvelope" override.serviceEnvelope
     setAttribute node "installationEnvelope" override.installationEnvelope
    )
@@ -185,13 +187,19 @@ struct AT_CoordinationProjectStoreStruct (
    for node in overrideNodes do (
     local clearanceText=getAttribute node "requiredClearance"
     local clearance=if clearanceText=="" then undefined else (clearanceText as float)
+    local serviceClearanceText=getAttribute node "serviceClearance"
+    local serviceClearance=if serviceClearanceText=="" then undefined else (serviceClearanceText as float)
+    local installationClearanceText=getAttribute node "installationClearance"
+    local installationClearance=if installationClearanceText=="" then undefined else (installationClearanceText as float)
     local elementId=getAttribute node "elementId"
     if elementId=="" then throw "INVALID_STORED_DISCIPLINE_OVERRIDE_ID"
     if clearance!=undefined and clearance<0 then throw "INVALID_STORED_DISCIPLINE_CLEARANCE"
+    if serviceClearance!=undefined and serviceClearance<0 then throw "INVALID_STORED_SERVICE_CLEARANCE"
+    if installationClearance!=undefined and installationClearance<0 then throw "INVALID_STORED_INSTALLATION_CLEARANCE"
     for existing in loadedOverrides where existing.elementId==elementId do throw "DUPLICATE_STORED_DISCIPLINE_OVERRIDE"
     local serviceText=getAttribute node "serviceEnvelope"
     local installationText=getAttribute node "installationEnvelope"
-    append loadedOverrides (AT_DisciplineEnvelopeOverride elementId:elementId requiredClearance:clearance serviceEnvelope:(if serviceText=="" then undefined else serviceText) installationEnvelope:(if installationText=="" then undefined else installationText))
+    append loadedOverrides (AT_DisciplineEnvelopeOverride elementId:elementId requiredClearance:clearance serviceClearance:serviceClearance installationClearance:installationClearance serviceEnvelope:(if serviceText=="" then undefined else serviceText) installationEnvelope:(if installationText=="" then undefined else installationText))
    )
    local loadedTracking=#()
    local trackingNodes=xml.SelectNodes "/AskerToolsCoordinationProject/ClashTracking/Clash"
