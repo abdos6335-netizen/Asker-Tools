@@ -37,6 +37,12 @@ struct AT_CoordinationSimulationStruct (
   for c in ruleChecks where c.status!="RULE_FOUND" do appendIfUnique result.ruleMissingIds (if c.ruleId=="" then c.reason else c.ruleId)
   if result.ruleMissingIds.count>0 then (result.status="BLOCKED_RULE_MISSING"; append result.diagnostics "One or more required rules are missing or unapproved"; append lastResults result; return result)
   if criticalViolationIds.count>0 then (result.status="BLOCKED_CRITICAL_RULE"; append lastResults result; return result)
+  if ruleChecks.count==0 then (
+   result.status="BLOCKED_RULE_CHECKS_NOT_SUPPLIED"
+   append result.diagnostics "At least one approved rule evaluation is required before simulation can be validated"
+   append lastResults result
+   return result
+  )
   local before=collectClashes records requiredClearance 1.0e-6
   local simulated=#(); local found=false
   for source in records do (
