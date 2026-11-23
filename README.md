@@ -4,7 +4,7 @@ A modular MAXScript toolkit for Autodesk 3ds Max, designed around practical inte
 
 ## Release status
 
-**0.4.0 — Project Material & Map Manager.** Adds project-aware central MAPS storage, automatic collection after Merge/Import, SHA-256 content deduplication, revision-name association (REV-01, REV-02, etc.), persistent MAPS location settings, and a manual move/relink workflow. The v0.3.0 scene-management tools remain included.
+**0.6.0 — Coordination Engine implementation milestone.** Adds triangle-mesh intersection/distance, closed-shell containment with edge and vertex-link checks, eight-discipline classification/mapping, approved-source rules with jurisdiction and master-unit normalization, pair-specific clearance checks, translation and pivot-rotation alternatives, stale-scene revalidation, severity/discipline filters, assignment/tracking, single-use approval and rollback, XML project persistence, revision-aware integration contracts, UTF-8 CSV report builders, and an in-host self-test runner. This remains a development milestone: MAXScript runtime and version compatibility are unverified; full B-rep/solid-kernel handling, geometric service/installation envelopes, rerouting/redistribution, non-clearance rule validators, real upstream module connections, and PDF/XLSX output remain incomplete.
 
 Target versions: 3ds Max 2022–2026. 3ds Max 2027 is pending validation. Corona and V-Ray are not yet certified; renderer integrations will be feature-specific and version-checked.
 
@@ -13,13 +13,13 @@ Target versions: 3ds Max 2022–2026. 3ds Max 2027 is pending validation. Corona
 1. In 3ds Max, evaluate `getDir #userScripts` to locate the user scripts folder.
 2. Copy the complete `AskerTools` folder there.
 3. Run `AskerTools.ms` from the MAXScript editor.
-4. Open tools with `AT_SceneAudit.show()`, `AT_SceneManager.show()`, `AT_AssetManager.show()`, `AT_Cleanup.show()`, and `AT_MaterialManager.show()`.
+4. Open tools with `AT_SceneAudit.show()`, `AT_SceneManager.show()`, `AT_AssetManager.show()`, `AT_Cleanup.show()`, `AT_MaterialManager.show()`, and `AT_ClashManager.show()`. The Clash Manager opens the Rule Manager and Discipline Manager; use its **Run Non-Destructive Internal Self-Tests** button to load and run the test harness from `Tests/`.
 
 Logs and settings are written under the same user scripts directory, in `AskerTools/Logs` and `AskerTools/Config`.
 
 ## Safety notes
 
-All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
+All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. Coordination simulation is non-destructive. Scene changes are only possible through a separate explicit governance apply call after a validated simulation and named approval; current apply actions are world translation and pivot rotation, with XML-persisted rules, required checks, discipline mappings/envelope metadata, tracking, integration revision tokens and audit history. Active approvals and scene transactions are not restored after loading a project. Risk scoring remains explicitly NOT_ASSESSED until a validated risk model exists. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
 
 ## Repository layout
 
@@ -27,7 +27,7 @@ All scans are read-only. Scene Manager visibility commands are explicit actions;
 - `Modules/` independent tools.
 - `Integrations/` renderer and external application adapters (planned).
 - `UI/` shared interface components (planned).
-- `Tests/` static checks and in-host test checklist.
+- `Tests/` static checks, self-test harness and in-host QA matrix.
 - `Documentation/` architecture and module guides.
 - `Installer/` packaging helpers (planned).
 

@@ -1,4 +1,106 @@
+# Coordination report rule provenance — 2026-11-23
+- Added a Registered Project Rules section to full HTML reports, including discipline pair, check type, value/unit, severity, source identity, revision, jurisdiction, approval/mandatory flags, effective date and notes.
+- Extended static validator and report QA requirements so rule provenance can be reviewed alongside clash and missing-rule findings.
+
+# Coordination project integration-state validation — 2026-11-23
+- Project loading now rejects incomplete or duplicate persisted integration IDs before mutating live integration state, preventing ambiguous token restoration.
+- Added the rejection marker to static validation and the project persistence QA matrix.
+
+# Coordination integration contract validation — 2026-11-23
+- Provider registration now rejects duplicate, empty and non-string capability declarations; exchange rejects an empty operation before invoking a provider.
+- Added in-host regression cases and static validation markers for both input guards.
+
+# Coordination Clash Manager and transaction safety — 2026-11-23
+- Added viewport framing and reversible isolation controls for a selected clash. The manager snapshots prior node visibility and restores it when requested, when the rollout closes, or when the manager resets.
+- Governance now verifies that a failed apply actually restored the original transform, object transform and pivot; failures that cannot be restored are explicitly marked APPLY_FAILED_RESTORE_FAILED. Failed rollback is marked ROLLBACK_FAILED and logged.
+- Added an in-host snapshot restoration regression case and static validator coverage. Multi-node atomic transactions remain explicitly unsupported; each approved apply is limited to one affected node.
+
+# Coordination project backup recovery — 2026-11-23
+- Added an explicit project backup recovery operation. It validates the backup XML root and schema before replacement, keeps the original backup intact, and moves the previous active project to a pre-restore file.
+- Recovery failures are reported and temporary files are cleaned up without intentionally overwriting the active project.
+
+# Coordination solution proposal integrity — 2026-11-23
+- Hardened candidate validation to reject empty or duplicate IDs across target, resolved, introduced, critical, missing-rule and affected-element sets; target and affected-element sets are required.
+- Hardened proposal validation to reject unsupported action types, malformed transform parameters, duplicate/empty ID sets, malformed non-array ID fields, and any count that does not match its corresponding ID array.
+- Added in-host regression cases for duplicate target IDs and tampered proposal counts, and expanded static validator and QA coverage.
+
+# Coordination integration revision safety — 2026-11-23
+- Provider re-registration with a changed revision no longer carries forward the previous provider revision's sync token. The revision change is recorded, and a matching persisted token for the new revision may still be restored explicitly.
+- Added an in-host regression case ensuring a token from provider revision r1 is not reused by revision r2; added static validation and QA coverage.
+
+# Coordination service and installation clearance integration — 2026-11-23
+- Fixed the discipline element record to carry service and installation clearance fields and corrected `setEnvelope` so both values are stored on the live inventory record and persistent override.
+- Fixed two Clash Manager integration paths that called a geometry-engine method that did not exist: the scan path now explicitly copies general, service and installation numeric clearances into each immutable mesh scan record, while stale-scene validation compares fresh mesh geometry without calling the missing metadata hook. Discipline inventory comparison now includes service and installation numeric clearances.
+- Exact pair-clearance evaluation now uses the maximum applicable general, service and installation numeric clearance from either element and its inventory metadata; simulation snapshots already preserve these fields.
+- Added regression cases for setting, applying, taking the maximum of, and clearing service/installation clearances, plus static validation against the previously missing method call.
+- Textual envelope references remain metadata; geometric expansion of arbitrary service/installation envelope shapes is still not implemented and is not inferred.
+
+# Triangle surface-distance regression coverage — 2026-11-23
+- Added direct triangle-to-triangle minimum-distance regression cases for parallel offset surfaces and coplanar separated triangles with known expected distances.
+
+# Coordination containment topology — 2026-11-23
+- Added global face-connectivity validation for closed mesh records. Disconnected closed shells are conservatively excluded from single-solid containment classification and reported as unverified.
+- Preserved connectivity metadata through translated and rotated simulation snapshots; added connected/disconnected face-graph regression cases.
+
+# Coordination geometry input validation — 2026-11-23
+- Added explicit rejection of negative and nonnumeric geometry tolerances in both clash-detection entry points, with a dedicated `INVALID_GEOMETRY_TOLERANCE` error and in-host regression coverage.
+
+# Coordination geometry scale handling — 2026-11-23
+- Replaced fixed absolute face-area and segment-length degeneracy cutoffs with scale-relative tests, so small but well-shaped geometry is not silently discarded as degenerate.
+- Added tiny-segment point-distance and parallel-overlap regression cases.
+
+# Coordination geometry SAT hardening — 2026-11-23
+- Normalized usable separating axes before projection, making the SAT epsilon a world-space distance instead of an axis-magnitude-dependent value.
+- Replaced the absolute near-zero-axis cutoff with per-axis thresholds relative to the originating edge/normal magnitudes, improving behavior for tiny, long-thin and non-uniformly scaled triangles.
+- Tightened closed-mesh ray-hit deduplication from 1e-6 to a scale-aware 1e-9 tolerance to reduce accidental merging of distinct nearby crossings.
+- Added in-host regression coverage for coplanar overlap/separation, vertex/edge touch, near-parallel separation, tiny triangles and high-aspect-ratio overlap. MAXScript runtime validation remains pending inside 3ds Max.
+
+# Coordination geometry regression coverage — 2026-11-23
+- Extended the segment-distance regression suite with point-to-segment perpendicular distance, zero-length segment handling, and skew segments whose closest points lie in both segment interiors.
+
+# Coordination geometry — 2026-11-23
+- Fixed the parallel-segment distance degeneracy in the exact mesh narrow phase. The prior closest-point calculation could miss an interior overlap when parallel segment projections overlapped but the first endpoint projected outside the opposite segment, overstating mesh clearance.
+- Added a dedicated point-to-segment distance primitive and a stable parallel fallback using all four endpoint projections; retained the interior closest-point solution for non-parallel segments.
+- Added in-host regression cases for collinear overlapping segments and parallel separated segments, plus static validator markers. Runtime MAXScript validation remains pending inside 3ds Max.
+
+### Coordination governance hardening — 2026-11-23
+- Approval now verifies the complete simulation-derived clash/rule/affected-element identity sets, not only action ID and transform parameters.
+- Added in-host regression cases for order-independent identity matching and tampered resolved/introduced clash sets.
+
 # Changelog
+
+## [0.6.1] - 2026-11-23
+- Add a print-styled HTML coordination report covering clashes, clearance, disciplines, missing rules, inspection errors, tracking, approvals, critical proposal issues, proposals, governance audit, and integration revision history.
+- Add a Clash Manager action to export the full report as HTML for browser-based printing to PDF.
+- Keep CSV as the native tabular export; native PDF and XLSX generation remain unimplemented.
+
+## 0.6.0 - Coordination Engine implementation milestone
+- Added explicit metadata-driven adapters for the eight coordination disciplines; unmapped elements remain UNKNOWN.
+- Added approved engineering rule lookup with mandatory-code, authority, manufacturer, project, and default source priority.
+- Added deterministic six-direction translation and three-axis pivot-rotation candidate generation with non-destructive transformed-mesh simulation.
+- Added closed-manifold mesh containment detection, open/non-manifold containment warnings, and degenerate-face handling.
+- Added per-element and rule-derived pair clearances with explicit conversion to 3ds Max master units.
+- Added jurisdiction-required rule resolution, same-priority conflict detection, and rule-revision invalidation of stale scans/approvals.
+- Added project Rule and Discipline Manager UIs, per-element clearance/envelope metadata, severity/discipline/text filters, stale scan/simulation/approval/apply revalidation, XML persistence for rules/mappings/envelopes/tracking/integration tokens/audit history, and an in-host self-test runner.
+- Added single-use named engineering approvals, translation/pivot-rotation apply, guarded rollback, immutable target/action snapshots and transaction audit records.
+- Added explicit NOT_ASSESSED risk status; unassessed risk is excluded from ranking penalties instead of being represented as zero risk.
+- Added revision-aware integration contracts and expanded clash, clearance, discipline, tracking, approval, audit and critical-issue CSV report builders.
+- Added UTF-8 CSV export, geometry/discipline/rule-missing reports, source-level validation markers and expanded in-host QA matrix; MAXScript runtime validation remains pending.
+- Updated core version to 0.6.0.
+
+## 0.5.0 - Coordination Solution Engine foundation
+- Added structured candidate-to-proposal generation from discipline adapter simulation results.
+- Added target/resolved clash identity validation and duplicate candidate rejection reporting.
+- Kept unvalidated proposals visible but ineligible until simulation is confirmed.
+- Added deterministic evaluation and ranking of structured coordination proposals.
+- Blocked ineligible proposals with critical violations, missing required rules, or newly introduced clashes.
+- Added configurable scoring weights and stable tie-breaking by proposal ID.
+- Kept evaluation read-only; no automatic geometry changes or engineering approvals.
+- Added module documentation and static validation coverage.
+- Added read-only 3ds Max AABB scene inspection and clash discovery.
+- Added six-axis move candidate generation with broad-phase rechecks against inventoried nodes.
+- Kept all geometry-derived candidates unvalidated pending exact geometry and approved-rule simulation.
+- Updated core version to 0.5.0.
 
 ## 0.4.0 - Project Material & Map Manager
 - Added project-aware MAPS folder configuration persisted per project.
@@ -24,3 +126,12 @@
 
 ## 0.1.0 - Foundation
 - Added bootstrap, logging, persistent settings, compatibility reporting, and environment diagnostics.
+
+
+## Historical note — Coordination Engine Part 1
+- Added a read-only triangle-mesh geometry engine for exact surface-intersection checks using separating-axis tests, including coplanar axes.
+- Added minimum triangle-surface distance evaluation and explicit required-clearance shortfall reporting.
+- Added result classification and face-level diagnostics; no scene edits or automatic approvals are performed.
+- MAXScript runtime and 3ds Max version validation remain pending.
+
+- 2026-11-23: Improved closed-mesh ray parity boundary handling: inclusive shared-edge/shared-vertex ray hits, scale-relative determinant rejection, normalized voting directions, and coincident-hit deduplication. Added in-host shared-edge and shared-vertex regression cases; runtime execution remains pending in 3ds Max.
