@@ -15,8 +15,9 @@ struct AT_CoordinationIntegrationsStruct (
   local existing=undefined
   for r in registry where r.integrationId==id do existing=r
   if existing!=undefined then (
-   rec.lastSyncToken=existing.lastSyncToken; rec.enabled=existing.enabled
-   if existing.revision!=revision do append syncHistory #("PROVIDER_REVISION_CHANGED",id,existing.revision,revision,rec.lastSyncToken)
+   if existing.revision==revision then rec.lastSyncToken=existing.lastSyncToken
+   else append syncHistory #("PROVIDER_REVISION_CHANGED",id,existing.revision,revision,existing.lastSyncToken)
+   rec.enabled=existing.enabled
    local idx=findItem registry existing
    deleteItem registry idx
   )
