@@ -211,12 +211,16 @@ struct AT_CoordinationProjectStoreStruct (
     append loadedTracking (AT_ClashTrackingRecord clashId:clashId owner:(getAttribute node "owner") status:status dueDate:(getAttribute node "dueDate") note:(getAttribute node "note") severity:(getAttribute node "severity"))
    )
    local loadedIntegrationTokens=#()
+   local loadedIntegrationIds=#()
    local integrationNodes=xml.SelectNodes "/AskerToolsCoordinationProject/IntegrationStates/Integration"
    for node in integrationNodes do (
     local id=getAttribute node "integrationId"
+    local moduleName=getAttribute node "moduleName"
     local revision=getAttribute node "revision"
-    if id=="" or revision=="" then throw "INVALID_STORED_INTEGRATION_STATE"
-    append loadedIntegrationTokens #(id,getAttribute node "moduleName",revision,getAttribute node "lastSyncToken",(toLower (getAttribute node "enabled"))=="true")
+    if id=="" or moduleName=="" or revision=="" then throw "INVALID_STORED_INTEGRATION_STATE"
+    if (findItem loadedIntegrationIds id)>0 then throw ("DUPLICATE_STORED_INTEGRATION_ID_"+id)
+    append loadedIntegrationIds id
+    append loadedIntegrationTokens #(id,moduleName,revision,getAttribute node "lastSyncToken",(toLower (getAttribute node "enabled"))=="true")
    )
    local loadedSyncHistory=#()
    local syncNodes=xml.SelectNodes "/AskerToolsCoordinationProject/IntegrationHistory/Event"
