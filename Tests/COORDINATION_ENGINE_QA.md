@@ -43,6 +43,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Critical violations cannot be overridden by lower-priority sources.
 
 ## Candidate generation and simulation
+- Unassessed risk must be labeled NOT_ASSESSED and omitted from score penalty, never displayed as zero risk.
 - Six translation candidates for each side of a clash.
 - Target clash resolution, remaining clashes, introduced clashes.
 - Exact mesh simulation against every other inventory element.
