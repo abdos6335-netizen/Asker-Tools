@@ -56,7 +56,7 @@ checks = {
     'Modules/Coordination/AT_RuleEngine.ms': ['MANDATORY_CODE', 'AUTHORITY_APPROVAL', 'MANUFACTURER_SPEC', 'PROJECT_SPEC', 'ASKER_DEFAULT', 'ONLY_UNAPPROVED_RULES_AVAILABLE', 'fn evaluateBatch'],
     'Modules/Coordination/AT_CoordinationSimulation.ms': ['fn cloneTranslatedMesh', 'fn simulateTranslation', 'EXACT_GEOMETRY_SIMULATION_PASSED', 'NEW_CLASHES_INTRODUCED', 'TARGET_CLASH_ID_REQUIRED', 'TARGET_CLASH_REMAINS', 'BLOCKED_RULE_MISSING'],
     'Modules/Coordination/AT_CoordinationSolutionGenerator.ms': ['fn generateTranslations', 'separationOffset', 'requiresEngineeringApproval=true'],
-    'Modules/Coordination/AT_ClashManager.ms': ['fn load', 'fn counts', 'fn selectClash', 'fn setTracking'],
+    'Modules/Coordination/AT_ClashManager.ms': ['fn load', 'fn counts', 'fn selectClash', 'fn setTracking', 'fn scan', 'fn show', 'Detect Exact Mesh Clashes'],
     'Modules/Coordination/AT_CoordinationGovernance.ms': ['fn approve', 'fn applyTranslation', 'fn rollback', 'FAILED_ROLLED_BACK'],
     'Modules/Coordination/AT_CoordinationIntegrations.ms': ['fn register', 'fn exchange', 'SOURCE_REVISION_REQUIRED', 'CAPABILITY_NOT_SUPPORTED'],
     'Modules/Coordination/AT_CoordinationReports.ms': ['fn buildClashRows', 'fn buildProposalRows', 'fn exportCSV', 'csvEscape'],
