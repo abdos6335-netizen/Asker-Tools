@@ -64,6 +64,14 @@ struct AT_CoordinationSelfTestsStruct (
    records=AT_ExactGeometryEngine.inspect #(gapA,gapB)
    found=AT_ExactGeometryEngine.detectClashes records:records requiredClearance:3.0
    addResult results "CLEARANCE_VIOLATION" (found.count==1 and found[1].status=="CLEARANCE_VIOLATION" and found[1].minimumDistanceKnown) (if found.count>0 then found[1].status else "NO_CLASH") "CLEARANCE_VIOLATION"
+   records[1].serviceClearance=3.0
+   found=AT_ExactGeometryEngine.detectClashesWithClearances records defaultClearance:0.0
+   addResult results "SERVICE_CLEARANCE_ENFORCED" (found.count==1 and found[1].status=="CLEARANCE_VIOLATION" and found[1].requiredClearance==3.0) (if found.count>0 then found[1].requiredClearance else -1) 3.0
+   records[1].serviceClearance=undefined
+   records[2].installationClearance=3.0
+   found=AT_ExactGeometryEngine.detectClashesWithClearances records defaultClearance:0.0
+   addResult results "INSTALLATION_CLEARANCE_ENFORCED" (found.count==1 and found[1].status=="CLEARANCE_VIOLATION" and found[1].requiredClearance==3.0) (if found.count>0 then found[1].requiredClearance else -1) 3.0
+   records[2].installationClearance=undefined
    local criticalOverride=AT_ExactPairClearanceRecord elementA:records[1].elementId elementB:records[2].elementId requiredClearance:3.0 severity:"CRITICAL" ruleIds:#("QA_CRITICAL_CLEARANCE")
    found=AT_ExactGeometryEngine.detectClashesWithClearances records defaultClearance:0.0 pairOverrides:#(criticalOverride)
    addResult results "PAIR_RULE_SEVERITY_PROPAGATION" (found.count==1 and found[1].ruleSeverity=="CRITICAL" and (AT_ClashManager.severityFor found[1])=="CRITICAL") (if found.count>0 then found[1].ruleSeverity else "NO_CLASH") "CRITICAL"
