@@ -77,6 +77,9 @@ struct AT_CoordinationSelfTestsStruct (
    found=AT_ExactGeometryEngine.detectClashes records:records
    addResult results "SEPARATED_BOXES" (found.count==0) found.count 0
 
+   local unitResult=AT_UnitConversionEngine.toSystemUnits 100.0 "mm"
+   addResult results "MILLIMETER_TO_MASTER_UNIT_CONVERSION" (unitResult.valid and abs(unitResult.systemValue-3.937007874)<0.001) unitResult.systemValue 3.937007874
+
    AT_RuleEngine.clearAll()
    local projectRule=AT_CoordinationRule ruleId:"QA_PROJECT_RULE" disciplineA:"*" disciplineB:"*" checkType:"CLEARANCE" value:10.0 unit:"mm" sourceType:"PROJECT_SPEC" sourceName:"QA Project" approved:true
    local codeRule=AT_CoordinationRule ruleId:"QA_CODE_RULE" disciplineA:"*" disciplineB:"*" checkType:"CLEARANCE" value:15.0 unit:"mm" sourceType:"MANDATORY_CODE" sourceName:"QA Code" approved:false
@@ -90,6 +93,12 @@ struct AT_CoordinationSelfTestsStruct (
    AT_RuleEngine.registerRule conflictA; AT_RuleEngine.registerRule conflictB
    evaluation=AT_RuleEngine.evaluate "HVAC" "STRUCTURE" "CLEARANCE"
    addResult results "SAME_PRIORITY_RULE_CONFLICT" (evaluation.reason=="CONFLICTING_SAME_PRIORITY_RULES") evaluation.reason "CONFLICTING_SAME_PRIORITY_RULES"
+
+   AT_RuleEngine.clearAll()
+   local accessRule=AT_CoordinationRule ruleId:"QA_ACCESS_RULE" disciplineA:"HVAC" disciplineB:"STRUCTURE" checkType:"ACCESS" value:1.0 unit:"system" sourceType:"PROJECT_SPEC" sourceName:"QA Project" approved:true
+   AT_RuleEngine.registerRule accessRule
+   evaluation=AT_RuleEngine.evaluate "HVAC" "STRUCTURE" "ACCESS"
+   addResult results "UNIMPLEMENTED_RULE_CHECK_BLOCKED" (evaluation.reason=="CHECK_TYPE_VALIDATOR_NOT_IMPLEMENTED") evaluation.reason "CHECK_TYPE_VALIDATOR_NOT_IMPLEMENTED"
   ) catch (
    append lastErrors (getCurrentException())
    addResult results "HARNESS_EXCEPTION" false (getCurrentException()) "NO_EXCEPTION"
