@@ -51,6 +51,8 @@ struct AT_CoordinationSimulationStruct (
   for i=1 to records.count do for j=i+1 to records.count do (
    local pairRequired=AT_ExactGeometryEngine.pairClearance records[i] records[j] AT_DisciplineAdapter.lastInventory clearance pairOverrides:pairOverrides
    local r=AT_ExactGeometryEngine.inspectPair records[i] records[j] requiredClearance:pairRequired epsilon:epsilon
+   local metadata=AT_ExactGeometryEngine.pairRuleMetadata records[i] records[j] pairOverrides:pairOverrides
+   r.ruleSeverity=metadata[1]; r.ruleIds=metadata[2]
    if r.status!="SEPARATED" do append found r
   )
   found
@@ -95,6 +97,7 @@ struct AT_CoordinationSimulationStruct (
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
   local afterRecords=collectClashRecords simulated requiredClearance 1.0e-6 pairOverrides:AT_ClashManager.lastPairClearances
+  for clash in afterRecords where clash.ruleSeverity=="CRITICAL" do appendIfUnique result.criticalViolationIds clash.clashId
   for clash in afterRecords where clash.status=="CONTAINMENT_UNVERIFIED" and (clash.elementA==movingElementId or clash.elementB==movingElementId) do (
    result.status="BLOCKED_UNVERIFIED_GEOMETRY"
    append result.diagnostics ("Containment could not be verified for "+clash.clashId)
@@ -109,7 +112,8 @@ struct AT_CoordinationSimulationStruct (
   for id in after do append result.remainingClashIds id
   result.affectedElementIds= #(movingElementId)
   local targetResolved=(targetClashId!="" and (findItem after targetClashId)==0 and (findItem before targetClashId)>0)
-  if result.introducedClashIds.count>0 then result.status="NEW_CLASHES_INTRODUCED"
+  if result.criticalViolationIds.count>0 then result.status="BLOCKED_CRITICAL_RULE"
+  else if result.introducedClashIds.count>0 then result.status="NEW_CLASHES_INTRODUCED"
   else if targetClashId=="" then result.status="TARGET_CLASH_ID_REQUIRED"
   else if not targetResolved then result.status="TARGET_CLASH_REMAINS"
   else (result.validated=true; result.status="EXACT_GEOMETRY_SIMULATION_PASSED")
