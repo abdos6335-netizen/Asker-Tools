@@ -43,9 +43,9 @@ struct AT_DisciplineAdapterStruct (
     fn applyEnvelopeOverride element = (
         local override=findEnvelopeOverride element.elementId
         if override!=undefined then (
-            element.requiredClearance=override.requiredClearance
-            element.serviceEnvelope=override.serviceEnvelope
-            element.installationEnvelope=override.installationEnvelope
+            if override.requiredClearance!=undefined then element.requiredClearance=override.requiredClearance
+            if override.serviceEnvelope!=undefined then element.serviceEnvelope=override.serviceEnvelope
+            if override.installationEnvelope!=undefined then element.installationEnvelope=override.installationEnvelope
         )
         element
     ),
