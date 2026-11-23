@@ -32,7 +32,7 @@ struct AT_CoordinationGeometryAdapterStruct (
     ),
 
     fn getBounds node offset:[0,0,0] = (
-        local bounds = nodeGetBoundingBox node node.transform
+        local bounds = nodeGetBoundingBox node node.objectTransform
         #(bounds[1] + offset, bounds[2] + offset)
     ),
 
