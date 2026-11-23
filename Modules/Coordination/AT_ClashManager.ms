@@ -4,7 +4,7 @@
 global AT_ClashManager
 struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", note="", severity="INFORMATION")
 struct AT_ClashManagerStruct (
- version="0.2.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(),
+ version="0.2.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(),
  fn severityFor clash = (
   if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH"
   else if clash.status=="CLEARANCE_VIOLATION" then "MEDIUM"
@@ -59,7 +59,8 @@ struct AT_ClashManagerStruct (
  fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   if index<1 or index>clashes.count or AT_ExactGeometryEngine.lastMeshes.count==0 then return #()
-  AT_CoordinationSolutionGenerator.generateAllAlternatives AT_ExactGeometryEngine.lastMeshes #(clashes[index]) clearance:clearance angles:angles
+  local required=amax clearance clashes[index].requiredClearance
+  AT_CoordinationSolutionGenerator.generateAllAlternatives AT_ExactGeometryEngine.lastMeshes #(clashes[index]) clearance:required angles:angles
  ),
  fn simulateAlternative index jurisdiction:"" = (
   local actions=AT_CoordinationSolutionGenerator.lastCandidates+AT_CoordinationSolutionGenerator.lastRotationCandidates
@@ -92,12 +93,39 @@ struct AT_ClashManagerStruct (
   local candidates=AT_CoordinationSolutionGenerator.toProposalCandidates()
   AT_SolutionEngine.generateAndRank candidates
  ),
- fn scan requiredClearance:0.0 = (
+ fn scan requiredClearance:0.0 jurisdiction:"" = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
+  lastPairClearances=#(); lastRuleMissingPairs=#()
   AT_DisciplineAdapter.inspect()
   AT_ExactGeometryEngine.inspect()
   for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do meshRecord.requiredClearance=element.requiredClearance
-  local found=AT_ExactGeometryEngine.detectClashesWithClearances AT_DisciplineAdapter.lastInventory defaultClearance:requiredClearance
+  for i=1 to AT_ExactGeometryEngine.lastMeshes.count do for j=i+1 to AT_ExactGeometryEngine.lastMeshes.count do (
+   local meshA=AT_ExactGeometryEngine.lastMeshes[i]
+   local meshB=AT_ExactGeometryEngine.lastMeshes[j]
+   local elementA=undefined; local elementB=undefined
+   for item in AT_DisciplineAdapter.lastInventory do (
+    if item.elementId==meshA.elementId then elementA=item
+    if item.elementId==meshB.elementId then elementB=item
+   )
+   local pairRequired=requiredClearance
+   if meshA.requiredClearance!=undefined do pairRequired=amax pairRequired meshA.requiredClearance
+   if meshB.requiredClearance!=undefined do pairRequired=amax pairRequired meshB.requiredClearance
+   if elementA==undefined or elementB==undefined or elementA.discipline=="UNKNOWN" or elementB.discipline=="UNKNOWN" then append lastRuleMissingPairs #(meshA.elementId,meshB.elementId,"","DISCIPLINE_CLASSIFICATION_REQUIRED")
+   else (
+    local pair=AT_ExactClashRecord elementA:meshA.elementId elementB:meshB.elementId disciplineA:elementA.discipline disciplineB:elementB.discipline
+    local evaluations=AT_RuleEngine.evaluateClash pair jurisdiction:jurisdiction
+    local ruleIds=#()
+    for evaluation in evaluations do (
+     if evaluation.status!="RULE_FOUND" then append lastRuleMissingPairs #(meshA.elementId,meshB.elementId,evaluation.checkType,evaluation.reason)
+     else if (findItem #("CLEARANCE","MIN_CLEARANCE","SERVICE_CLEARANCE","INSTALLATION_CLEARANCE") evaluation.checkType)>0 and evaluation.unitConversionValid then (
+      pairRequired=amax pairRequired evaluation.valueInSystemUnits
+      appendIfUnique ruleIds evaluation.ruleId
+     )
+    )
+    if pairRequired>0 or ruleIds.count>0 do append lastPairClearances (AT_ExactPairClearanceRecord elementA:meshA.elementId elementB:meshB.elementId requiredClearance:pairRequired ruleIds:ruleIds)
+   )
+  )
+  local found=AT_ExactGeometryEngine.detectClashesWithClearances AT_DisciplineAdapter.lastInventory defaultClearance:requiredClearance pairOverrides:lastPairClearances
   for clash in found do (
    for element in AT_DisciplineAdapter.lastInventory do (
     if element.elementId==clash.elementA then (clash.nameA=element.nodeName; clash.disciplineA=element.discipline)
@@ -114,6 +142,7 @@ struct AT_ClashManagerStruct (
    button btnRules "Manage Project Rules" width:190 height:28 align:#left
    label lblSummary "Ready" align:#left
    label lblCounts "HIGH 0 | MEDIUM 0 | LOW 0 | INFO 0" align:#left
+   label lblRuleMissing "Missing rule checks: 0" align:#left
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
    button btnGenerate "Generate Solution Alternatives" width:220 height:28 align:#left
@@ -152,10 +181,11 @@ struct AT_ClashManagerStruct (
    )
    on btnRules pressed do AT_RuleManager.show()
    on btnScan pressed do (
-    local found=AT_ClashManager.scan()
+    local found=AT_ClashManager.scan jurisdiction:edtJurisdiction.text
     lbClashes.items=for c in found collect (AT_ClashManager.clashLabel c)
     lblSummary.text=found.count as string+" clashes | exact mesh analysis"
     lblCounts.text=AT_ClashManager.countsLabel()
+    lblRuleMissing.text="Missing rule checks: "+(AT_ClashManager.lastRuleMissingPairs.count as string)
     lbSolutions.items=#()
    )
    on btnGenerate pressed do (
@@ -208,6 +238,6 @@ struct AT_ClashManagerStruct (
   )
   createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
  ),
- fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); true)
+ fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
