@@ -28,6 +28,11 @@ struct AT_RuleEngineStruct (
         if not validDiscipline rule.disciplineA or not validDiscipline rule.disciplineB or not validSeverity rule.severity then return false
         if classOf rule.value!=Integer and classOf rule.value!=Float and rule.value!=undefined then return false
         if rule.value!=undefined and (rule.value<0 or rule.unit=="") then return false
+        rule.disciplineA=toUpper rule.disciplineA
+        rule.disciplineB=toUpper rule.disciplineB
+        rule.checkType=toUpper rule.checkType
+        rule.sourceType=toUpper rule.sourceType
+        rule.severity=toUpper rule.severity
         for i=rules.count to 1 by -1 where rules[i].ruleId==rule.ruleId do deleteItem rules i
         append rules rule
         registryRevision+=1
@@ -112,7 +117,7 @@ struct AT_RuleEngineStruct (
         local validated=#()
         for checkType in checkTypes do (
             if classOf checkType!=String or checkType=="" then return false
-            appendIfUnique validated checkType
+            appendIfUnique validated (toUpper checkType)
         )
         if (validated as string)!=(requiredCheckTypes as string) do registryRevision+=1
         requiredCheckTypes=validated
