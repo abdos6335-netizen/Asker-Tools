@@ -15,6 +15,14 @@ struct AT_CoordinationTransaction (
 struct AT_CoordinationGovernanceStruct (
  version="0.2.0", approvals=#(), transactions=#(), auditLog=#(),
  fn findApproval proposalId = (for a in approvals where a.proposalId==proposalId do return a; undefined),
+ fn restoreTransactionSnapshot tx = (
+  if tx==undefined or not isValidNode tx.nodeRef then return false
+  try (
+   tx.nodeRef.transform=tx.beforeTransform
+   tx.nodeRef.pivot=tx.beforePivot
+   (tx.nodeRef.transform==tx.beforeTransform and tx.nodeRef.objectTransform==tx.beforeObjectTransform and tx.nodeRef.pivot==tx.beforePivot)
+  ) catch (false)
+ ),
  fn sameStringSet a b = (
   if classOf a!=Array or classOf b!=Array or a.count!=b.count then return false
   local uniqueA=#(); local uniqueB=#()
@@ -84,9 +92,10 @@ struct AT_CoordinationGovernanceStruct (
    append auditLog #("APPLIED",proposalId,expectedId,transactionId,a.actionType)
    tx
   ) catch (
-   try (nodeRef.transform=tx.beforeTransform; nodeRef.pivot=tx.beforePivot) catch()
-   tx.state="FAILED_ROLLED_BACK"
-   append auditLog #("APPLY_FAILED",proposalId,expectedId,getCurrentException())
+   local failure=getCurrentException()
+   local restored=restoreTransactionSnapshot tx
+   tx.state=if restored then "FAILED_ROLLED_BACK" else "APPLY_FAILED_RESTORE_FAILED"
+   append auditLog #("APPLY_FAILED",proposalId,expectedId,failure,tx.state)
    tx
   )
  ),
@@ -110,7 +119,11 @@ struct AT_CoordinationGovernanceStruct (
    tx.state="ROLLED_BACK"; tx.rollbackReason=reason
    append auditLog #("ROLLED_BACK",transactionId,reason)
    true
-  ) catch (append auditLog #("ROLLBACK_FAILED",transactionId,getCurrentException()); false)
+  ) catch (
+   tx.state="ROLLBACK_FAILED"
+   append auditLog #("ROLLBACK_FAILED",transactionId,reason,getCurrentException())
+   false
+  )
  ),
  fn clearAudit = (auditLog=#(); true)
 )
