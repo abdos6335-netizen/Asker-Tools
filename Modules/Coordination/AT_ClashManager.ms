@@ -123,12 +123,25 @@ struct AT_ClashManagerStruct (
     editText edtTransactionId "Transaction ID" text:"" width:300
     button btnApply "Apply Approved Action" width:180 height:26
    )
+   group "Project data persistence" (
+    editText edtStorePath "Project XML path" text:"" width:580
+    button btnSaveProject "Save Project Data" width:180 height:26
+    button btnLoadProject "Load Project Data" width:180 height:26
+   )
    group "Assignment and status" (
     editText edtOwner "Owner" text:"" width:300
     dropdownList ddlStatus "Status" items:#("OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") width:300
     editText edtDue "Due date" text:"" width:300
     editText edtNote "Note" text:"" width:580
     button btnSave "Save clash tracking" width:180 height:26
+   )
+   on btnSaveProject pressed do (
+    local ok=AT_CoordinationProjectStore.save edtStorePath.text
+    lblSummary.text=if ok then "Project data saved with backup" else "Project save failed; inspect ProjectStore.lastErrors"
+   )
+   on btnLoadProject pressed do (
+    local ok=AT_CoordinationProjectStore.load edtStorePath.text
+    lblSummary.text=if ok then "Project data loaded; rule and tracking state restored" else "Project load failed; prior state retained"
    )
    on btnRules pressed do AT_RuleManager.show()
    on btnScan pressed do (
