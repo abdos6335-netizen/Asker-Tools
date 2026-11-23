@@ -19,6 +19,7 @@ struct AT_DisciplineMapping (
 struct AT_DisciplineAdapterStruct (
     version="0.2.0", mappingRevision=0, metadataRevision=0, supportedDisciplines=#("ARCHITECTURE","STRUCTURE","ELECTRICAL","HVAC","FIRE_FIGHTING","PLUMBING","LOW_CURRENT","INTERIOR_ELEMENTS"),
     mappings=#(), envelopeOverrides=#(), lastInventory=#(), lastUnclassified=#(), lastErrors=#(),
+    fn isSupportedNode node = ((superClassOf node)==GeometryClass or (superClassOf node)==Shape),
     fn validDiscipline value = (findItem supportedDisciplines (toUpper value) > 0),
     fn registerMapping matchKind matchValue discipline elementType:"UNSPECIFIED" sourceLabel:"PROJECT_MAPPING" revision:"" = (
         local d=toUpper discipline
@@ -81,7 +82,7 @@ struct AT_DisciplineAdapterStruct (
     fn inspect nodes:undefined includeHidden:false = (
         local sourceNodes=if nodes==undefined then objects as array else nodes
         local found=#(); local unknown=#(); lastErrors=#()
-        for n in sourceNodes where isValidNode n do if includeHidden or not n.isHidden do (
+        for n in sourceNodes where isValidNode n do if isSupportedNode n and (includeHidden or not n.isHidden) do (
             try (
                 local e=inspectNode n
                 append found e
