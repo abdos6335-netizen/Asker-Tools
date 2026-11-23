@@ -13,7 +13,7 @@ Target versions: 3ds Max 2022–2026. 3ds Max 2027 is pending validation. Corona
 1. In 3ds Max, evaluate `getDir #userScripts` to locate the user scripts folder.
 2. Copy the complete `AskerTools` folder there.
 3. Run `AskerTools.ms` from the MAXScript editor.
-4. Open tools with `AT_SceneAudit.show()`, `AT_SceneManager.show()`, `AT_AssetManager.show()`, `AT_Cleanup.show()`, and `AT_MaterialManager.show()`.
+4. Open tools with `AT_SceneAudit.show()`, `AT_SceneManager.show()`, `AT_AssetManager.show()`, `AT_Cleanup.show()`, `AT_MaterialManager.show()`, and `AT_ClashManager.show()`. The Clash Manager opens the Rule Manager and Discipline Manager; run `AT_CoordinationSelfTests.run()` for the non-destructive in-host checks.
 
 Logs and settings are written under the same user scripts directory, in `AskerTools/Logs` and `AskerTools/Config`.
 
