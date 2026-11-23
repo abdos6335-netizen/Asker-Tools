@@ -82,11 +82,22 @@ struct AT_ClashManagerStruct (
   )
   true
  ),
+ fn validateCurrentScene jurisdiction:"" = (
+  if lastScanRuleRevision!=AT_RuleEngine.registryRevision or jurisdiction!=lastScanJurisdiction or (AT_RuleEngine.requiredCheckTypes as string)!=(lastScanRequiredChecks as string) then (lastError="RULES_OR_JURISDICTION_CHANGED_RESCAN_REQUIRED"; return false)
+  if lastDisciplineMappingRevision!=AT_DisciplineAdapter.mappingRevision or lastDisciplineMetadataRevision!=AT_DisciplineAdapter.metadataRevision then (lastError="DISCIPLINE_METADATA_CHANGED_RESCAN_REQUIRED"; return false)
+  local savedInventory=lastDisciplineInventory
+  AT_DisciplineAdapter.inspect()
+  if not disciplineInventoryMatches savedInventory AT_DisciplineAdapter.lastInventory then (lastError="DISCIPLINE_INVENTORY_CHANGED_RESCAN_REQUIRED"; return false)
+  local savedMeshes=lastScanMeshes
+  AT_ExactGeometryEngine.inspect()
+  if not meshInventoryMatches savedMeshes AT_ExactGeometryEngine.lastMeshes then (lastError="SCENE_GEOMETRY_CHANGED_RESCAN_REQUIRED"; return false)
+  lastError=""
+  true
+ ),
  fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   if index<1 or index>clashes.count or AT_ExactGeometryEngine.lastMeshes.count==0 then return #()
-  if lastScanRuleRevision!=AT_RuleEngine.registryRevision then (
-   lastError="RULES_CHANGED_RESCAN_REQUIRED"
+  if not validateCurrentScene jurisdiction:lastScanJurisdiction then (
    AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
    return #()
   )
@@ -96,14 +107,7 @@ struct AT_ClashManagerStruct (
  fn simulateAlternative index jurisdiction:"" = (
   local actions=AT_CoordinationSolutionGenerator.lastCandidates+AT_CoordinationSolutionGenerator.lastRotationCandidates
   if index<1 or index>actions.count then return undefined
-  if lastScanRuleRevision!=AT_RuleEngine.registryRevision or jurisdiction!=lastScanJurisdiction or (AT_RuleEngine.requiredCheckTypes as string)!=(lastScanRequiredChecks as string) then (lastError="RULES_OR_JURISDICTION_CHANGED_RESCAN_REQUIRED"; return undefined)
-  if lastDisciplineMappingRevision!=AT_DisciplineAdapter.mappingRevision or lastDisciplineMetadataRevision!=AT_DisciplineAdapter.metadataRevision then (lastError="DISCIPLINE_METADATA_CHANGED_RESCAN_REQUIRED"; return undefined)
-  local savedInventory=lastDisciplineInventory
-  AT_DisciplineAdapter.inspect()
-  if not disciplineInventoryMatches savedInventory AT_DisciplineAdapter.lastInventory then (lastError="DISCIPLINE_INVENTORY_CHANGED_RESCAN_REQUIRED"; return undefined)
-  local savedMeshes=lastScanMeshes
-  AT_ExactGeometryEngine.inspect()
-  if not meshInventoryMatches savedMeshes AT_ExactGeometryEngine.lastMeshes then (lastError="SCENE_GEOMETRY_CHANGED_RESCAN_REQUIRED"; return undefined)
+  if not validateCurrentScene jurisdiction:jurisdiction then return undefined
   local action=actions[index]
   local clash=undefined
   for c in clashes where c.clashId==action.targetClashIds[1] do clash=c
@@ -118,11 +122,12 @@ struct AT_ClashManagerStruct (
  ),
  fn approveAlternative index approver reason approvalDate = (
   if index<1 or index>lastSimulations.count or index>lastSimulationCandidates.count then return false
-  if lastScanRuleRevision!=AT_RuleEngine.registryRevision then return false
+  if not validateCurrentScene jurisdiction:lastScanJurisdiction then return false
   AT_CoordinationGovernance.approve lastSimulationCandidates[index] lastSimulations[index] approver reason approvalDate
  ),
  fn applyAlternative index transactionId = (
   if index<1 or index>lastSimulationCandidates.count then return undefined
+  if not validateCurrentScene jurisdiction:lastScanJurisdiction then return undefined
   local candidate=lastSimulationCandidates[index]
   if candidate==undefined or candidate.affectedElementIds.count!=1 then return undefined
   local node=getNodeByHandle (candidate.affectedElementIds[1] as integer)
