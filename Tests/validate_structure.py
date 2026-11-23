@@ -11,6 +11,7 @@ required = [
     'Modules/Cleanup/AT_Cleanup.ms',
     'Modules/Materials/AT_MaterialManager.ms',
     'Modules/Coordination/AT_SolutionEngine.ms',
+    'Modules/Coordination/AT_CoordinationGeometryAdapter.ms',
     'Documentation/Modules/MATERIAL_MANAGER.md',
     'Documentation/Modules/SCENE_MANAGER.md',
     'Documentation/Modules/ASSET_MANAGER.md',
@@ -35,6 +36,7 @@ checks = {
     'Core/AT_Core.ms': ['version = "0.5.0"'],
     'Modules/Materials/AT_MaterialManager.ms': ['#filePostMerge', '#postImport', 'SHA256', 'AutoCollect', 'REV(?:ISION)?', 'centralizeBitmap', 'changeMapsFolder'],
     'Modules/Coordination/AT_SolutionEngine.ms': ['fn validateCandidate', 'fn buildProposal', 'fn generateProposals', 'fn generateAndRank', 'fn validateProposal', 'fn evaluateProposal', 'fn evaluate', 'fn setWeights', 'SIMULATION_NOT_VALIDATED', 'CRITICAL_RULE_VIOLATION', 'REQUIRED_RULE_MISSING', 'INTRODUCES_NEW_CLASHES'],
+    'Modules/Coordination/AT_CoordinationGeometryAdapter.ms': ['fn inspect', 'fn detectClashes', 'fn generateMoveCandidates', 'fn simulateAABBMove', 'AABB_CLEAR_ONLY_REQUIRES_EXACT_VALIDATION', 'simulationValidated = false'],
 }
 for rel, tokens in checks.items():
     source = (ROOT / rel).read_text(encoding='utf-8')
