@@ -88,6 +88,13 @@ struct AT_CoordinationSelfTestsStruct (
    addResult results "UNAPPROVED_HIGHER_PRIORITY_BLOCKS_FALLBACK" (evaluation.reason=="HIGHEST_PRIORITY_RULE_NOT_APPROVED") evaluation.reason "HIGHEST_PRIORITY_RULE_NOT_APPROVED"
 
    AT_RuleEngine.clearAll()
+   local scopedCode=AT_CoordinationRule ruleId:"QA_SCOPED_CODE" disciplineA:"*" disciplineB:"*" checkType:"CLEARANCE" value:20.0 unit:"mm" sourceType:"MANDATORY_CODE" sourceName:"QA Jurisdiction Code" jurisdiction:"EGYPT" approved:true
+   local globalProject=AT_CoordinationRule ruleId:"QA_GLOBAL_PROJECT" disciplineA:"*" disciplineB:"*" checkType:"CLEARANCE" value:10.0 unit:"mm" sourceType:"PROJECT_SPEC" sourceName:"QA Global Project" approved:true
+   AT_RuleEngine.registerRule scopedCode; AT_RuleEngine.registerRule globalProject
+   evaluation=AT_RuleEngine.evaluate "HVAC" "STRUCTURE" "CLEARANCE"
+   addResult results "JURISDICTION_REQUIRED_BEFORE_FALLBACK" (evaluation.reason=="JURISDICTION_REQUIRED") evaluation.reason "JURISDICTION_REQUIRED"
+
+   AT_RuleEngine.clearAll()
    local conflictA=AT_CoordinationRule ruleId:"QA_CONFLICT_A" disciplineA:"HVAC" disciplineB:"STRUCTURE" checkType:"CLEARANCE" value:10.0 unit:"mm" sourceType:"AUTHORITY_APPROVAL" sourceName:"Authority A" approved:true
    local conflictB=AT_CoordinationRule ruleId:"QA_CONFLICT_B" disciplineA:"HVAC" disciplineB:"STRUCTURE" checkType:"CLEARANCE" value:20.0 unit:"mm" sourceType:"AUTHORITY_APPROVAL" sourceName:"Authority B" approved:true
    AT_RuleEngine.registerRule conflictA; AT_RuleEngine.registerRule conflictB
