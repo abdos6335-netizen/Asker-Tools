@@ -122,6 +122,7 @@ struct AT_ClashManagerStruct (
  ),
  fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
+  AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
   if index<1 or index>clashes.count or AT_ExactGeometryEngine.lastMeshes.count==0 then return #()
   if not validateCurrentScene jurisdiction:lastScanJurisdiction then (
    AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
@@ -341,7 +342,12 @@ struct AT_ClashManagerStruct (
     lblDisciplineErrors.text="Discipline inspection errors: "+(AT_ClashManager.lastDisciplineErrors.count as string)
     lbSolutions.items=#()
    )
-   on btnFilter pressed do AT_ClashManager.refreshClashList lbClashes severityFilter:(ddlSeverityFilter.items[amax 1 ddlSeverityFilter.selection]) disciplineFilter:(ddlDisciplineFilter.items[amax 1 ddlDisciplineFilter.selection]) searchText:edtClashSearch.text
+   on btnFilter pressed do (
+    AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
+    AT_ClashManager.lastSimulations=#(); AT_ClashManager.lastSimulationCandidates=#(); AT_ClashManager.lastSimulationResults=#()
+    lbSolutions.items=#()
+    AT_ClashManager.refreshClashList lbClashes severityFilter:(ddlSeverityFilter.items[amax 1 ddlSeverityFilter.selection]) disciplineFilter:(ddlDisciplineFilter.items[amax 1 ddlDisciplineFilter.selection]) searchText:edtClashSearch.text
+   )
    on btnGenerate pressed do (
     local actualClashIndex=if lbClashes.selection>0 and lbClashes.selection<=AT_ClashManager.visibleClashIndices.count then AT_ClashManager.visibleClashIndices[lbClashes.selection] else 0
     local actions=AT_ClashManager.generateAlternatives actualClashIndex
@@ -374,6 +380,9 @@ struct AT_ClashManagerStruct (
    )
    on btnSelect pressed do AT_ClashManager.selectVisibleClash lbClashes.selection
    on lbClashes selected index do (
+    AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
+    AT_ClashManager.lastSimulations=#(); AT_ClashManager.lastSimulationCandidates=#(); AT_ClashManager.lastSimulationResults=#()
+    lbSolutions.items=#()
     if index>0 and index<=AT_ClashManager.visibleClashIndices.count do (
      local actualIndex=AT_ClashManager.visibleClashIndices[index]
      local record=AT_ClashManager.getTracking AT_ClashManager.clashes[actualIndex].clashId
