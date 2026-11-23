@@ -4,7 +4,7 @@
 global AT_ExactGeometryEngine
 struct AT_ExactTriangle (a=[0,0,0], b=[0,0,0], c=[0,0,0], minimum=[0,0,0], maximum=[0,0,0], faceIndex=0)
 struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0, validFaceCount=0, invalidFaceCount=0, requiredClearance=undefined, isClosed=false, isManifold=false, topologyChecked=false)
-struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", status="SEPARATED", minimumDistance=1.0e9, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
+struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", status="SEPARATED", minimumDistance=undefined, minimumDistanceKnown=false, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
 struct AT_ExactGeometryEngineStruct (
  version="0.1.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
  fn idForNode n = (try ((getHandleByAnim n) as string) catch ("")),
@@ -187,7 +187,8 @@ struct AT_ExactGeometryEngineStruct (
   )
   if intersected then (result.status="EXACT_MESH_INTERFERENCE"; result.minimumDistance=0.0)
   else (
-   result.minimumDistance=if best==1.0e30 then 1.0e9 else sqrt best
+   if best==1.0e30 then (result.minimumDistance=undefined; result.minimumDistanceKnown=false)
+   else (result.minimumDistance=sqrt best; result.minimumDistanceKnown=true)
    local aContainsB=(recordB.minimum.x>=recordA.minimum.x and recordB.maximum.x<=recordA.maximum.x and recordB.minimum.y>=recordA.minimum.y and recordB.maximum.y<=recordA.maximum.y and recordB.minimum.z>=recordA.minimum.z and recordB.maximum.z<=recordA.maximum.z)
    local bContainsA=(recordA.minimum.x>=recordB.minimum.x and recordA.maximum.x<=recordB.maximum.x and recordA.minimum.y>=recordB.minimum.y and recordA.maximum.y<=recordB.maximum.y and recordA.minimum.z>=recordB.minimum.z and recordA.maximum.z<=recordB.maximum.z)
    if aContainsB or bContainsA then (
