@@ -466,6 +466,7 @@ struct AT_ClashManagerStruct (
     local ok=AT_ClashManager.restoreIsolation()
     lblSummary.text=if ok then "Previous visibility state restored" else "No isolation snapshot to restore"
    )
+   on AT_ClashManagerRollout close do AT_ClashManager.restoreIsolation()
    on lbClashes selected index do (
     AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
     AT_ClashManager.lastSimulations=#(); AT_ClashManager.lastSimulationCandidates=#(); AT_ClashManager.lastSimulationResults=#()
@@ -497,6 +498,6 @@ struct AT_ClashManagerStruct (
   )
   createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
  ),
- fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastGeometryErrors=#(); lastDisciplineErrors=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); lastDisciplineMappingRevision=-1; lastDisciplineMetadataRevision=-1; lastDisciplineInventory=#(); lastScanMeshes=#(); visibleClashIndices=#(); true)
+ fn clear = (restoreIsolation(); clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastGeometryErrors=#(); lastDisciplineErrors=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); lastDisciplineMappingRevision=-1; lastDisciplineMetadataRevision=-1; lastDisciplineInventory=#(); lastScanMeshes=#(); visibleClashIndices=#(); true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
