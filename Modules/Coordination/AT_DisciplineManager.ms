@@ -46,6 +46,7 @@ struct AT_DisciplineManagerStruct (
     dropdownList ddlUnit "Clearance unit" items:#("mm","cm","m","in","ft","system") width:300
     editText edtService "Service envelope reference (optional)" text:"" width:650
     editText edtInstallation "Installation envelope reference (optional)" text:"" width:650
+    label lblEnvelopeUnits "Selected element values display in 3ds Max master units" align:#left
     button btnApplyEnvelope "Apply Envelope to Selected Element" width:260 height:28
     button btnClearEnvelope "Clear Selected Element Override" width:230 height:28
    )
@@ -69,6 +70,17 @@ struct AT_DisciplineManagerStruct (
    on btnRefresh pressed do (
     AT_DisciplineManager.refreshInventory lbInventory
     lblStatus.text=(AT_DisciplineAdapter.lastUnclassified.count as string)+" elements remain UNKNOWN"
+   )
+   on lbInventory selected index do (
+    if index>0 and index<=AT_DisciplineAdapter.lastInventory.count then (
+     local element=AT_DisciplineAdapter.lastInventory[index]
+     ddlUnit.selection=6
+     edtClearance.text=if element.requiredClearance==undefined then "" else (element.requiredClearance as string)
+     edtServiceClearance.text=if element.serviceClearance==undefined then "" else (element.serviceClearance as string)
+     edtInstallationClearance.text=if element.installationClearance==undefined then "" else (element.installationClearance as string)
+     edtService.text=if element.serviceEnvelope==undefined then "" else (element.serviceEnvelope as string)
+     edtInstallation.text=if element.installationEnvelope==undefined then "" else (element.installationEnvelope as string)
+    )
    )
    on btnClearEnvelope pressed do (
     if lbInventory.selection<1 or lbInventory.selection>AT_DisciplineAdapter.lastInventory.count then lblStatus.text="Select an element first"
