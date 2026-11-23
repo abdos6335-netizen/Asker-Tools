@@ -104,6 +104,7 @@ struct AT_ClashManagerStruct (
   try (destroyDialog AT_ClashManagerRollout) catch()
   rollout AT_ClashManagerRollout "Asker Tools | Clash Manager" width:650 height:430 (
    button btnScan "Detect Exact Mesh Clashes" width:190 height:28 align:#left
+   button btnRules "Manage Project Rules" width:190 height:28 align:#left
    label lblSummary "Ready" align:#left
    label lblCounts "HIGH 0 | MEDIUM 0 | LOW 0 | INFO 0" align:#left
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
@@ -129,6 +130,7 @@ struct AT_ClashManagerStruct (
     editText edtNote "Note" text:"" width:580
     button btnSave "Save clash tracking" width:180 height:26
    )
+   on btnRules pressed do AT_RuleManager.show()
    on btnScan pressed do (
     local found=AT_ClashManager.scan()
     lbClashes.items=for c in found collect (AT_ClashManager.clashLabel c)
