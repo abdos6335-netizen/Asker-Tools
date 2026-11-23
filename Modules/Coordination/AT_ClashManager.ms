@@ -195,10 +195,16 @@ struct AT_ClashManagerStruct (
   lastDisciplineInventory=AT_DisciplineAdapter.lastInventory
   AT_ExactGeometryEngine.inspect()
   lastScanMeshes=AT_ExactGeometryEngine.lastMeshes
-  AT_ExactGeometryEngine.applyDisciplineMetadata lastScanMeshes lastDisciplineInventory
   lastGeometryErrors=AT_ExactGeometryEngine.lastErrors
   lastDisciplineErrors=AT_DisciplineAdapter.lastErrors
-  for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do meshRecord.requiredClearance=element.requiredClearance
+  /* Copy only explicit per-element numeric clearances into immutable scan records.
+     Named service/installation envelope geometry remains metadata until a geometric
+     envelope provider is implemented; no shape is inferred from a text label. */
+  for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do (
+   meshRecord.requiredClearance=element.requiredClearance
+   meshRecord.serviceClearance=element.serviceClearance
+   meshRecord.installationClearance=element.installationClearance
+  )
   for i=1 to AT_ExactGeometryEngine.lastMeshes.count do for j=i+1 to AT_ExactGeometryEngine.lastMeshes.count do (
    local meshA=AT_ExactGeometryEngine.lastMeshes[i]
    local meshB=AT_ExactGeometryEngine.lastMeshes[j]
