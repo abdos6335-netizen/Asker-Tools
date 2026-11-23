@@ -9,6 +9,9 @@
 - Added configurable scoring weights and stable tie-breaking by proposal ID.
 - Kept evaluation read-only; no automatic geometry changes or engineering approvals.
 - Added module documentation and static validation coverage.
+- Added read-only 3ds Max AABB scene inspection and clash discovery.
+- Added six-axis move candidate generation with broad-phase rechecks against inventoried nodes.
+- Kept all geometry-derived candidates unvalidated pending exact geometry and approved-rule simulation.
 - Updated core version to 0.5.0.
 
 ## 0.4.0 - Project Material & Map Manager
