@@ -91,7 +91,7 @@ struct AT_ClashManagerStruct (
    local current=undefined
    for item in newInventory where item.elementId==old.elementId do current=item
    if current==undefined then return false
-   if old.nodeName!=current.nodeName or old.discipline!=current.discipline or old.elementType!=current.elementType or old.source!=current.source or old.sourceRevision!=current.sourceRevision or old.requiredClearance!=current.requiredClearance or (old.serviceEnvelope as string)!=(current.serviceEnvelope as string) or (old.installationEnvelope as string)!=(current.installationEnvelope as string) or old.boundsMin!=current.boundsMin or old.boundsMax!=current.boundsMax then return false
+   if old.nodeName!=current.nodeName or old.discipline!=current.discipline or old.elementType!=current.elementType or old.source!=current.source or old.sourceRevision!=current.sourceRevision or old.requiredClearance!=current.requiredClearance or old.serviceClearance!=current.serviceClearance or old.installationClearance!=current.installationClearance or (old.serviceEnvelope as string)!=(current.serviceEnvelope as string) or (old.installationEnvelope as string)!=(current.installationEnvelope as string) or old.boundsMin!=current.boundsMin or old.boundsMax!=current.boundsMax then return false
   )
   true
  ),
@@ -118,7 +118,6 @@ struct AT_ClashManagerStruct (
   if AT_DisciplineAdapter.lastErrors.count>0 then (lastError="DISCIPLINE_INSPECTION_ERRORS_PRESENT"; return false)
   local savedMeshes=lastScanMeshes
   AT_ExactGeometryEngine.inspect()
-  AT_ExactGeometryEngine.applyDisciplineMetadata AT_ExactGeometryEngine.lastMeshes AT_DisciplineAdapter.lastInventory
   if not meshInventoryMatches savedMeshes AT_ExactGeometryEngine.lastMeshes then (lastError="SCENE_GEOMETRY_CHANGED_RESCAN_REQUIRED"; return false)
   if AT_ExactGeometryEngine.lastErrors.count>0 then (lastError="GEOMETRY_INSPECTION_ERRORS_PRESENT"; return false)
   lastError=""
