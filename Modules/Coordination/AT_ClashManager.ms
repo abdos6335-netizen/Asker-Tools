@@ -42,7 +42,7 @@ struct AT_ClashManagerStruct (
  fn scan requiredClearance:0.0 = (
   AT_DisciplineAdapter.inspect()
   AT_ExactGeometryEngine.inspect()
-  local found=AT_ExactGeometryEngine.detectClashes requiredClearance:requiredClearance
+  local found=AT_ExactGeometryEngine.detectClashesWithClearances AT_DisciplineAdapter.lastInventory defaultClearance:requiredClearance
   for clash in found do (
    for element in AT_DisciplineAdapter.lastInventory do (
     if element.elementId==clash.elementA then (clash.nameA=element.nodeName; clash.disciplineA=element.discipline)
