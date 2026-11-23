@@ -52,7 +52,7 @@ struct AT_RuleManagerStruct (
    listbox lbRules "Registered rules" items:#() width:680 height:12
    label lblStatus "Rules are project data; values must come from approved sources." align:#left
    on AT_CoordinationRuleManagerRollout open do (
-    refreshList lbRules
+    AT_RuleManager.refreshList lbRules
     local requiredText=""
     for checkType in AT_RuleEngine.requiredCheckTypes do (
      if requiredText!="" then requiredText+=";"
@@ -71,13 +71,13 @@ struct AT_RuleManagerStruct (
     local source=ddlSource.items[amax 1 ddlSource.selection]
     local severity=ddlSeverity.items[amax 1 ddlSeverity.selection]
     local ok=AT_RuleManager.addRule edtRuleId.text dA dB edtCheckType.text value edtUnit.text severity source edtSourceName.text edtRevision.text edtJurisdiction.text chkApproved.checked chkMandatory.checked edtEffectiveDate.text edtNotes.text
-    refreshList lbRules
+    AT_RuleManager.refreshList lbRules
     lblStatus.text=if ok then "Rule registered" else "Rule rejected; check ID, type, source and value"
     )
    )
    on btnRemove pressed do (
     local ok=AT_RuleManager.removeRule lbRules.selection
-    refreshList lbRules
+    AT_RuleManager.refreshList lbRules
     lblStatus.text=if ok then "Rule removed" else "Select a rule to remove"
    )
    on btnSetRequired pressed do (
