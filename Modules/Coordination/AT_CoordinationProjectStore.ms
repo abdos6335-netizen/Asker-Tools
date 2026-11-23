@@ -141,7 +141,7 @@ struct AT_CoordinationProjectStoreStruct (
    local mappingNodes=xml.SelectNodes "/AskerToolsCoordinationProject/DisciplineMappings/Mapping"
    for node in mappingNodes do (
     local mapping=AT_DisciplineMapping matchKind:(getAttribute node "matchKind") matchValue:(getAttribute node "matchValue") discipline:(getAttribute node "discipline") elementType:(getAttribute node "elementType") sourceLabel:(getAttribute node "sourceLabel") revision:(getAttribute node "revision")
-    if mapping.matchKind=="" or mapping.matchValue=="" or not AT_DisciplineAdapter.validDiscipline mapping.discipline then throw "INVALID_STORED_DISCIPLINE_MAPPING"
+    if (findItem #("USER_PROPERTY","LAYER","CLASS","NODE_NAME") mapping.matchKind)==0 or mapping.matchValue=="" or not AT_DisciplineAdapter.validDiscipline mapping.discipline then throw "INVALID_STORED_DISCIPLINE_MAPPING"
     append loadedMappings mapping
    )
    local loadedOverrides=#()
