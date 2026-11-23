@@ -36,6 +36,8 @@ struct AT_CoordinationSelfTestsStruct (
    local records=AT_ExactGeometryEngine.inspect #(overlapA,overlapB)
    local found=AT_ExactGeometryEngine.detectClashes records:records
    addResult results "OVERLAPPING_BOXES" (found.count==1 and found[1].status=="EXACT_MESH_INTERFERENCE") (if found.count>0 then found[1].status else "NO_CLASH") "EXACT_MESH_INTERFERENCE"
+   local translationCandidates=AT_CoordinationSolutionGenerator.generateTranslations records found
+   addResult results "TRANSLATION_CANDIDATE_COUNT" (translationCandidates.count==12) translationCandidates.count 12
    local rotationCandidates=AT_CoordinationSolutionGenerator.generateRotations records found
    addResult results "ROTATION_CANDIDATE_COUNT" (rotationCandidates.count==24) rotationCandidates.count 24
    local rotationProposals=AT_CoordinationSolutionGenerator.toProposalCandidates()
@@ -62,6 +64,9 @@ struct AT_CoordinationSelfTestsStruct (
    records=AT_ExactGeometryEngine.inspect #(gapA,gapB)
    found=AT_ExactGeometryEngine.detectClashes records:records requiredClearance:3.0
    addResult results "CLEARANCE_VIOLATION" (found.count==1 and found[1].status=="CLEARANCE_VIOLATION" and found[1].minimumDistanceKnown) (if found.count>0 then found[1].status else "NO_CLASH") "CLEARANCE_VIOLATION"
+   local criticalOverride=AT_ExactPairClearanceRecord elementA:records[1].elementId elementB:records[2].elementId requiredClearance:3.0 severity:"CRITICAL" ruleIds:#("QA_CRITICAL_CLEARANCE")
+   found=AT_ExactGeometryEngine.detectClashesWithClearances records defaultClearance:0.0 pairOverrides:#(criticalOverride)
+   addResult results "PAIR_RULE_SEVERITY_PROPAGATION" (found.count==1 and found[1].ruleSeverity=="CRITICAL" and AT_ClashManager.severityFor found[1]=="CRITICAL") (if found.count>0 then found[1].ruleSeverity else "NO_CLASH") "CRITICAL"
 
    local outer=box length:20 width:20 height:20 pos:[50,0,0]
    append testNodes outer; outer.name=uniqueName "AT_QA_Containment_Outer_"; convertToMesh outer
