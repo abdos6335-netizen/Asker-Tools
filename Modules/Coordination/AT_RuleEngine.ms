@@ -40,16 +40,27 @@ struct AT_RuleEngineStruct (
         local candidates=#()
         for r in rules where r.checkType==checkType and pairMatches r dA dB and
             (not r.approved or r.jurisdiction=="" or jurisdiction=="" or r.jurisdiction==jurisdiction) do append candidates r
-        local approved=#()
-        for r in candidates where r.approved do append approved r
-        if approved.count==0 then (
-            local missing=AT_RuleEvaluation()
-            missing.reason=if candidates.count>0 then "ONLY_UNAPPROVED_RULES_AVAILABLE" else "NO_RULE_REGISTERED"
+        if candidates.count==0 then (
+            local missing=AT_RuleEvaluation reason:"NO_RULE_REGISTERED"
             append lastEvaluations missing
             return missing
         )
-        local selected=approved[1]
-        for r in approved where priority r.sourceType < priority selected.sourceType do selected=r
+        local highestPriority=999
+        for r in candidates do highestPriority=amin highestPriority (priority r.sourceType)
+        local highestSourceRules=#()
+        for r in candidates where priority r.sourceType==highestPriority do append highestSourceRules r
+        local approvedHighest=#()
+        for r in highestSourceRules where r.approved do append approvedHighest r
+        if approvedHighest.count==0 then (
+            local missing=AT_RuleEvaluation()
+            missing.reason="HIGHEST_PRIORITY_RULE_NOT_APPROVED"
+            missing.sourceType=highestSourceRules[1].sourceType
+            missing.sourceName=highestSourceRules[1].sourceName
+            append lastEvaluations missing
+            return missing
+        )
+        local selected=approvedHighest[1]
+        for r in approvedHighest where r.ruleId < selected.ruleId do selected=r
         local result=AT_RuleEvaluation status:"RULE_FOUND" ruleId:selected.ruleId value:selected.value unit:selected.unit severity:selected.severity sourceType:selected.sourceType sourceName:selected.sourceName reason:"APPROVED_RULE_SELECTED" blocking:false
         append lastEvaluations result
         result
