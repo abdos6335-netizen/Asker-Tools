@@ -6,7 +6,7 @@ struct AT_DisciplineElement (
     elementId="", nodeName="", discipline="UNKNOWN", elementType="UNSPECIFIED",
     source="UNRESOLVED", sourceRevision="", nodeRef=undefined,
     boundsMin=[0,0,0], boundsMax=[0,0,0],
-    requiredClearance=undefined, serviceEnvelope=undefined,
+    requiredClearance=undefined, serviceClearance=undefined, installationClearance=undefined, serviceEnvelope=undefined,
     installationEnvelope=undefined, metadata=#(), warnings=#()
 )
 struct AT_DisciplineEnvelopeOverride (
@@ -132,6 +132,12 @@ struct AT_DisciplineAdapterStruct (
         if override==undefined then (override=AT_DisciplineEnvelopeOverride elementId:elementId; append envelopeOverrides override)
         if requiredClearance!=undefined then (
             target.requiredClearance=requiredClearance; override.requiredClearance=requiredClearance
+        )
+        if serviceClearance!=undefined then (
+            target.serviceClearance=serviceClearance; override.serviceClearance=serviceClearance
+        )
+        if installationClearance!=undefined then (
+            target.installationClearance=installationClearance; override.installationClearance=installationClearance
         )
         if serviceEnvelope!=undefined then (target.serviceEnvelope=serviceEnvelope; override.serviceEnvelope=serviceEnvelope)
         if installationEnvelope!=undefined then (target.installationEnvelope=installationEnvelope; override.installationEnvelope=installationEnvelope)
