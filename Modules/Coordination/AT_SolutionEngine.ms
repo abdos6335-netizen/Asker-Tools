@@ -28,7 +28,7 @@ struct AT_CoordinationProposalResult (
 struct AT_SolutionEngineStruct (
     version = "0.2.0",
     weights = #(#resolvedClashes, 100.0, #newClashes, 200.0, #risk, 20.0, #affectedElements, 2.0),
-    lastResults = #(), lastProposals = #(),
+    lastResults = #(), lastProposals = #(), lastRejectedCandidates = #(),
 
     fn validNonNegative value = (
         (classOf value == Integer or classOf value == Float) and value >= 0
@@ -47,6 +47,8 @@ struct AT_SolutionEngineStruct (
         else (
             if candidate.actionId == "" do append issues "MISSING_ACTION_ID"
             if candidate.targetClashIds.count == 0 do append issues "NO_TARGET_CLASHES"
+            for resolvedID in candidate.resolvedClashIds where (findItem candidate.targetClashIds resolvedID) == 0 do
+                appendIfUnique issues "RESOLVED_CLASH_NOT_IN_TARGET_SET"
             if not validNonNegative candidate.risk do append issues "INVALID_RISK_VALUE"
             if candidate.simulationValidated != true do append issues "SIMULATION_NOT_VALIDATED"
         )
@@ -78,6 +80,7 @@ struct AT_SolutionEngineStruct (
     fn generateProposals candidates = (
         local proposals = #()
         local seenIds = #()
+        lastRejectedCandidates = #()
         for candidate in candidates do (
             local candidateIssues = validateCandidate candidate
             if candidateIssues.count == 0 then (
@@ -87,8 +90,8 @@ struct AT_SolutionEngineStruct (
                         append proposals proposal
                         append seenIds candidate.actionId
                     )
-                )
-            )
+                ) else append lastRejectedCandidates #(candidate.actionId, #("DUPLICATE_ACTION_ID"))
+            ) else append lastRejectedCandidates #(candidate.actionId, candidateIssues)
         )
         lastProposals = proposals
         proposals
@@ -173,6 +176,7 @@ struct AT_SolutionEngineStruct (
     fn clearResults = (
         lastResults = #()
         lastProposals = #()
+        lastRejectedCandidates = #()
         true
     )
 )
