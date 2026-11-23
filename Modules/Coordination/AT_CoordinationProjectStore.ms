@@ -107,7 +107,7 @@ struct AT_CoordinationProjectStoreStruct (
    for node in ruleNodes do (
     local valueText=getAttribute node "value"
     local value=if valueText=="" then undefined else (valueText as float)
-    local rule=AT_CoordinationRule ruleId:(getAttribute node "ruleId") disciplineA:(getAttribute node "disciplineA") disciplineB:(getAttribute node "disciplineB") checkType:(getAttribute node "checkType") value:value unit:(getAttribute node "unit") severity:(getAttribute node "severity") sourceType:(getAttribute node "sourceType") sourceName:(getAttribute node "sourceName") revision:(getAttribute node "revision") jurisdiction:(getAttribute node "jurisdiction") approved:((getAttribute node "approved")=="true") mandatory:((getAttribute node "mandatory")=="true") effectiveDate:(getAttribute node "effectiveDate") notes:(getAttribute node "notes")
+    local rule=AT_CoordinationRule ruleId:(getAttribute node "ruleId") disciplineA:(getAttribute node "disciplineA") disciplineB:(getAttribute node "disciplineB") checkType:(getAttribute node "checkType") value:value unit:(getAttribute node "unit") severity:(getAttribute node "severity") sourceType:(getAttribute node "sourceType") sourceName:(getAttribute node "sourceName") revision:(getAttribute node "revision") jurisdiction:(getAttribute node "jurisdiction") approved:((toLower (getAttribute node "approved"))=="true") mandatory:((toLower (getAttribute node "mandatory"))=="true") effectiveDate:(getAttribute node "effectiveDate") notes:(getAttribute node "notes")
     append loadedRules rule
    )
    local loadedChecks=#()
@@ -116,10 +116,18 @@ struct AT_CoordinationProjectStoreStruct (
    local loadedTracking=#()
    local trackingNodes=xml.SelectNodes "/AskerToolsCoordinationProject/ClashTracking/Clash"
    for node in trackingNodes do append loadedTracking (AT_ClashTrackingRecord clashId:(getAttribute node "clashId") owner:(getAttribute node "owner") status:(getAttribute node "status") dueDate:(getAttribute node "dueDate") note:(getAttribute node "note") severity:(getAttribute node "severity"))
+   local loadedSyncHistory=#()
+   local syncNodes=xml.SelectNodes "/AskerToolsCoordinationProject/IntegrationHistory/Event"
+   for node in syncNodes do append loadedSyncHistory #((getAttribute node "type"),(getAttribute node "data"))
+   local loadedAudit=#()
+   local auditNodes=xml.SelectNodes "/AskerToolsCoordinationProject/GovernanceAudit/Event"
+   for node in auditNodes do append loadedAudit #((getAttribute node "type"),(getAttribute node "data"))
    AT_RuleEngine.rules=#()
    for rule in loadedRules do if not AT_RuleEngine.registerRule rule then throw ("INVALID_STORED_RULE_"+rule.ruleId)
    if not AT_RuleEngine.setRequiredCheckTypes loadedChecks then throw "INVALID_STORED_REQUIRED_CHECKS"
    AT_ClashManager.tracking=loadedTracking
+   AT_CoordinationIntegrations.syncHistory=loadedSyncHistory
+   AT_CoordinationGovernance.auditLog=loadedAudit
    lastPath=path; lastErrors=#()
    true
   ) catch (
