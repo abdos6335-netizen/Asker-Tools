@@ -24,6 +24,11 @@ struct AT_CoordinationReportsStruct (
   for c in clashes do append rows #(c.clashId,c.disciplineA,c.nameA,c.disciplineB,c.nameB,c.status,AT_ClashManager.severityFor c)
   lastRows=rows; rows
  ),
+ fn buildGeometryErrorRows errors = (
+  local rows=#(#("Element ID","Reason"))
+  for item in errors do append rows #(item[1],item[2])
+  lastRows=rows; rows
+ ),
  fn buildRuleMissingRows missingPairs = (
   local rows=#(#("Element A","Element B","Check Type","Reason"))
   for item in missingPairs do append rows #(item[1],item[2],item[3],item[4])
