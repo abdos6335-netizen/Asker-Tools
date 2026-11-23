@@ -7,7 +7,7 @@ struct AT_CoordinationProposal (
     offset = [0,0,0], rotationAxis = [0,0,1], angleDegrees = 0.0, pivot = [0,0,0],
     resolvedClashes = 0, newClashes = 0,
     criticalViolations = 0, missingRules = 0,
-    risk = 0.0, affectedElements = 0,
+    risk = 0.0, riskAssessed = false, affectedElements = 0,
     requiresEngineeringApproval = true,
     simulationValidated = false,
     resolvedClashIds = #(), introducedClashIds = #(),
@@ -19,13 +19,13 @@ struct AT_CoordinationActionCandidate (
     targetClashIds = #(), resolvedClashIds = #(),
     introducedClashIds = #(), criticalViolationIds = #(),
     missingRuleIds = #(), affectedElementIds = #(),
-    risk = 0.0, requiresEngineeringApproval = true,
+    risk = 0.0, riskAssessed = false, requiresEngineeringApproval = true,
     simulationValidated = false
 )
 struct AT_CoordinationProposalResult (
     proposalId = "", description = "",
     eligible = false, score = -1.0e9, rank = 0,
-    requiresApproval = true, reasons = #()
+    requiresApproval = true, riskAssessment = "NOT_ASSESSED", reasons = #()
 )
 struct AT_SolutionEngineStruct (
     version = "0.2.0",
@@ -81,6 +81,7 @@ struct AT_SolutionEngineStruct (
         proposal.missingRules = uniqueCount candidate.missingRuleIds
         proposal.affectedElements = uniqueCount candidate.affectedElementIds
         proposal.risk = candidate.risk
+        proposal.riskAssessed = candidate.riskAssessed
         proposal.requiresEngineeringApproval = candidate.requiresEngineeringApproval
         proposal.simulationValidated = candidate.simulationValidated
         proposal
@@ -124,7 +125,7 @@ struct AT_SolutionEngineStruct (
     fn scoreProposal proposal = (
         (proposal.resolvedClashes * weights[2]) -
         (proposal.newClashes * weights[4]) -
-        (proposal.risk * weights[6]) -
+        ((if proposal.riskAssessed then proposal.risk else 0.0) * weights[6]) -
         (proposal.affectedElements * weights[8])
     ),
 
@@ -138,6 +139,8 @@ struct AT_SolutionEngineStruct (
             result.proposalId = proposal.id
             result.description = proposal.description
             result.requiresApproval = proposal.requiresEngineeringApproval
+            result.riskAssessment=if proposal.riskAssessed then "ASSESSED" else "NOT_ASSESSED"
+            if not proposal.riskAssessed do append result.reasons "RISK_NOT_ASSESSED"
             if not proposal.simulationValidated do append result.reasons "SIMULATION_NOT_VALIDATED"
             if proposal.criticalViolations > 0 do append result.reasons "CRITICAL_RULE_VIOLATION"
             if proposal.missingRules > 0 do append result.reasons "REQUIRED_RULE_MISSING"
