@@ -70,6 +70,14 @@ struct AT_CoordinationSimulationStruct (
   if actionType=="TRANSLATE" and classOf offset!=Point3 then (result.status="INVALID_OFFSET_VECTOR"; append lastResults result; return result)
   if actionType=="ROTATE" and (classOf rotationAxis!=Point3 or classOf pivot!=Point3 or (classOf angleDegrees!=Integer and classOf angleDegrees!=Float) or length rotationAxis<=1.0e-8) then (result.status="INVALID_ROTATION_PARAMETERS"; append lastResults result; return result)
   if actionType!="TRANSLATE" and actionType!="ROTATE" then (result.status="UNSUPPORTED_ACTION_TYPE"; append lastResults result; return result)
+  if (classOf requiredClearance!=Integer and classOf requiredClearance!=Float) or requiredClearance<0 then (result.status="INVALID_REQUIRED_CLEARANCE"; append lastResults result; return result)
+  if actionType=="ROTATE" and abs angleDegrees>180.0 then (result.status="ROTATION_ANGLE_OUT_OF_RANGE"; append lastResults result; return result)
+  if not AT_ClashManager.validateCurrentScene jurisdiction:AT_ClashManager.lastScanJurisdiction then (
+   result.status="BLOCKED_STALE_SCENE"
+   append result.diagnostics AT_ClashManager.lastError
+   append lastResults result
+   return result
+  )
   if targetClashId!="" do append result.targetClashIds targetClashId
   result.criticalViolationIds=criticalViolationIds
   for c in ruleChecks where c.status!="RULE_FOUND" do appendIfUnique result.ruleMissingIds (if c.ruleId=="" then c.reason else c.ruleId)
@@ -92,7 +100,12 @@ struct AT_CoordinationSimulationStruct (
   for clash in beforeRecords do append before clash.clashId
   local simulated=#(); local found=false
   for source in records do (
-   if source.elementId==movingElementId then (result.sourceTransform=source.sourceTransform; result.sourcePivot=source.sourcePivot; append simulated (cloneActionMesh source actionType offset rotationAxis angleDegrees pivot); found=true)
+   if source.elementId==movingElementId then (
+    result.sourceTransform=source.sourceTransform; result.sourcePivot=source.sourcePivot
+    if actionType=="ROTATE" and pivot!=source.sourcePivot then (result.status="ROTATION_PIVOT_MISMATCH"; append lastResults result; return result)
+    append simulated (cloneActionMesh source actionType offset rotationAxis angleDegrees pivot)
+    found=true
+   )
    else append simulated source
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
