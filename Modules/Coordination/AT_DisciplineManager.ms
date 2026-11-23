@@ -5,6 +5,7 @@ struct AT_DisciplineManagerStruct (
  fn mappingLabel mapping = (
   mapping.matchKind+" | "+mapping.matchValue+" => "+mapping.discipline+" / "+mapping.elementType+" | "+mapping.sourceLabel+" | "+mapping.revision
  ),
+ fn displayClearance value = (if value==undefined then "not set" else (value as string))
  fn parseClearance textValue unit = (
   if textValue=="" then return #(true,undefined)
   local raw=undefined
@@ -46,7 +47,7 @@ struct AT_DisciplineManagerStruct (
     dropdownList ddlUnit "Clearance unit" items:#("mm","cm","m","in","ft","system") width:300
     editText edtService "Service envelope reference (optional)" text:"" width:650
     editText edtInstallation "Installation envelope reference (optional)" text:"" width:650
-    label lblEnvelopeUnits "Selected element values display in 3ds Max master units" align:#left
+    label lblEnvelopeUnits "Existing clearances are shown below in master units; new inputs use the selected unit" align:#left
     button btnApplyEnvelope "Apply Envelope to Selected Element" width:260 height:28
     button btnClearEnvelope "Clear Selected Element Override" width:230 height:28
    )
@@ -74,10 +75,9 @@ struct AT_DisciplineManagerStruct (
    on lbInventory selected index do (
     if index>0 and index<=AT_DisciplineAdapter.lastInventory.count then (
      local element=AT_DisciplineAdapter.lastInventory[index]
-     ddlUnit.selection=6
-     edtClearance.text=if element.requiredClearance==undefined then "" else (element.requiredClearance as string)
-     edtServiceClearance.text=if element.serviceClearance==undefined then "" else (element.serviceClearance as string)
-     edtInstallationClearance.text=if element.installationClearance==undefined then "" else (element.installationClearance as string)
+     ddlUnit.selection=1
+     edtClearance.text=""; edtServiceClearance.text=""; edtInstallationClearance.text=""
+     lblEnvelopeUnits.text="Existing master units — General: "+AT_DisciplineManager.displayClearance element.requiredClearance+" | Service: "+AT_DisciplineManager.displayClearance element.serviceClearance+" | Installation: "+AT_DisciplineManager.displayClearance element.installationClearance
      edtService.text=if element.serviceEnvelope==undefined then "" else (element.serviceEnvelope as string)
      edtInstallation.text=if element.installationEnvelope==undefined then "" else (element.installationEnvelope as string)
     )
@@ -90,6 +90,7 @@ struct AT_DisciplineManagerStruct (
      if ok then (
       edtClearance.text=""; edtServiceClearance.text=""; edtInstallationClearance.text=""
       edtService.text=""; edtInstallation.text=""
+      lblEnvelopeUnits.text="No clearance/envelope override is stored for the selected element"
      )
      lblStatus.text=if ok then "Envelope override cleared; rescan clashes" else "No override exists for this element"
     )
@@ -107,6 +108,11 @@ struct AT_DisciplineManagerStruct (
       local service=if edtService.text=="" then undefined else edtService.text
       local install=if edtInstallation.text=="" then undefined else edtInstallation.text
       local ok=AT_DisciplineAdapter.setEnvelope elementId requiredClearance:generalResult[2] serviceClearance:serviceResult[2] installationClearance:installResult[2] serviceEnvelope:service installationEnvelope:install
+      if ok then (
+       local updated=AT_DisciplineAdapter.lastInventory[lbInventory.selection]
+       lblEnvelopeUnits.text="Existing master units — General: "+AT_DisciplineManager.displayClearance updated.requiredClearance+" | Service: "+AT_DisciplineManager.displayClearance updated.serviceClearance+" | Installation: "+AT_DisciplineManager.displayClearance updated.installationClearance
+       edtClearance.text=""; edtServiceClearance.text=""; edtInstallationClearance.text=""
+      )
       lblStatus.text=if ok then "Clearance/envelope overrides saved; rescan clashes before simulation" else "Envelope update failed"
      )
     )
