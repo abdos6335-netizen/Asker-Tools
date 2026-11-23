@@ -246,6 +246,7 @@ struct AT_CoordinationProjectStoreStruct (
    AT_ClashManager.lastDisciplineMetadataRevision=-1
    AT_ClashManager.lastDisciplineInventory=#()
    AT_ClashManager.lastScanMeshes=#()
+   AT_ClashManager.visibleClashIndices=#()
    AT_DisciplineAdapter.clear()
    AT_CoordinationSolutionGenerator.clear()
    AT_SolutionEngine.clearResults()
