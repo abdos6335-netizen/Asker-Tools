@@ -47,7 +47,7 @@ struct AT_RuleEngineStruct (
         for r in rules where r.checkType==checkType and pairMatches r dA dB and
             (r.jurisdiction=="" or (jurisdiction!="" and r.jurisdiction==jurisdiction)) do append candidates r
         if candidates.count==0 then (
-            local missing=AT_RuleEvaluation reason:"NO_RULE_REGISTERED"
+            local missing=AT_RuleEvaluation checkType:checkType reason:"NO_RULE_REGISTERED"
             append lastEvaluations missing
             return missing
         )
@@ -62,7 +62,7 @@ struct AT_RuleEngineStruct (
         local unapprovedBest=#()
         for r in bestSourceRules where not r.approved do append unapprovedBest r
         if unapprovedBest.count>0 then (
-            local missing=AT_RuleEvaluation()
+            local missing=AT_RuleEvaluation checkType:checkType
             missing.reason="HIGHEST_PRIORITY_RULE_NOT_APPROVED"
             missing.sourceType=unapprovedBest[1].sourceType
             missing.sourceName=unapprovedBest[1].sourceName
@@ -78,7 +78,7 @@ struct AT_RuleEngineStruct (
             local conflict=false
             for r in bestRules where r.value!=first.value or r.unit!=first.unit or r.severity!=first.severity or r.mandatory!=first.mandatory do conflict=true
             if conflict then (
-                local ambiguous=AT_RuleEvaluation()
+                local ambiguous=AT_RuleEvaluation checkType:checkType
                 ambiguous.reason="CONFLICTING_SAME_PRIORITY_RULES"
                 ambiguous.sourceType=first.sourceType
                 ambiguous.sourceName=first.sourceName
@@ -119,7 +119,7 @@ struct AT_RuleEngineStruct (
             return #(missing)
         )
         if clash.disciplineA=="UNKNOWN" or clash.disciplineB=="UNKNOWN" then (
-            local missing=AT_RuleEvaluation reason:"DISCIPLINE_CLASSIFICATION_REQUIRED"
+            local missing=AT_RuleEvaluation checkType:requestedChecks[1] reason:"DISCIPLINE_CLASSIFICATION_REQUIRED"
             append lastEvaluations missing
             return #(missing)
         )
