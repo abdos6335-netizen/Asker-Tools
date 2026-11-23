@@ -5,7 +5,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 ## Geometry
 - Axis-aligned box overlap, clear separation, face/edge/vertex contact.
 - Coplanar triangles, near-parallel triangles, tiny triangles, degenerate faces.
-- Rotated, concave, hollow, open, non-manifold and nested meshes.
+- Rotated, concave, hollow, open, edge-non-manifold, vertex-non-manifold and nested meshes.
 - Fully contained closed meshes with no surface intersection (must be detected or explicitly reported unsupported).
 - Degenerate/zero-area faces: skipped from triangle math, counted, and must prevent a mesh from being treated as watertight.
 - Multiple clash pairs and explicit non-zero clearance.
