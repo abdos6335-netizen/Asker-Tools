@@ -4,8 +4,9 @@
 global AT_ExactGeometryEngine
 struct AT_ExactTriangle (a=[0,0,0], b=[0,0,0], c=[0,0,0], minimum=[0,0,0], maximum=[0,0,0], faceIndex=0)
 struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, sourcePivot=[0,0,0], elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0, validFaceCount=0, invalidFaceCount=0, requiredClearance=undefined, isClosed=false, isManifold=false, topologyChecked=false)
-struct AT_ExactPairClearanceRecord (elementA="", elementB="", requiredClearance=0.0, ruleIds=#())
-struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", status="SEPARATED", minimumDistance=undefined, minimumDistanceKnown=false, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
+struct AT_ExactPairClearanceRecord (elementA="", elementB="", requiredClearance=0.0, severity="INFORMATION", ruleIds=#())
+
+struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", ruleSeverity="INFORMATION", ruleIds=#(), status="SEPARATED", minimumDistance=undefined, minimumDistanceKnown=false, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
 struct AT_ExactGeometryEngineStruct (
  version="0.1.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
  fn idForNode n = (try ((getHandleByAnim n) as string) catch ("")),
@@ -207,6 +208,16 @@ struct AT_ExactGeometryEngineStruct (
   result
  ),
  fn findDisciplineRecord inventory elementId = (for item in inventory where item.elementId==elementId do return item; undefined),
+ fn pairRuleMetadata recordA recordB pairOverrides:#() = (
+  local severity="INFORMATION"; local ruleIds=#()
+  local priority=0
+  for item in pairOverrides where ((item.elementA==recordA.elementId and item.elementB==recordB.elementId) or (item.elementA==recordB.elementId and item.elementB==recordA.elementId)) do (
+   local current=findItem #("INFORMATION","LOW","MEDIUM","HIGH","CRITICAL") item.severity
+   if current>priority then (priority=current; severity=item.severity)
+   for id in item.ruleIds do appendIfUnique ruleIds id
+  )
+  #(severity,ruleIds)
+ ),
  fn pairClearance recordA recordB inventory defaultClearance pairOverrides:#() = (
   local a=findDisciplineRecord inventory recordA.elementId
   local b=findDisciplineRecord inventory recordB.elementId
@@ -229,6 +240,8 @@ struct AT_ExactGeometryEngineStruct (
    local clearance=pairClearance a b inventory defaultClearance pairOverrides:pairOverrides
    if boxesOverlap a.minimum a.maximum b.minimum b.maximum tolerance:clearance do (
     local result=inspectPair a b requiredClearance:clearance epsilon:epsilon
+    local metadata=pairRuleMetadata a b pairOverrides:pairOverrides
+    result.ruleSeverity=metadata[1]; result.ruleIds=metadata[2]
     if result.status!="SEPARATED" do append results result
    )
   )
