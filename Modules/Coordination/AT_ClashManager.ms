@@ -6,14 +6,18 @@ struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", 
 struct AT_ClashManagerStruct (
  version="0.2.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(),
  fn severityFor clash = (
-  if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH"
+  if clash.ruleSeverity=="CRITICAL" then "CRITICAL"
+  else if clash.ruleSeverity=="HIGH" then "HIGH"
+  else if clash.ruleSeverity=="MEDIUM" then "MEDIUM"
+  else if clash.ruleSeverity=="LOW" then "LOW"
+  else if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH"
   else if clash.status=="CLEARANCE_VIOLATION" then "MEDIUM"
   else if clash.status=="CONTAINMENT_UNVERIFIED" then "HIGH"
   else "INFORMATION"
  ),
  fn clashLabel clash = (
   local distanceText=if clash.minimumDistanceKnown then (formattedPrint clash.minimumDistance format:".4f") else "not measured"
-  clash.status+" | "+clash.disciplineA+":"+clash.nameA+" <> "+clash.disciplineB+":"+clash.nameB+" | d="+distanceText
+  severityFor clash+" | "+clash.status+" | "+clash.disciplineA+":"+clash.nameA+" <> "+clash.disciplineB+":"+clash.nameB+" | d="+distanceText
  ),
  fn load clashes = (AT_ClashManager.clashes=clashes; selectedIndex=if clashes.count>0 then 1 else 0; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); true),
  fn trackingFor clashId = (
@@ -31,7 +35,7 @@ struct AT_ClashManagerStruct (
  ),
  fn getTracking clashId = (trackingFor clashId),
  fn counts = (
-  local result=#(#("HIGH",0),#("MEDIUM",0),#("LOW",0),#("INFORMATION",0))
+  local result=#(#("CRITICAL",0),#("HIGH",0),#("MEDIUM",0),#("LOW",0),#("INFORMATION",0))
   for c in clashes do (
    local s=severityFor c
    for item in result where item[1]==s do item[2]+=1
@@ -54,7 +58,7 @@ struct AT_ClashManagerStruct (
  ),
  fn countsLabel = (
   local values=counts()
-  "HIGH "+(values[1][2] as string)+" | MEDIUM "+(values[2][2] as string)+" | LOW "+(values[3][2] as string)+" | INFO "+(values[4][2] as string)
+  "CRITICAL "+(values[1][2] as string)+" | HIGH "+(values[2][2] as string)+" | MEDIUM "+(values[3][2] as string)+" | LOW "+(values[4][2] as string)+" | INFO "+(values[5][2] as string)
  ),
  fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
@@ -120,15 +124,16 @@ struct AT_ClashManagerStruct (
    else (
     local pair=AT_ExactClashRecord elementA:meshA.elementId elementB:meshB.elementId disciplineA:elementA.discipline disciplineB:elementB.discipline
     local evaluations=AT_RuleEngine.evaluateClash pair jurisdiction:jurisdiction
-    local ruleIds=#()
+    local ruleIds=#(); local pairSeverity="INFORMATION"
     for evaluation in evaluations do (
      if evaluation.status!="RULE_FOUND" then append lastRuleMissingPairs #(meshA.elementId,meshB.elementId,evaluation.checkType,evaluation.reason)
      else if (findItem #("CLEARANCE","MIN_CLEARANCE","SERVICE_CLEARANCE","INSTALLATION_CLEARANCE") evaluation.checkType)>0 and evaluation.unitConversionValid then (
       pairRequired=amax pairRequired evaluation.valueInSystemUnits
       appendIfUnique ruleIds evaluation.ruleId
+      if (findItem #("INFORMATION","LOW","MEDIUM","HIGH","CRITICAL") evaluation.severity)>(findItem #("INFORMATION","LOW","MEDIUM","HIGH","CRITICAL") pairSeverity) do pairSeverity=evaluation.severity
      )
     )
-    if pairRequired>0 or ruleIds.count>0 do append lastPairClearances (AT_ExactPairClearanceRecord elementA:meshA.elementId elementB:meshB.elementId requiredClearance:pairRequired ruleIds:ruleIds)
+    if pairRequired>0 or ruleIds.count>0 do append lastPairClearances (AT_ExactPairClearanceRecord elementA:meshA.elementId elementB:meshB.elementId requiredClearance:pairRequired severity:pairSeverity ruleIds:ruleIds)
    )
   )
   local found=AT_ExactGeometryEngine.detectClashesWithClearances AT_DisciplineAdapter.lastInventory defaultClearance:requiredClearance pairOverrides:lastPairClearances
@@ -147,7 +152,7 @@ struct AT_ClashManagerStruct (
    button btnScan "Detect Exact Mesh Clashes" width:190 height:28 align:#left
    button btnRules "Manage Project Rules" width:190 height:28 align:#left
    label lblSummary "Ready" align:#left
-   label lblCounts "HIGH 0 | MEDIUM 0 | LOW 0 | INFO 0" align:#left
+   label lblCounts "CRITICAL 0 | HIGH 0 | MEDIUM 0 | LOW 0 | INFO 0" align:#left
    label lblRuleMissing "Missing rule checks: 0" align:#left
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
