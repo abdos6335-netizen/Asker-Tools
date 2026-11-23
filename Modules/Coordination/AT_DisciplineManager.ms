@@ -54,7 +54,7 @@ struct AT_DisciplineManagerStruct (
    )
    on btnRefresh pressed do (
     AT_DisciplineManager.refreshInventory lbInventory
-    lblStatus.text=AT_DisciplineAdapter.lastUnclassified.count as string+" elements remain UNKNOWN"
+    lblStatus.text=(AT_DisciplineAdapter.lastUnclassified.count as string)+" elements remain UNKNOWN"
    )
    on btnApplyEnvelope pressed do (
     if lbInventory.selection<1 or lbInventory.selection>AT_DisciplineAdapter.lastInventory.count then lblStatus.text="Select an element first"
