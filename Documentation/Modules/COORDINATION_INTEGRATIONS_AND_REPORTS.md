@@ -10,7 +10,7 @@ API: `register moduleName revision provider capabilities:<array>`, `unregister i
 ## Reporting (0.1.0)
 Creates structured clash and proposal report rows and exports CSV. Rows include measured geometric distance/clearance and current provisional severity; proposal rows preserve eligibility, score, rank, approval requirement, and reasons. No PDF/Excel exporter is claimed in this milestone.
 
-APIs: `buildClashRows clashes`, `buildClearanceRows clashes`, `buildDisciplineRows clashes`, `buildProposalRows results`, `buildTrackingRows tracking`, `buildRuleMissingRows missingPairs`, `buildGeometryErrorRows errors`, `buildApprovalRows approvals`, `buildRevisionRows syncHistory`, `buildAuditRows auditLog`, `exportCSV rows path`. All report builders create structured rows for CSV export; PDF/XLSX rendering is not yet included.
+APIs: `buildClashRows clashes`, `buildClearanceRows clashes`, `buildDisciplineRows clashes`, `buildProposalRows results`, `buildTrackingRows tracking`, `buildRuleMissingRows missingPairs`, `buildGeometryErrorRows errors`, `buildDisciplineErrorRows errors`, `buildApprovalRows approvals`, `buildRevisionRows syncHistory`, `buildAuditRows auditLog`, `exportCSV rows path`. All report builders create structured rows for CSV export; PDF/XLSX rendering is not yet included.
 
 ## Remaining production gates
 Persistent project database, linked-file revision diff/merge, two-way DWG synchronization, actual integrations to the other modules, PDF/XLSX formatting, as-built history, and user-authenticated approvals remain future implementation work. Integration contracts do not imply that the upstream tools are already connected.
