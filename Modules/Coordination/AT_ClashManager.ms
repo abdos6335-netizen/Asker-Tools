@@ -6,8 +6,9 @@ struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", 
 struct AT_ClashManagerStruct (
  version="0.1.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="",
  fn severityFor clash = (
-  if clash.status=="EXACT_MESH_INTERFERENCE" then "HIGH"
+  if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH"
   else if clash.status=="CLEARANCE_VIOLATION" then "MEDIUM"
+  else if clash.status=="CONTAINMENT_UNVERIFIED" then "INFORMATION"
   else "INFORMATION"
  ),
  fn load clashes = (this.clashes=clashes; selectedIndex=if clashes.count>0 then 1 else 0; true),
