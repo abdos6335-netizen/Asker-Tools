@@ -124,7 +124,10 @@ struct AT_DisciplineAdapterStruct (
         for e in lastInventory where e.elementId==elementId do target=e
         if target==undefined then return false
         if requiredClearance==undefined and serviceClearance==undefined and installationClearance==undefined and serviceEnvelope==undefined and installationEnvelope==undefined then return false
-        for value in #(requiredClearance,serviceClearance,installationClearance) where value!=undefined do if (classOf value!=Integer and classOf value!=Float) or value<0 then return false
+        for value in #(requiredClearance,serviceClearance,installationClearance) do if value!=undefined then (
+            if classOf value!=Integer and classOf value!=Float then return false
+            if value<0 then return false
+        )
         local override=findEnvelopeOverride elementId
         if override==undefined then (override=AT_DisciplineEnvelopeOverride elementId:elementId; append envelopeOverrides override)
         if requiredClearance!=undefined then (
