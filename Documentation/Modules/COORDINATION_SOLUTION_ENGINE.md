@@ -62,3 +62,28 @@ Results expose eligibility, score, rank, approval requirement, and reason codes.
 
 ## Validation
 Static checks verify required files, API markers, and balanced delimiters. MAXScript runtime behavior remains unverified until executed in supported 3ds Max installations.
+
+
+## Read-only 3ds Max geometry adapter (0.1.0)
+
+`Modules/Coordination/AT_CoordinationGeometryAdapter.ms` adds a first scene-connected milestone:
+
+- `inspect` reads world-space node bounding boxes using the node transform. It is read-only and does not clone or move scene nodes.
+- `detectClashes` reports broad-phase axis-aligned bounding-box (AABB) overlaps with stable IDs derived from 3ds Max node handles.
+- `generateMoveCandidates` derives six axis-aligned translation candidates for each side of each detected pair. The requested clearance defaults to zero; callers must supply a project-approved clearance when one is required.
+- Each candidate is checked against the other inventoried AABBs. The adapter records target overlaps resolved and new AABB overlaps introduced.
+- `toProposalCandidates` maps these candidates into the proposal engine input contract, but always sets `simulationValidated = false`. The existing evaluator therefore keeps them ineligible.
+
+### Important geometric boundary
+
+This is a broad-phase bounding-box engine, not an exact mesh/solid intersection engine. Rotated, concave, hollow, nested, or irregular geometry can produce false positives; a clean AABB result is not proof of physical clearance. The adapter does not calculate discipline-specific service envelopes, code compliance, structural feasibility, access/maintenance clearances, or manufacturer constraints. It never applies a transform. No candidate may be promoted to a validated/approvable proposal until an exact geometry and approved-rules simulation adapter is implemented and tested in 3ds Max.
+
+### API
+
+- `AT_CoordinationGeometryAdapter.inspect nodes:<array> includeHidden:false` (omit nodes to inspect scene objects)
+- `AT_CoordinationGeometryAdapter.detectClashes records:<array>`
+- `AT_CoordinationGeometryAdapter.generateMoveCandidates records:<array> clashes:<array> clearance:<number>`
+- `AT_CoordinationGeometryAdapter.toProposalCandidates()`
+- `AT_CoordinationGeometryAdapter.clear()`
+
+`clearance` is a geometric offset input, not a code value. The adapter does not invent one.
