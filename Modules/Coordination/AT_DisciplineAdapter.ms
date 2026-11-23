@@ -22,8 +22,10 @@ struct AT_DisciplineAdapterStruct (
     fn validDiscipline value = (findItem supportedDisciplines (toUpper value) > 0),
     fn registerMapping matchKind matchValue discipline elementType:"UNSPECIFIED" sourceLabel:"PROJECT_MAPPING" revision:"" = (
         local d=toUpper discipline
-        if not validDiscipline d or matchValue=="" then return false
-        local m=AT_DisciplineMapping matchKind:matchKind matchValue:matchValue discipline:d elementType:elementType sourceLabel:sourceLabel revision:revision
+        local kind=toUpper matchKind
+        if (findItem #("USER_PROPERTY","LAYER","CLASS","NODE_NAME") kind)==0 or not validDiscipline d or matchValue=="" then return false
+        local normalizedValue=if kind=="USER_PROPERTY" then toUpper matchValue else matchValue
+        local m=AT_DisciplineMapping matchKind:kind matchValue:normalizedValue discipline:d elementType:elementType sourceLabel:sourceLabel revision:revision
         for i=mappings.count to 1 by -1 where mappings[i].matchKind==matchKind and mappings[i].matchValue==matchValue do deleteItem mappings i
         append mappings m
         mappingRevision+=1
