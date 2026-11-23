@@ -124,6 +124,19 @@ struct AT_CoordinationSelfTestsStruct (
    evaluation=AT_RuleEngine.evaluate "HVAC" "STRUCTURE" "CLEARANCE"
    addResult results "SAME_PRIORITY_RULE_CONFLICT" (evaluation.reason=="CONFLICTING_SAME_PRIORITY_RULES") evaluation.reason "CONFLICTING_SAME_PRIORITY_RULES"
 
+   local identitySimulation=AT_CoordinationSimulationResult simulationId:"QA_IDENTITY_SIM" movingElementId:"QA_NODE" actionType:"TRANSLATE" offset:[1,0,0] baselineClashIds:#("QA_CLASH_A","QA_CLASH_B") validated:true status:"EXACT_GEOMETRY_SIMULATION_PASSED" resolvedClashIds:#("QA_CLASH_A","QA_CLASH_B") affectedElementIds:#("QA_NODE")
+   local identityCandidate=AT_CoordinationActionCandidate actionId:"QA_IDENTITY_SIM" actionType:"TRANSLATE" offset:[1,0,0] targetClashIds:#("QA_CLASH_B","QA_CLASH_A") resolvedClashIds:#("QA_CLASH_B","QA_CLASH_A") affectedElementIds:#("QA_NODE") simulationValidated:true
+   local identityMatches=AT_CoordinationGovernance.candidateMatchesSimulation identityCandidate identitySimulation
+   addResult results "APPROVAL_SIMULATION_IDENTITY_MATCH" identityMatches identityMatches true
+   identityCandidate.resolvedClashIds=#("QA_TAMPERED_CLASH")
+   local tamperRejected=not AT_CoordinationGovernance.candidateMatchesSimulation identityCandidate identitySimulation
+   addResult results "APPROVAL_REJECTS_TAMPERED_RESOLUTION_SET" tamperRejected tamperRejected true
+   identityCandidate.resolvedClashIds=#("QA_CLASH_B","QA_CLASH_A")
+   identityCandidate.targetClashIds=#("QA_CLASH_A","QA_CLASH_B")
+   identityCandidate.introducedClashIds=#("QA_NEW_CLASH")
+   local introducedTamperRejected=not AT_CoordinationGovernance.candidateMatchesSimulation identityCandidate identitySimulation
+   addResult results "APPROVAL_REJECTS_TAMPERED_NEW_CLASH_SET" introducedTamperRejected introducedTamperRejected true
+
    local riskCandidate=AT_CoordinationActionCandidate actionId:"QA_RISK_UNKNOWN" targetClashIds:#("QA_CLASH") resolvedClashIds:#("QA_CLASH") affectedElementIds:#("QA_NODE") simulationValidated:true risk:50.0 riskAssessed:false
    local riskProposal=AT_SolutionEngine.buildProposal riskCandidate
    local scoreWithoutRisk=AT_SolutionEngine.scoreProposal riskProposal
