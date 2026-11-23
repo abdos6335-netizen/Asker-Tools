@@ -28,7 +28,7 @@ struct AT_CoordinationSimulationStruct (
   local copy=AT_ExactMeshRecord()
   copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.sourcePivot=source.sourcePivot; copy.elementId=source.elementId; copy.nodeName=source.nodeName
   copy.faceCount=source.faceCount; copy.validFaceCount=source.validFaceCount; copy.invalidFaceCount=source.invalidFaceCount
-  copy.requiredClearance=source.requiredClearance; copy.isClosed=source.isClosed; copy.isManifold=source.isManifold; copy.topologyChecked=source.topologyChecked
+  copy.requiredClearance=source.requiredClearance; copy.serviceClearance=source.serviceClearance; copy.installationClearance=source.installationClearance; copy.isClosed=source.isClosed; copy.isManifold=source.isManifold; copy.topologyChecked=source.topologyChecked
   local minPoint=[1.0e30,1.0e30,1.0e30]; local maxPoint=[-1.0e30,-1.0e30,-1.0e30]
   for tri in source.triangles do (
    local a=rotatePointAround tri.a pivot axis angleDegrees
