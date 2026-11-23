@@ -316,7 +316,7 @@ struct AT_ClashManagerStruct (
    on btnGenerate pressed do (
     local actions=AT_ClashManager.generateAlternatives lbClashes.selection
     local ranked=AT_ClashManager.rankAlternatives()
-    lbSolutions.items=for item in ranked collect (item.description+" | "+(item.reasons as string))
+    lbSolutions.items=for item in ranked collect (item.description+" | risk "+item.riskAssessment+" | "+(item.reasons as string))
     lblSummary.text=if actions.count>0 then ((actions.count as string)+" alternatives generated; simulation and approval required") else (if AT_ClashManager.lastError!="" then AT_ClashManager.lastError else "No alternatives generated")
    )
    on btnSimulate pressed do (
