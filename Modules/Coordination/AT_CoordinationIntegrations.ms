@@ -21,7 +21,7 @@ struct AT_CoordinationIntegrationsStruct (
    deleteItem registry idx
   )
   local restored=try (AT_CoordinationProjectStore.restoreIntegrationToken id revision) catch (undefined)
-  if restored!=undefined then rec.lastSyncToken=restored
+  if restored!=undefined then (rec.lastSyncToken=restored[1]; rec.enabled=restored[2])
   append registry rec
   append syncHistory #("REGISTERED",id,revision)
   true
