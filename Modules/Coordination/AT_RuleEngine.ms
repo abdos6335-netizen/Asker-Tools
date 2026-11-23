@@ -50,6 +50,15 @@ struct AT_RuleEngineStruct (
         ((rule.disciplineA=="*" or rule.disciplineA==dB) and (rule.disciplineB=="*" or rule.disciplineB==dA))
     ),
     fn evaluate dA dB checkType jurisdiction:"" recordResult:true = (
+        local jurisdictionSpecific=#()
+        if jurisdiction=="" do for r in rules where r.checkType==checkType and pairMatches r dA dB and r.jurisdiction!="" do append jurisdictionSpecific r
+        if jurisdictionSpecific.count>0 then (
+            local missing=AT_RuleEvaluation checkType:checkType reason:"JURISDICTION_REQUIRED"
+            missing.ruleId=jurisdictionSpecific[1].ruleId
+            missing.sourceType=jurisdictionSpecific[1].sourceType
+            if recordResult do append lastEvaluations missing
+            return missing
+        )
         local candidates=#()
         for r in rules where r.checkType==checkType and pairMatches r dA dB and
             (r.jurisdiction=="" or (jurisdiction!="" and r.jurisdiction==jurisdiction)) do append candidates r
