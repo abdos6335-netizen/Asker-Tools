@@ -11,6 +11,10 @@ struct AT_ClashManagerStruct (
   else if clash.status=="CONTAINMENT_UNVERIFIED" then "INFORMATION"
   else "INFORMATION"
  ),
+ fn clashLabel clash = (
+  local distanceText=if clash.minimumDistanceKnown then (formattedPrint clash.minimumDistance format:".4f") else "not measured"
+  clash.status+" | "+clash.disciplineA+":"+clash.nameA+" <> "+clash.disciplineB+":"+clash.nameB+" | d="+distanceText
+ ),
  fn load clashes = (this.clashes=clashes; selectedIndex=if clashes.count>0 then 1 else 0; true),
  fn trackingFor clashId = (for t in tracking where t.clashId==clashId do return t; local t=AT_ClashTrackingRecord clashId:clashId; append tracking t; t),
  fn setTracking clashId owner:"" status:"OPEN" dueDate:"" note:"" = (
@@ -70,7 +74,7 @@ struct AT_ClashManagerStruct (
    )
    on btnScan pressed do (
     local found=AT_ClashManager.scan()
-    lbClashes.items=for c in found collect (c.status+" | "+c.disciplineA+":"+c.nameA+" <> "+c.disciplineB+":"+c.nameB+" | d="+(formattedPrint c.minimumDistance format:".4f"))
+    lbClashes.items=for c in found collect (AT_ClashManager.clashLabel c)
     lblSummary.text=found.count as string+" clashes | exact mesh surface analysis"
    )
    on btnSelect pressed do AT_ClashManager.selectClash lbClashes.selection
