@@ -54,7 +54,7 @@ checks = {
     'Modules/Coordination/AT_ExactGeometryEngine.ms': ['fn trianglesIntersect', 'fn triangleDistanceSquared', 'fn inspectPair', 'EXACT_MESH_INTERFERENCE', 'CLEARANCE_VIOLATION', 'fn detectClashes'],
     'Modules/Coordination/AT_DisciplineAdapter.ms': ['ARCHITECTURE', 'STRUCTURE', 'ELECTRICAL', 'HVAC', 'FIRE_FIGHTING', 'PLUMBING', 'LOW_CURRENT', 'INTERIOR_ELEMENTS', 'DISCIPLINE_MAPPING_MISSING', 'fn registerMapping'],
     'Modules/Coordination/AT_RuleEngine.ms': ['MANDATORY_CODE', 'AUTHORITY_APPROVAL', 'MANUFACTURER_SPEC', 'PROJECT_SPEC', 'ASKER_DEFAULT', 'HIGHEST_PRIORITY_RULE_NOT_APPROVED', 'fn evaluateBatch'],
-    'Modules/Coordination/AT_CoordinationSimulation.ms': ['fn cloneTranslatedMesh', 'fn simulateTranslation', 'EXACT_GEOMETRY_SIMULATION_PASSED', 'NEW_CLASHES_INTRODUCED', 'TARGET_CLASH_ID_REQUIRED', 'TARGET_CLASH_REMAINS', 'BLOCKED_RULE_MISSING'],
+    'Modules/Coordination/AT_CoordinationSimulation.ms': ['fn cloneTranslatedMesh', 'fn simulateTranslation', 'EXACT_GEOMETRY_SIMULATION_PASSED', 'NEW_CLASHES_INTRODUCED', 'TARGET_CLASH_ID_REQUIRED', 'TARGET_CLASH_REMAINS', 'BLOCKED_RULE_MISSING', 'BLOCKED_RULE_CHECKS_NOT_SUPPLIED'],
     'Modules/Coordination/AT_CoordinationSolutionGenerator.ms': ['fn generateTranslations', 'separationOffset', 'requiresEngineeringApproval=true'],
     'Modules/Coordination/AT_ClashManager.ms': ['fn load', 'fn counts', 'fn selectClash', 'fn setTracking', 'fn scan', 'fn show', 'Detect Exact Mesh Clashes'],
     'Modules/Coordination/AT_CoordinationGovernance.ms': ['fn approve', 'fn applyTranslation', 'fn rollback', 'FAILED_ROLLED_BACK'],
