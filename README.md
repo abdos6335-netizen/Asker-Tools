@@ -4,7 +4,7 @@ A modular MAXScript toolkit for Autodesk 3ds Max, designed around practical inte
 
 ## Release status
 
-**0.6.0 — Coordination Engine implementation milestone.** Adds triangle-mesh surface clash/clearance analysis, eight-discipline metadata adapters, an approved-source rule hierarchy, deterministic translation candidates, non-destructive exact-mesh translation simulation, clash tracking, approval/apply/rollback primitives, revision-aware integration contracts, and CSV reports. This remains a development milestone: MAXScript runtime, full solid containment, discipline semantics, advanced rerouting/rotation, durable audit storage, real upstream module connections, and UI workflows still require implementation and validation.
+**0.6.0 — Coordination Engine implementation milestone.** Adds triangle-mesh intersection/distance, closed-mesh containment checks, eight-discipline metadata adapters, approved-source rule hierarchy with jurisdiction and unit normalization, rule-derived pair clearances, translation and pivot-rotation candidates/simulation, a Clash Manager review workflow, explicit approval/apply/rollback guards, XML project persistence, revision-aware integration contracts, CSV report families, and an in-host self-test harness. This remains a development milestone: MAXScript runtime and version compatibility are unverified; full B-rep/solid-kernel handling, semantic discipline envelopes, rerouting/redistribution, non-clearance rule validators, real upstream module connections, and PDF/XLSX output remain incomplete.
 
 Target versions: 3ds Max 2022–2026. 3ds Max 2027 is pending validation. Corona and V-Ray are not yet certified; renderer integrations will be feature-specific and version-checked.
 
@@ -19,7 +19,7 @@ Logs and settings are written under the same user scripts directory, in `AskerTo
 
 ## Safety notes
 
-All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. Coordination simulation is non-destructive. Scene changes are only possible through a separate explicit governance apply call after a validated simulation and named approval; translation-only scope and in-memory audit limitations apply. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
+All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. Coordination simulation is non-destructive. Scene changes are only possible through a separate explicit governance apply call after a validated simulation and named approval; current apply actions are world translation and pivot rotation, with XML-persisted project rules/tracking/audit history. Active approvals are not restored after loading a project. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
 
 ## Repository layout
 
