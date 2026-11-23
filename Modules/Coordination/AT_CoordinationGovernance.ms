@@ -4,7 +4,7 @@
 global AT_CoordinationGovernance
 struct AT_CoordinationApproval (
  proposalId="", approved=false, approver="", approvalDate="", reason="",
- simulationId="", actionType="TRANSLATE", sourceTransform=undefined, sourcePivot=[0,0,0],
+ simulationId="", ruleRevision=0, actionType="TRANSLATE", sourceTransform=undefined, sourcePivot=[0,0,0],
  offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], candidate=undefined
 )
 struct AT_CoordinationTransaction (
@@ -18,12 +18,12 @@ struct AT_CoordinationGovernanceStruct (
  fn approve candidate simulation approver reason approvalDate = (
   if candidate==undefined or simulation==undefined or approver=="" or reason=="" or approvalDate=="" then return false
   if not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
-  if candidate.actionId!=simulation.simulationId or candidate.actionType!=simulation.actionType then return false
+  if candidate.actionId!=simulation.simulationId or candidate.actionType!=simulation.actionType or simulation.ruleRevision!=AT_RuleEngine.registryRevision then return false
   if candidate.affectedElementIds.count!=1 or candidate.affectedElementIds[1]!=simulation.movingElementId then return false
   if candidate.offset!=simulation.offset or candidate.rotationAxis!=simulation.rotationAxis or candidate.angleDegrees!=simulation.angleDegrees or candidate.pivot!=simulation.pivot then return false
   if simulation.introducedClashIds.count>0 or simulation.ruleMissingIds.count>0 or simulation.criticalViolationIds.count>0 or simulation.sourceTransform==undefined then return false
   if simulation.actionType=="ROTATE" and simulation.pivot!=simulation.sourcePivot then return false
-  local a=AT_CoordinationApproval proposalId:candidate.actionId approved:true approver:approver approvalDate:approvalDate reason:reason simulationId:simulation.simulationId actionType:simulation.actionType sourceTransform:simulation.sourceTransform sourcePivot:simulation.sourcePivot offset:simulation.offset rotationAxis:simulation.rotationAxis angleDegrees:simulation.angleDegrees pivot:simulation.pivot candidate:candidate
+  local a=AT_CoordinationApproval proposalId:candidate.actionId approved:true approver:approver approvalDate:approvalDate reason:reason simulationId:simulation.simulationId ruleRevision:simulation.ruleRevision actionType:simulation.actionType sourceTransform:simulation.sourceTransform sourcePivot:simulation.sourcePivot offset:simulation.offset rotationAxis:simulation.rotationAxis angleDegrees:simulation.angleDegrees pivot:simulation.pivot candidate:candidate
   local old=findApproval candidate.actionId
   if old!=undefined then (local idx=findItem approvals old; deleteItem approvals idx)
   append approvals a
@@ -35,6 +35,7 @@ struct AT_CoordinationGovernanceStruct (
   if a==undefined or not a.approved or not isValidNode nodeRef or transactionId=="" then return undefined
   local expectedId=try ((getHandleByAnim nodeRef) as string) catch ("")
   if (findItem a.candidate.affectedElementIds expectedId)==0 or expectedId!=a.candidate.affectedElementIds[1] then return undefined
+  if a.ruleRevision!=AT_RuleEngine.registryRevision then (append auditLog #("APPLY_BLOCKED_RULES_CHANGED",proposalId); return undefined)
   if nodeRef.objectTransform!=a.sourceTransform or nodeRef.pivot!=a.sourcePivot then (append auditLog #("APPLY_BLOCKED_STALE_SCENE",proposalId,expectedId); return undefined)
   for existing in transactions where existing.transactionId==transactionId do return undefined
   local tx=AT_CoordinationTransaction transactionId:transactionId proposalId:proposalId elementId:expectedId actionType:a.actionType nodeRef:nodeRef beforeTransform:nodeRef.transform beforeObjectTransform:nodeRef.objectTransform beforePivot:nodeRef.pivot state:"PREPARED"
