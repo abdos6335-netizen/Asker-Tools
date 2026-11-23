@@ -10,8 +10,8 @@ struct AT_CoordinationReportsStruct (
   lastRows=rows; rows
  ),
  fn buildProposalRows results = (
-  local rows=#(#("Proposal ID","Description","Eligible","Score","Rank","Requires Approval","Reasons"))
-  for r in results do append rows #(r.proposalId,r.description,r.eligible,r.score,r.rank,r.requiresApproval,(r.reasons as string))
+  local rows=#(#("Proposal ID","Description","Eligible","Score","Rank","Requires Approval","Risk Assessment","Reasons"))
+  for r in results do append rows #(r.proposalId,r.description,r.eligible,r.score,r.rank,r.requiresApproval,r.riskAssessment,(r.reasons as string))
   lastRows=rows; rows
  ),
  fn buildClearanceRows clashes = (
