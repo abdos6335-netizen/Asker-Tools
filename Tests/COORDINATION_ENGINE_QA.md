@@ -51,3 +51,7 @@ Run the full matrix on 3ds Max 2022, 2023, 2024, 2025 and 2026. Treat 2027 as pe
 
 ## Release gate
 Do not label this engine production-ready or merge it to main until all critical geometry, rule, transaction and regression tests pass in-host and the results are reviewed.
+
+
+## In-host self-test harness
+Run `fileIn (getDir #userScripts + "\\\\AskerTools\\\\Tests\\\\AT_CoordinationSelfTests.ms")` after the coordination modules are loaded, then run `AT_CoordinationSelfTests.run()` and inspect `AT_CoordinationSelfTests.summary()` plus `lastResults`. The harness creates uniquely named temporary boxes and a plane, deletes only those test nodes, and restores the prior geometry/rule-engine result arrays and rule registry. Run it on a disposable scene first; confirm no test objects remain afterward.
