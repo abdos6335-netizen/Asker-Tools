@@ -4,7 +4,7 @@ A modular MAXScript toolkit for Autodesk 3ds Max, designed around practical inte
 
 ## Release status
 
-**0.6.0 — Coordination Engine implementation milestone.** Adds triangle-mesh intersection/distance, closed-mesh containment checks, eight-discipline metadata adapters, approved-source rule hierarchy with jurisdiction and unit normalization, rule-derived pair clearances, translation and pivot-rotation candidates/simulation, a Clash Manager review workflow, explicit approval/apply/rollback guards, XML project persistence, revision-aware integration contracts, CSV report families, and an in-host self-test harness. This remains a development milestone: MAXScript runtime and version compatibility are unverified; full B-rep/solid-kernel handling, semantic discipline envelopes, rerouting/redistribution, non-clearance rule validators, real upstream module connections, and PDF/XLSX output remain incomplete.
+**0.6.0 — Coordination Engine implementation milestone.** Adds triangle-mesh intersection/distance, closed-shell containment with edge and vertex-link checks, eight-discipline classification/mapping, approved-source rules with jurisdiction and master-unit normalization, pair-specific clearance checks, translation and pivot-rotation alternatives, stale-scene revalidation, severity/discipline filters, assignment/tracking, single-use approval and rollback, XML project persistence, revision-aware integration contracts, UTF-8 CSV report builders, and an in-host self-test runner. This remains a development milestone: MAXScript runtime and version compatibility are unverified; full B-rep/solid-kernel handling, geometric service/installation envelopes, rerouting/redistribution, non-clearance rule validators, real upstream module connections, and PDF/XLSX output remain incomplete.
 
 Target versions: 3ds Max 2022–2026. 3ds Max 2027 is pending validation. Corona and V-Ray are not yet certified; renderer integrations will be feature-specific and version-checked.
 
@@ -19,7 +19,7 @@ Logs and settings are written under the same user scripts directory, in `AskerTo
 
 ## Safety notes
 
-All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. Coordination simulation is non-destructive. Scene changes are only possible through a separate explicit governance apply call after a validated simulation and named approval; current apply actions are world translation and pivot rotation, with XML-persisted project rules/tracking/audit history. Active approvals are not restored after loading a project. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
+All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. Coordination simulation is non-destructive. Scene changes are only possible through a separate explicit governance apply call after a validated simulation and named approval; current apply actions are world translation and pivot rotation, with XML-persisted rules, required checks, discipline mappings/envelope metadata, tracking, integration revision tokens and audit history. Active approvals and scene transactions are not restored after loading a project. Risk scoring remains explicitly NOT_ASSESSED until a validated risk model exists. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
 
 ## Repository layout
 
@@ -27,7 +27,7 @@ All scans are read-only. Scene Manager visibility commands are explicit actions;
 - `Modules/` independent tools.
 - `Integrations/` renderer and external application adapters (planned).
 - `UI/` shared interface components (planned).
-- `Tests/` static checks and in-host test checklist.
+- `Tests/` static checks, self-test harness and in-host QA matrix.
 - `Documentation/` architecture and module guides.
 - `Installer/` packaging helpers (planned).
 
