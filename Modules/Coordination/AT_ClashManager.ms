@@ -15,7 +15,7 @@ struct AT_ClashManagerStruct (
  ),
  fn clashLabel clash = (
   local distanceText=if clash.minimumDistanceKnown then (formattedPrint clash.minimumDistance format:".4f") else "not measured"
-  severityFor clash+" | "+clash.status+" | "+clash.disciplineA+":"+clash.nameA+" <> "+clash.disciplineB+":"+clash.nameB+" | d="+distanceText
+  (severityFor clash)+" | "+clash.status+" | "+clash.disciplineA+":"+clash.nameA+" <> "+clash.disciplineB+":"+clash.nameB+" | d="+distanceText
  ),
  fn load clashes = (AT_ClashManager.clashes=clashes; selectedIndex=if clashes.count>0 then 1 else 0; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); true),
  fn trackingFor clashId = (
@@ -295,7 +295,7 @@ struct AT_ClashManagerStruct (
    on btnScan pressed do (
     local found=AT_ClashManager.scan jurisdiction:edtJurisdiction.text
     lbClashes.items=for c in found collect (AT_ClashManager.clashLabel c)
-    lblSummary.text=found.count as string+" clashes | exact mesh analysis"
+    lblSummary.text=(found.count as string)+" clashes | exact mesh analysis"
     lblCounts.text=AT_ClashManager.countsLabel()
     lblRuleMissing.text="Missing rule checks: "+(AT_ClashManager.lastRuleMissingPairs.count as string)
     lblGeometryErrors.text="Geometry inspection errors: "+(AT_ClashManager.lastGeometryErrors.count as string)
@@ -306,7 +306,7 @@ struct AT_ClashManagerStruct (
     local actions=AT_ClashManager.generateAlternatives lbClashes.selection
     local ranked=AT_ClashManager.rankAlternatives()
     lbSolutions.items=for item in ranked collect (item.description+" | "+(item.reasons as string))
-    lblSummary.text=if actions.count>0 then (actions.count as string+" alternatives generated; simulation and approval required") else (if AT_ClashManager.lastError!="" then AT_ClashManager.lastError else "No alternatives generated")
+    lblSummary.text=if actions.count>0 then ((actions.count as string)+" alternatives generated; simulation and approval required") else (if AT_ClashManager.lastError!="" then AT_ClashManager.lastError else "No alternatives generated")
    )
    on btnSimulate pressed do (
     local result=AT_ClashManager.simulateAlternative lbSolutions.selection jurisdiction:edtJurisdiction.text
