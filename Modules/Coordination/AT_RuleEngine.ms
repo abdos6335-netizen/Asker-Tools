@@ -50,20 +50,24 @@ struct AT_RuleEngineStruct (
         for r in candidates do highestPriority=amin highestPriority (priority r.sourceType)
         local highestSourceRules=#()
         for r in candidates where priority r.sourceType==highestPriority do append highestSourceRules r
-        local approvedHighest=#()
-        for r in highestSourceRules where r.approved do append approvedHighest r
-        if approvedHighest.count==0 then (
+        local bestSpecificity=-1
+        for r in highestSourceRules do bestSpecificity=amax bestSpecificity (specificity r jurisdiction)
+        local bestSourceRules=#()
+        for r in highestSourceRules where (specificity r jurisdiction)==bestSpecificity do append bestSourceRules r
+        local unapprovedBest=#()
+        for r in bestSourceRules where not r.approved do append unapprovedBest r
+        if unapprovedBest.count>0 then (
             local missing=AT_RuleEvaluation()
             missing.reason="HIGHEST_PRIORITY_RULE_NOT_APPROVED"
-            missing.sourceType=highestSourceRules[1].sourceType
-            missing.sourceName=highestSourceRules[1].sourceName
+            missing.sourceType=unapprovedBest[1].sourceType
+            missing.sourceName=unapprovedBest[1].sourceName
+            missing.ruleId=unapprovedBest[1].ruleId
             append lastEvaluations missing
             return missing
         )
-        local bestSpecificity=-1
-        for r in approvedHighest do bestSpecificity=amax bestSpecificity (specificity r jurisdiction)
-        local bestRules=#()
-        for r in approvedHighest where specificity r jurisdiction==bestSpecificity do append bestRules r
+        local approvedHighest=#()
+        for r in bestSourceRules where r.approved do append approvedHighest r
+        local bestRules=approvedHighest
         if bestRules.count>1 then (
             local first=bestRules[1]
             local conflict=false
