@@ -130,24 +130,36 @@ struct AT_ExactGeometryEngineStruct (
   local denom=1.0/(va+vb+vc); local v=vb*denom; local w=vc*denom
   local delta=p-(a+ab*v+ac*w); (dot delta delta)
  ),
+ fn pointSegmentDistanceSquared point startPoint endPoint = (
+  local direction=endPoint-startPoint
+  local lengthSquared=dot direction direction
+  if lengthSquared<=1.0e-12 then (
+   local delta=point-startPoint; return (dot delta delta)
+  )
+  local parameter=amax 0.0 (amin 1.0 ((dot (point-startPoint) direction)/lengthSquared))
+  local delta=point-(startPoint+direction*parameter)
+  (dot delta delta)
+ ),
  fn segmentDistanceSquared p1 q1 p2 q2 = (
   local d1=q1-p1; local d2=q2-p2; local r=p1-p2
-  local aa=dot d1 d1; local ee=dot d2 d2; local ff=dot d2 r
-  local s=0.0; local t=0.0
-  if aa<=1.0e-12 and ee<=1.0e-12 then return (dot r r)
-  if aa<=1.0e-12 then t=amax 0.0 (amin 1.0 (ff/ee))
-  else (
-   local cc=dot d1 r
-   if ee<=1.0e-12 then s=amax 0.0 (amin 1.0 (-cc/aa))
-   else (
-    local bb=dot d1 d2; local denom=aa*ee-bb*bb
-    if denom!=0 then s=amax 0.0 (amin 1.0 ((bb*ff-cc*ee)/denom))
-    t=(bb*s+ff)/ee
-    if t<0 then (t=0; s=amax 0.0 (amin 1.0 (-cc/aa)))
-    if t>1 then (t=1; s=amax 0.0 (amin 1.0 ((bb-cc)/aa)))
-   )
+  local aa=dot d1 d1; local ee=dot d2 d2
+  if aa<=1.0e-12 then return (pointSegmentDistanceSquared p1 p2 q2)
+  if ee<=1.0e-12 then return (pointSegmentDistanceSquared p2 p1 q1)
+  local bb=dot d1 d2; local cc=dot d1 r; local ff=dot d2 r
+  local denom=aa*ee-bb*bb
+  if abs denom<=1.0e-12*aa*ee then (
+   local best=pointSegmentDistanceSquared p1 p2 q2
+   best=amin best (pointSegmentDistanceSquared q1 p2 q2)
+   best=amin best (pointSegmentDistanceSquared p2 p1 q1)
+   best=amin best (pointSegmentDistanceSquared q2 p1 q1)
+   return best
   )
-  local delta=(p1+d1*s)-(p2+d2*t); (dot delta delta)
+  local s=amax 0.0 (amin 1.0 ((bb*ff-cc*ee)/denom))
+  local t=(bb*s+ff)/ee
+  if t<0.0 then (t=0.0; s=amax 0.0 (amin 1.0 (-cc/aa)))
+  if t>1.0 then (t=1.0; s=amax 0.0 (amin 1.0 ((bb-cc)/aa)))
+  local delta=(p1+d1*s)-(p2+d2*t)
+  (dot delta delta)
  ),
  fn triangleDistanceSquared ta tb = (
   local best=1.0e30; local va=#(ta.a,ta.b,ta.c); local vb=#(tb.a,tb.b,tb.c)
