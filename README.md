@@ -4,7 +4,7 @@ A modular MAXScript toolkit for Autodesk 3ds Max, designed around practical inte
 
 ## Release status
 
-**0.4.0 — Project Material & Map Manager.** Adds project-aware central MAPS storage, automatic collection after Merge/Import, SHA-256 content deduplication, revision-name association (REV-01, REV-02, etc.), persistent MAPS location settings, and a manual move/relink workflow. The v0.3.0 scene-management tools remain included.
+**0.5.0 — Coordination Solution Engine foundation.** Adds a deterministic, read-only evaluator that validates and ranks proposed clash resolutions. It blocks proposals with critical rule violations, missing required rules, or newly introduced clashes, and records explicit engineering-approval requirements. This is an evaluation foundation, not a geometry clash detector or automatic model editor. The v0.4.0 material manager and earlier scene tools remain included.
 
 Target versions: 3ds Max 2022–2026. 3ds Max 2027 is pending validation. Corona and V-Ray are not yet certified; renderer integrations will be feature-specific and version-checked.
 
@@ -19,7 +19,7 @@ Logs and settings are written under the same user scripts directory, in `AskerTo
 
 ## Safety notes
 
-All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
+All scans are read-only. Scene Manager visibility commands are explicit actions; Restore Visibility returns nodes to their pre-isolation hidden states. Cleanup only reports candidates and does not delete anything. The Coordination Solution Engine only evaluates supplied proposal data; it never changes scene geometry or approves engineering changes. A material not directly assigned to a node may still be referenced indirectly, so candidates require manual review.
 
 ## Repository layout
 
