@@ -8,7 +8,7 @@ struct AT_ExactPairClearanceRecord (elementA="", elementB="", requiredClearance=
 
 struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", ruleSeverity="INFORMATION", ruleIds=#(), status="SEPARATED", minimumDistance=undefined, minimumDistanceKnown=false, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
 struct AT_ExactGeometryEngineStruct (
- version="0.1.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
+ version="0.2.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
  fn idForNode n = (try ((getHandleByAnim n) as string) catch ("")),
  fn addEdgeCount edgeCounts indexA indexB = (
   local low=amin indexA indexB; local high=amax indexA indexB
