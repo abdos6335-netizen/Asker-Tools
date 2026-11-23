@@ -20,6 +20,7 @@ struct AT_CoordinationProposalResult (
     eligible = false,
     score = -1.0e9,
     rank = 0,
+    requiresApproval = true,
     reasons = #()
 )
 struct AT_SolutionEngineStruct (
@@ -56,19 +57,20 @@ struct AT_SolutionEngineStruct (
 
     fn evaluateProposal proposal = (
         local result = AT_CoordinationProposalResult()
-        result.proposalId = proposal.id
-        result.description = proposal.description
         local issues = validateProposal proposal
         if issues.count > 0 then (
             result.eligible = false
             result.reasons = issues
         ) else (
+            result.proposalId = proposal.id
+            result.description = proposal.description
+            result.requiresApproval = proposal.requiresEngineeringApproval
             if proposal.criticalViolations > 0 do append result.reasons "CRITICAL_RULE_VIOLATION"
             if proposal.missingRules > 0 do append result.reasons "REQUIRED_RULE_MISSING"
             if proposal.newClashes > 0 do append result.reasons "INTRODUCES_NEW_CLASHES"
             result.eligible = (proposal.criticalViolations == 0 and proposal.missingRules == 0 and proposal.newClashes == 0)
             result.score = scoreProposal proposal
-            if proposal.requiresEngineeringApproval do append result.reasons "ENGINEERING_APPROVAL_REQUIRED"
+            if result.requiresApproval do append result.reasons "ENGINEERING_APPROVAL_REQUIRED"
             if not result.eligible do result.score = -1.0e9
         )
         result
