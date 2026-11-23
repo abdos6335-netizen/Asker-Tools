@@ -46,29 +46,46 @@ struct AT_ExactGeometryEngineStruct (
   )
   true
  ),
- fn rayHitsTriangle origin direction tri epsilon:1.0e-7 = (
+ fn rayHitDistance origin direction tri epsilon:1.0e-7 = (
+  /* Inclusive barycentric boundaries are intentional: adjacent triangles may
+     both report a shared-edge/vertex hit. pointInsideClosedMesh deduplicates
+     equal ray parameters so the surface crossing is counted exactly once. */
   local edge1=tri.b-tri.a; local edge2=tri.c-tri.a
+  local directionLength=length direction
+  local edgeScale=(length edge1)*(length edge2)*directionLength
+  if edgeScale<=1.0e-20 then return undefined
   local h=cross direction edge2; local determinant=dot edge1 h
-  if abs determinant<epsilon then return false
+  if abs determinant<=epsilon*edgeScale then return undefined
   local inverse=1.0/determinant
   local offset=origin-tri.a
   local u=inverse*(dot offset h)
-  if u<=epsilon or u>=1.0-epsilon then return false
+  if u < -epsilon or u > 1.0+epsilon then return undefined
   local q=cross offset edge1
   local v=inverse*(dot direction q)
-  if v<=epsilon or (u+v)>=1.0-epsilon then return false
+  if v < -epsilon or (u+v)>1.0+epsilon then return undefined
   local distance=inverse*(dot edge2 q)
-  distance>epsilon
+  if distance>epsilon then distance else undefined
+ ),
+ fn rayHitsTriangle origin direction tri epsilon:1.0e-7 = (
+  (rayHitDistance origin direction tri epsilon:epsilon)!=undefined
  ),
  fn pointInsideClosedMesh point meshRecord = (
   if not meshRecord.isClosed or not meshRecord.isManifold then return false
   if point.x<meshRecord.minimum.x or point.x>meshRecord.maximum.x or point.y<meshRecord.minimum.y or point.y>meshRecord.maximum.y or point.z<meshRecord.minimum.z or point.z>meshRecord.maximum.z then return false
   local directions=#([1.0,0.371390676,0.529103],[0.217,1.0,0.413],[0.619,0.283,1.0])
   local insideVotes=0
-  for direction in directions do (
-   local hits=0
-   for tri in meshRecord.triangles where rayHitsTriangle point direction tri do hits+=1
-   if (mod hits 2)==1 do insideVotes+=1
+  for rawDirection in directions do (
+   local direction=normalize rawDirection
+   local hitDistances=#()
+   for tri in meshRecord.triangles do (
+    local hitDistance=rayHitDistance point direction tri
+    if hitDistance!=undefined do (
+     local duplicate=false
+     for previous in hitDistances where abs(previous-hitDistance)<=1.0e-6*(amax 1.0 (amax (abs previous) (abs hitDistance))) do duplicate=true
+     if not duplicate do append hitDistances hitDistance
+    )
+   )
+   if (mod hitDistances.count 2)==1 do insideVotes+=1
   )
   insideVotes>=2
  ),
