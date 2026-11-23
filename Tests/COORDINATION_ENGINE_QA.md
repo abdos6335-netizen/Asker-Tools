@@ -6,6 +6,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Axis-aligned box overlap, clear separation, face/edge/vertex contact.
 - Coplanar triangles, near-parallel triangles, tiny triangles, degenerate faces.
 - Parallel, collinear segment pairs with overlapping projections must return zero distance; parallel separated segments must return the perpendicular gap.
+- Point-to-segment checks cover perpendicular projection, zero-length segments, and skew segment pairs with an interior closest point.
 - Rotated, concave, hollow, open, edge-non-manifold, vertex-non-manifold and nested meshes.
 - Fully contained closed meshes with no surface intersection (must be detected or explicitly reported unsupported).
 - Degenerate/zero-area faces: skipped from triangle math, counted, and must prevent a mesh from being treated as watertight.
