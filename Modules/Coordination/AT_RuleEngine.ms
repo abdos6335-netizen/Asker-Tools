@@ -100,6 +100,10 @@ struct AT_RuleEngineStruct (
                 if conversion.valid then (result.valueInSystemUnits=conversion.systemValue; result.unitConversionValid=true)
                 else (result.status="RULE_MISSING"; result.reason=conversion.reason; result.blocking=true)
             )
+        ) else (
+            result.status="RULE_MISSING"
+            result.reason="CHECK_TYPE_VALIDATOR_NOT_IMPLEMENTED"
+            result.blocking=true
         )
         append lastEvaluations result
         result
