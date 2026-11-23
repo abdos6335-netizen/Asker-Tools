@@ -3,7 +3,7 @@
 */
 global AT_CoordinationSimulation
 struct AT_CoordinationSimulationResult (
- simulationId="", movingElementId="", actionType="TRANSLATE", sourceTransform=undefined, sourcePivot=[0,0,0], sourcePivot=[0,0,0], offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
+ simulationId="", movingElementId="", actionType="TRANSLATE", sourceTransform=undefined, sourcePivot=[0,0,0], offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
  resolvedClashIds=#(), introducedClashIds=#(), remainingClashIds=#(),
  ruleMissingIds=#(), criticalViolationIds=#(), affectedElementIds=#(),
  beforeCount=0, afterCount=0, diagnostics=#()
