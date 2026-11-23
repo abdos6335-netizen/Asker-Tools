@@ -188,6 +188,11 @@ struct AT_CoordinationProjectStoreStruct (
    AT_ClashManager.lastScanRuleRevision=-1
    AT_ClashManager.lastScanJurisdiction=""
    AT_ClashManager.lastScanRequiredChecks=#()
+   AT_ClashManager.lastDisciplineMappingRevision=-1
+   AT_ClashManager.lastDisciplineMetadataRevision=-1
+   AT_ClashManager.lastDisciplineInventory=#()
+   AT_ClashManager.lastScanMeshes=#()
+   AT_DisciplineAdapter.clear()
    AT_CoordinationSolutionGenerator.clear()
    AT_SolutionEngine.clearResults()
    AT_CoordinationSimulation.clear()
