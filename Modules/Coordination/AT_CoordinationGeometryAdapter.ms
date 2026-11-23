@@ -46,7 +46,7 @@ struct AT_CoordinationGeometryAdapterStruct (
         local sourceNodes = if nodes == undefined then objects as array else nodes
         local records = #()
         lastErrors = #()
-        for node in sourceNodes where isValidNode node do (
+        for node in sourceNodes where isValidNode node do if includeHidden or not node.isHidden do (
             if (includeHidden or not node.isHidden) do (
                 try (
                     local bounds = getBounds node
