@@ -4,7 +4,7 @@
 global AT_ClashManager
 struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", note="", severity="INFORMATION")
 struct AT_ClashManagerStruct (
- version="0.3.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastGeometryErrors=#(), lastDisciplineErrors=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(), lastDisciplineMappingRevision=-1, lastDisciplineMetadataRevision=-1, lastDisciplineInventory=#(), lastScanMeshes=#(), visibleClashIndices=#(),
+ version="0.3.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", isolationSnapshot=#(), lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastGeometryErrors=#(), lastDisciplineErrors=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(), lastDisciplineMappingRevision=-1, lastDisciplineMetadataRevision=-1, lastDisciplineInventory=#(), lastScanMeshes=#(), visibleClashIndices=#(),
  fn severityFor clash = (
   local base="INFORMATION"
   if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" or clash.status=="CONTAINMENT_UNVERIFIED" then base="HIGH"
@@ -61,6 +61,40 @@ struct AT_ClashManagerStruct (
  fn refreshClashList listControl severityFilter:"ALL" disciplineFilter:"ALL" statusFilter:"ALL" searchText:"" = (
   local indices=filteredClashIndices severityFilter:severityFilter disciplineFilter:disciplineFilter statusFilter:statusFilter searchText:searchText
   listControl.items=for i in indices collect (clashLabel clashes[i])
+  true
+ ),
+ fn isolateSelectedClash visibleIndex = (
+  if visibleIndex<1 or visibleIndex>visibleClashIndices.count then return false
+  local clash=clashes[visibleClashIndices[visibleIndex]]
+  local targets=#()
+  for id in #(clash.elementA,clash.elementB) do (
+   local handle=try (id as integer) catch (0)
+   if handle>0 do (
+    local node=getNodeByHandle handle
+    if isValidNode node do appendIfUnique targets node
+   )
+  )
+  if targets.count==0 then return false
+  if isolationSnapshot.count==0 then (
+   for node in objects do if isValidNode node do append isolationSnapshot #(node,node.isHidden)
+  )
+  for node in objects do if isValidNode node and (findItem targets node)==0 do hide node
+  for node in targets do if isValidNode node do unhide node
+  select targets
+  true
+ ),
+ fn restoreIsolation = (
+  if isolationSnapshot.count==0 then return false
+  for state in isolationSnapshot do (
+   local node=state[1]
+   if isValidNode node do (if state[2] then hide node else unhide node)
+  )
+  isolationSnapshot=#()
+  true
+ ),
+ fn frameSelectedClash visibleIndex = (
+  if not selectVisibleClash visibleIndex then return false
+  max zoomext sel
   true
  ),
  fn selectVisibleClash visibleIndex = (
@@ -260,6 +294,9 @@ struct AT_ClashManagerStruct (
    button btnFilter "Apply Filters" width:140 height:26
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
+   button btnFrame "Frame Selected Clash" width:160 height:28 align:#left
+   button btnIsolate "Isolate Selected Clash" width:160 height:28 align:#left
+   button btnRestoreIsolation "Restore Hidden State" width:160 height:28 align:#left
    button btnGenerate "Generate Solution Alternatives" width:220 height:28 align:#left
    listbox lbSolutions "Generated alternatives" items:#() width:620 height:8
    button btnSimulate "Simulate Selected Alternative" width:220 height:28 align:#left
@@ -417,6 +454,18 @@ struct AT_ClashManagerStruct (
     lblSummary.text=if tx==undefined then "Apply blocked; verify approval, transaction ID and unchanged scene" else tx.state
    )
    on btnSelect pressed do AT_ClashManager.selectVisibleClash lbClashes.selection
+   on btnFrame pressed do (
+    local ok=AT_ClashManager.frameSelectedClash lbClashes.selection
+    lblSummary.text=if ok then "Selected clash framed in viewport" else "Select a valid clash first"
+   )
+   on btnIsolate pressed do (
+    local ok=AT_ClashManager.isolateSelectedClash lbClashes.selection
+    lblSummary.text=if ok then "Clash isolated; use Restore Hidden State to restore visibility" else "Could not isolate the selected clash"
+   )
+   on btnRestoreIsolation pressed do (
+    local ok=AT_ClashManager.restoreIsolation()
+    lblSummary.text=if ok then "Previous visibility state restored" else "No isolation snapshot to restore"
+   )
    on lbClashes selected index do (
     AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
     AT_ClashManager.lastSimulations=#(); AT_ClashManager.lastSimulationCandidates=#(); AT_ClashManager.lastSimulationResults=#()
