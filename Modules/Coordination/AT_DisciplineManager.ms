@@ -43,11 +43,13 @@ struct AT_DisciplineManagerStruct (
    on AT_DisciplineManagerRollout open do AT_DisciplineManager.refreshMappings lbMappings
    on btnRegister pressed do (
     local kind=ddlMatchKind.items[amax 1 ddlMatchKind.selection]
-    if ddlDiscipline.selection<2 then (lblStatus.text="Choose a discipline explicitly"; return())
-    local discipline=ddlDiscipline.items[ddlDiscipline.selection]
-    local ok=AT_DisciplineAdapter.registerMapping kind edtMatchValue.text discipline elementType:edtElementType.text sourceLabel:edtSourceLabel.text revision:edtRevision.text
-    AT_DisciplineManager.refreshMappings lbMappings
-    lblStatus.text=if ok then "Discipline mapping registered" else "Mapping rejected; check match type, value and discipline"
+    if ddlDiscipline.selection<2 then lblStatus.text="Choose a discipline explicitly"
+    else (
+     local discipline=ddlDiscipline.items[ddlDiscipline.selection]
+     local ok=AT_DisciplineAdapter.registerMapping kind edtMatchValue.text discipline elementType:edtElementType.text sourceLabel:edtSourceLabel.text revision:edtRevision.text
+     AT_DisciplineManager.refreshMappings lbMappings
+     lblStatus.text=if ok then "Discipline mapping registered" else "Mapping rejected; check match type, value and discipline"
+    )
    )
    on btnRemove pressed do (
     local ok=AT_DisciplineManager.removeMapping lbMappings.selection
