@@ -52,7 +52,8 @@ struct AT_DisciplineAdapterStruct (
     fn findMapping node = (
         local userDiscipline=""
         try (userDiscipline=getUserProp node "AT_DISCIPLINE") catch()
-        if classOf userDiscipline==String and userDiscipline!="" then (
+        if userDiscipline!=undefined and userDiscipline!="" then (
+            if classOf userDiscipline!=String then return undefined
             if validDiscipline userDiscipline then (
                 for m in mappings where m.matchKind=="USER_PROPERTY" and m.matchValue==toUpper userDiscipline do return m
                 return (AT_DisciplineMapping matchKind:"USER_PROPERTY" matchValue:(toUpper userDiscipline) discipline:(toUpper userDiscipline) sourceLabel:"NODE_USER_PROPERTY")
@@ -78,7 +79,7 @@ struct AT_DisciplineAdapterStruct (
         ) else (
             local userDiscipline=""
             try (userDiscipline=getUserProp node "AT_DISCIPLINE") catch()
-            append e.warnings (if userDiscipline!="" then "INVALID_AT_DISCIPLINE_USER_PROPERTY" else "DISCIPLINE_MAPPING_MISSING")
+            append e.warnings (if userDiscipline!=undefined and userDiscipline!="" then "INVALID_AT_DISCIPLINE_USER_PROPERTY" else "DISCIPLINE_MAPPING_MISSING")
         )
         applyEnvelopeOverride e
         try (
