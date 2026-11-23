@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1] - 2026-11-23
+- Add a print-styled HTML coordination report covering clashes, clearance, disciplines, missing rules, inspection errors, tracking, approvals, critical proposal issues, proposals, governance audit, and integration revision history.
+- Add a Clash Manager action to export the full report as HTML for browser-based printing to PDF.
+- Keep CSV as the native tabular export; native PDF and XLSX generation remain unimplemented.
+
+# Changelog
+
 ## 0.6.0 - Coordination Engine implementation milestone
 - Added explicit metadata-driven adapters for the eight coordination disciplines; unmapped elements remain UNKNOWN.
 - Added approved engineering rule lookup with mandatory-code, authority, manufacturer, project, and default source priority.
