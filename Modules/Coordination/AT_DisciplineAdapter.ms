@@ -108,6 +108,15 @@ struct AT_DisciplineAdapterStruct (
         lastInventory=found; lastUnclassified=unknown
         found
     ),
+    fn clearEnvelope elementId = (
+        local override=findEnvelopeOverride elementId
+        if override==undefined then return false
+        local idx=findItem envelopeOverrides override
+        if idx>0 do deleteItem envelopeOverrides idx
+        for e in lastInventory where e.elementId==elementId do (e.requiredClearance=undefined; e.serviceEnvelope=undefined; e.installationEnvelope=undefined)
+        metadataRevision+=1
+        true
+    ),
     fn setEnvelope elementId requiredClearance:undefined serviceEnvelope:undefined installationEnvelope:undefined = (
         local target=undefined
         for e in lastInventory where e.elementId==elementId do target=e
