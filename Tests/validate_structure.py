@@ -30,6 +30,7 @@ required = [
     'Documentation/Modules/COORDINATION_REVIEW_AND_GOVERNANCE.md',
     'Documentation/Modules/COORDINATION_INTEGRATIONS_AND_REPORTS.md',
     'Tests/COORDINATION_ENGINE_QA.md',
+    'Tests/AT_CoordinationSelfTests.ms',
 ]
 for rel in required:
     path = ROOT / rel
@@ -59,6 +60,7 @@ checks = {
     'Modules/Coordination/AT_ClashManager.ms': ['fn load', 'fn counts', 'fn selectClash', 'fn setTracking', 'fn getTracking', 'fn clashLabel', 'fn scan', 'fn show', 'btnSave', 'UNDER_REVIEW', 'Detect Exact Mesh Clashes', 'AT_DisciplineAdapter.inspect'],
     'Modules/Coordination/AT_CoordinationGovernance.ms': ['fn approve', 'fn applyTranslation', 'fn rollback', 'FAILED_ROLLED_BACK', 'APPLY_BLOCKED_STALE_SCENE', 'ROLLBACK_BLOCKED_SCENE_CHANGED'],
     'Modules/Coordination/AT_CoordinationIntegrations.ms': ['fn register', 'fn exchange', 'SOURCE_REVISION_REQUIRED', 'CAPABILITY_NOT_SUPPORTED', 'REVISION_CONFLICT', 'expectedPreviousRevision'],
+    'Tests/AT_CoordinationSelfTests.ms': ['fn run', 'OVERLAPPING_BOXES', 'CLEARANCE_VIOLATION', 'CLOSED_SOLID_CONTAINMENT', 'OPEN_MESH_CONTAINMENT_UNVERIFIED', 'UNAPPROVED_HIGHER_PRIORITY_BLOCKS_FALLBACK', 'SAME_PRIORITY_RULE_CONFLICT'],
     'Modules/Coordination/AT_CoordinationReports.ms': ['fn buildClashRows', 'fn buildProposalRows', 'fn buildClearanceRows', 'fn buildDisciplineRows', 'fn buildTrackingRows', 'fn buildApprovalRows', 'fn buildRevisionRows', 'fn buildAuditRows', 'fn buildCriticalRows', 'fn exportCSV', 'csvEscape'],
 }
 for rel, tokens in checks.items():
