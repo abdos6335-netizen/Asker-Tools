@@ -1,48 +1,53 @@
 /* Asker Tools - Coordination Review, Approval and Apply Transactions
-   Applies only an explicitly approved, exactly simulated translation candidate.
+   Applies only explicitly approved, successfully simulated transforms.
 */
 global AT_CoordinationGovernance
 struct AT_CoordinationApproval (
  proposalId="", approved=false, approver="", approvalDate="", reason="",
- simulationId="", sourceTransform=undefined, offset=[0,0,0], candidate=undefined
+ simulationId="", actionType="TRANSLATE", sourceTransform=undefined,
+ offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], candidate=undefined
 )
 struct AT_CoordinationTransaction (
- transactionId="", proposalId="", elementId="", nodeRef=undefined,
- beforeTransform=undefined, afterTransform=undefined,
- state="PREPARED", appliedAt="", rollbackReason=""
+ transactionId="", proposalId="", elementId="", actionType="TRANSLATE", nodeRef=undefined,
+ beforeTransform=undefined, afterTransform=undefined, state="PREPARED",
+ appliedAt="", rollbackReason=""
 )
 struct AT_CoordinationGovernanceStruct (
- version="0.1.0", approvals=#(), transactions=#(), auditLog=#(),
+ version="0.2.0", approvals=#(), transactions=#(), auditLog=#(),
  fn findApproval proposalId = (for a in approvals where a.proposalId==proposalId do return a; undefined),
  fn approve candidate simulation approver reason approvalDate = (
   if candidate==undefined or simulation==undefined or approver=="" or reason=="" or approvalDate=="" then return false
   if not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
-  if candidate.actionId!=simulation.simulationId or candidate.affectedElementIds.count!=1 or candidate.affectedElementIds[1]!=simulation.movingElementId then return false
+  if candidate.actionId!=simulation.simulationId or candidate.actionType!=simulation.actionType then return false
+  if candidate.affectedElementIds.count!=1 or candidate.affectedElementIds[1]!=simulation.movingElementId then return false
+  if candidate.offset!=simulation.offset or candidate.rotationAxis!=simulation.rotationAxis or candidate.angleDegrees!=simulation.angleDegrees or candidate.pivot!=simulation.pivot then return false
   if simulation.introducedClashIds.count>0 or simulation.ruleMissingIds.count>0 or simulation.criticalViolationIds.count>0 or simulation.sourceTransform==undefined then return false
-  local a=AT_CoordinationApproval proposalId:candidate.actionId approved:true approver:approver approvalDate:approvalDate reason:reason simulationId:simulation.simulationId sourceTransform:simulation.sourceTransform offset:simulation.offset candidate:candidate
+  if simulation.actionType=="ROTATE" and simulation.pivot!=simulation.sourceTransform.row4 then return false
+  local a=AT_CoordinationApproval proposalId:candidate.actionId approved:true approver:approver approvalDate:approvalDate reason:reason simulationId:simulation.simulationId actionType:simulation.actionType sourceTransform:simulation.sourceTransform offset:simulation.offset rotationAxis:simulation.rotationAxis angleDegrees:simulation.angleDegrees pivot:simulation.pivot candidate:candidate
   local old=findApproval candidate.actionId
   if old!=undefined then (local idx=findItem approvals old; deleteItem approvals idx)
   append approvals a
-  append auditLog #("APPROVED",candidate.actionId,approver,approvalDate,reason)
+  append auditLog #("APPROVED",candidate.actionId,approver,approvalDate,reason,simulation.actionType)
   true
  ),
- fn applyTranslation proposalId nodeRef offset transactionId = (
+ fn applyAction proposalId nodeRef transactionId = (
   local a=findApproval proposalId
   if a==undefined or not a.approved or not isValidNode nodeRef or transactionId=="" then return undefined
   local expectedId=try ((getHandleByAnim nodeRef) as string) catch ("")
   if (findItem a.candidate.affectedElementIds expectedId)==0 or expectedId!=a.candidate.affectedElementIds[1] then return undefined
-  if offset!=a.offset then return undefined
   if nodeRef.transform!=a.sourceTransform then (append auditLog #("APPLY_BLOCKED_STALE_SCENE",proposalId,expectedId); return undefined)
   for existing in transactions where existing.transactionId==transactionId do return undefined
-  local tx=AT_CoordinationTransaction transactionId:transactionId proposalId:proposalId elementId:expectedId nodeRef:nodeRef beforeTransform:nodeRef.transform state:"PREPARED"
+  local tx=AT_CoordinationTransaction transactionId:transactionId proposalId:proposalId elementId:expectedId actionType:a.actionType nodeRef:nodeRef beforeTransform:nodeRef.transform state:"PREPARED"
   append transactions tx
   try (
    undo ("Asker Tools Coordination Apply "+proposalId) on (
-    in coordsys world (move nodeRef offset)
+    if a.actionType=="TRANSLATE" then in coordsys world (move nodeRef a.offset)
+    else if a.actionType=="ROTATE" then in coordsys world (rotate nodeRef (angleAxis a.angleDegrees a.rotationAxis))
+    else throw "UNSUPPORTED_APPROVED_ACTION"
    )
    tx.afterTransform=nodeRef.transform
    tx.state="APPLIED"
-   append auditLog #("APPLIED",proposalId,expectedId,transactionId)
+   append auditLog #("APPLIED",proposalId,expectedId,transactionId,a.actionType)
    tx
   ) catch (
    try (nodeRef.transform=tx.beforeTransform) catch()
@@ -50,6 +55,16 @@ struct AT_CoordinationGovernanceStruct (
    append auditLog #("APPLY_FAILED",proposalId,expectedId,getCurrentException())
    tx
   )
+ ),
+ fn applyTranslation proposalId nodeRef offset transactionId = (
+  local a=findApproval proposalId
+  if a==undefined or a.actionType!="TRANSLATE" or a.offset!=offset then return undefined
+  applyAction proposalId nodeRef transactionId
+ ),
+ fn applyRotation proposalId nodeRef axis angleDegrees pivot transactionId = (
+  local a=findApproval proposalId
+  if a==undefined or a.actionType!="ROTATE" or a.rotationAxis!=axis or a.angleDegrees!=angleDegrees or a.pivot!=pivot then return undefined
+  applyAction proposalId nodeRef transactionId
  ),
  fn rollback transactionId reason = (
   local tx=undefined
