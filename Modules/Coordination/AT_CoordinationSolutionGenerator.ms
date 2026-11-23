@@ -14,7 +14,7 @@ struct AT_CoordinationSolutionGeneratorStruct (
   delta
  ),
  fn generateTranslations records clashes clearance:0.0 = (
-  local result=#(); lastErrors=#()
+  local result=#(); lastErrors=#(); lastRotationCandidates=#()
   if (classOf clearance!=Integer and classOf clearance!=Float) or clearance<0 then (append lastErrors #("","INVALID_CLEARANCE"); return result)
   for clash in clashes do (
    local a=findRecord records clash.elementA
@@ -38,7 +38,7 @@ struct AT_CoordinationSolutionGeneratorStruct (
   result
  ),
  fn generateRotations records clashes angles:#(15.0,-15.0,30.0,-30.0) = (
-  local result=#(); lastErrors=#()
+  local result=#(); lastErrors=#(); lastCandidates=#(); lastRotationCandidates=#()
   for angle in angles where (classOf angle!=Integer and classOf angle!=Float) or angle==0 do append lastErrors #("", "INVALID_ROTATION_ANGLE")
   for clash in clashes do (
    local a=findRecord records clash.elementA
@@ -62,8 +62,11 @@ struct AT_CoordinationSolutionGeneratorStruct (
  ),
  fn generateAllAlternatives records clashes clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
   local translations=generateTranslations records clashes clearance:clearance
+  local translationCandidates=lastCandidates
   local translationErrors=lastErrors
   local rotations=generateRotations records clashes angles:angles
+  local rotationCandidates=lastRotationCandidates
+  lastCandidates=translationCandidates; lastRotationCandidates=rotationCandidates
   lastErrors=translationErrors+lastErrors
   translations+rotations
  ),
