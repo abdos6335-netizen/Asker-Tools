@@ -218,7 +218,8 @@ struct AT_ClashManagerStruct (
     editText edtReportPath "CSV output path" text:"" width:580
     button btnExportClashes "Export Clash Report" width:180 height:26
     button btnExportMissing "Export Missing Rules" width:180 height:26
-    button btnExportTracking "Export Tracking and Audit" width:220 height:26
+    button btnExportTracking "Export Tracking" width:180 height:26
+    button btnExportAudit "Export Approval / Audit History" width:240 height:26
    )
    group "Project data persistence" (
     editText edtStorePath "Project XML path" text:"" width:580
@@ -246,6 +247,11 @@ struct AT_ClashManagerStruct (
     local rows=AT_CoordinationReports.buildTrackingRows AT_ClashManager.tracking
     local ok=AT_CoordinationReports.exportCSV rows edtReportPath.text
     lblSummary.text=if ok then "Tracking CSV exported" else "Tracking CSV export failed"
+   )
+   on btnExportAudit pressed do (
+    local rows=AT_CoordinationReports.buildAuditRows AT_CoordinationGovernance.auditLog
+    local ok=AT_CoordinationReports.exportCSV rows edtReportPath.text
+    lblSummary.text=if ok then "Audit CSV exported" else "Audit CSV export failed"
    )
    on btnSaveProject pressed do (
     local ok=AT_CoordinationProjectStore.save edtStorePath.text
