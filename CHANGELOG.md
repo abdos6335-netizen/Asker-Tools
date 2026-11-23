@@ -1,3 +1,7 @@
+# Coordination project backup recovery — 2026-11-23
+- Added an explicit project backup recovery operation. It validates the backup XML root and schema before replacement, keeps the original backup intact, and moves the previous active project to a pre-restore file.
+- Recovery failures are reported and temporary files are cleaned up without intentionally overwriting the active project.
+
 # Coordination solution proposal integrity — 2026-11-23
 - Hardened candidate validation to reject empty or duplicate IDs across target, resolved, introduced, critical, missing-rule and affected-element sets; target and affected-element sets are required.
 - Hardened proposal validation to reject unsupported action types, malformed transform parameters, duplicate/empty ID sets, malformed non-array ID fields, and any count that does not match its corresponding ID array.
