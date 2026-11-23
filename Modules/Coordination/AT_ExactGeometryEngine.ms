@@ -3,11 +3,45 @@
 */
 global AT_ExactGeometryEngine
 struct AT_ExactTriangle (a=[0,0,0], b=[0,0,0], c=[0,0,0], minimum=[0,0,0], maximum=[0,0,0], faceIndex=0)
-struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0)
+struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0, isClosed=false, isManifold=false, topologyChecked=false)
 struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", status="SEPARATED", minimumDistance=1.0e9, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
 struct AT_ExactGeometryEngineStruct (
  version="0.1.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
  fn idForNode n = (try ((getHandleByAnim n) as string) catch ("")),
+ fn addEdgeCount edgeCounts indexA indexB = (
+  local low=amin indexA indexB; local high=amax indexA indexB
+  local key=(low as string)+"_"+(high as string)
+  local found=0
+  for i=1 to edgeCounts.count where edgeCounts[i][1]==key do found=i
+  if found==0 then append edgeCounts #(key,1) else edgeCounts[found][2]+=1
+  true
+ ),
+ fn rayHitsTriangle origin direction tri epsilon:1.0e-7 = (
+  local edge1=tri.b-tri.a; local edge2=tri.c-tri.a
+  local h=cross direction edge2; local determinant=dot edge1 h
+  if abs determinant<epsilon then return false
+  local inverse=1.0/determinant
+  local offset=origin-tri.a
+  local u=inverse*(dot offset h)
+  if u<=epsilon or u>=1.0-epsilon then return false
+  local q=cross offset edge1
+  local v=inverse*(dot direction q)
+  if v<=epsilon or (u+v)>=1.0-epsilon then return false
+  local distance=inverse*(dot edge2 q)
+  distance>epsilon
+ ),
+ fn pointInsideClosedMesh point meshRecord = (
+  if not meshRecord.isClosed or not meshRecord.isManifold then return false
+  if point.x<meshRecord.minimum.x or point.x>meshRecord.maximum.x or point.y<meshRecord.minimum.y or point.y>meshRecord.maximum.y or point.z<meshRecord.minimum.z or point.z>meshRecord.maximum.z then return false
+  local directions=#([1.0,0.371390676,0.529103],[0.217,1.0,0.413],[0.619,0.283,1.0])
+  local insideVotes=0
+  for direction in directions do (
+   local hits=0
+   for tri in meshRecord.triangles where rayHitsTriangle point direction tri do hits+=1
+   if mod hits 2==1 do insideVotes+=1
+  )
+  insideVotes>=2
+ ),
  fn makeTriangle a b c faceIndex = (
   AT_ExactTriangle a:a b:b c:c
    minimum:[(amin a.x (amin b.x c.x)),(amin a.y (amin b.y c.y)),(amin a.z (amin b.z c.z))]
@@ -103,12 +137,22 @@ struct AT_ExactGeometryEngineStruct (
   if faceTotal<=0 then throw "NO_TRIANGLE_FACES"
   local bounds=nodeGetBoundingBox node node.transform
   record.minimum=bounds[1]; record.maximum=bounds[2]
+  local edgeCounts=#()
   for faceIndex=1 to faceTotal do (
    local face=getFace meshValue faceIndex
    local p1=getVert meshValue face.x
    local p2=getVert meshValue face.y
    local p3=getVert meshValue face.z
    append record.triangles (makeTriangle p1 p2 p3 faceIndex)
+   addEdgeCount edgeCounts face.x face.y
+   addEdgeCount edgeCounts face.y face.z
+   addEdgeCount edgeCounts face.z face.x
+  )
+  record.topologyChecked=true
+  record.isClosed=true; record.isManifold=true
+  for edge in edgeCounts do (
+   if edge[2]!=2 do record.isClosed=false
+   if edge[2]>2 do record.isManifold=false
   )
   record
  ),
@@ -137,8 +181,18 @@ struct AT_ExactGeometryEngineStruct (
   if intersected then (result.status="EXACT_MESH_INTERFERENCE"; result.minimumDistance=0.0)
   else (
    result.minimumDistance=if best==1.0e30 then 1.0e9 else sqrt best
+   local aContainsB=(recordB.minimum.x>=recordA.minimum.x and recordB.maximum.x<=recordA.maximum.x and recordB.minimum.y>=recordA.minimum.y and recordB.maximum.y<=recordA.maximum.y and recordB.minimum.z>=recordA.minimum.z and recordB.maximum.z<=recordA.maximum.z)
+   local bContainsA=(recordA.minimum.x>=recordB.minimum.x and recordA.maximum.x<=recordB.maximum.x and recordA.minimum.y>=recordB.minimum.y and recordA.maximum.y<=recordB.maximum.y and recordA.minimum.z>=recordB.minimum.z and recordA.maximum.z<=recordB.maximum.z)
+   if aContainsB or bContainsA then (
+    if not recordA.isClosed or not recordB.isClosed or not recordA.isManifold or not recordB.isManifold then result.status="CONTAINMENT_UNVERIFIED"
+    else (
+     local inner=if aContainsB then recordB else recordA
+     local outer=if aContainsB then recordA else recordB
+     if inner.triangles.count>0 and pointInsideClosedMesh inner.triangles[1].a outer then result.status="SOLID_CONTAINMENT_INTERFERENCE"
+    )
+   )
    result.clearanceShortfall=amax 0.0 (requiredClearance-result.minimumDistance)
-   if result.clearanceShortfall>epsilon then result.status="CLEARANCE_VIOLATION"
+   if result.status=="SEPARATED" and result.clearanceShortfall>epsilon then result.status="CLEARANCE_VIOLATION"
   )
   result
  ),
