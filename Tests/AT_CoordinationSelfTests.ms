@@ -99,6 +99,10 @@ struct AT_CoordinationSelfTestsStruct (
    records=AT_ExactGeometryEngine.inspect #(farA,farB)
    found=AT_ExactGeometryEngine.detectClashes records:records
    addResult results "SEPARATED_BOXES" (found.count==0) found.count 0
+   local parallelOverlap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,0,0] [15,0,0]
+   local parallelGap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,2,0] [15,2,0]
+   addResult results "PARALLEL_OVERLAPPING_SEGMENTS_ZERO_DISTANCE" (parallelOverlap<=1.0e-8) parallelOverlap 0.0
+   addResult results "PARALLEL_SEPARATED_SEGMENTS_DISTANCE" (abs(parallelGap-4.0)<=1.0e-8) parallelGap 4.0
 
    local unitResult=AT_UnitConversionEngine.toSystemUnits 100.0 "mm"
    addResult results "MILLIMETER_TO_MASTER_UNIT_CONVERSION" (unitResult.valid and abs(unitResult.systemValue-3.937007874)<0.001) unitResult.systemValue 3.937007874
