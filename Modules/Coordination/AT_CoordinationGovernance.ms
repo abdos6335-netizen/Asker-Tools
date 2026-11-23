@@ -50,7 +50,7 @@ struct AT_CoordinationGovernanceStruct (
    append auditLog #("APPLIED",proposalId,expectedId,transactionId,a.actionType)
    tx
   ) catch (
-   try (nodeRef.transform=tx.beforeTransform) catch()
+   try (nodeRef.transform=tx.beforeTransform; nodeRef.pivot=tx.beforePivot) catch()
    tx.state="FAILED_ROLLED_BACK"
    append auditLog #("APPLY_FAILED",proposalId,expectedId,getCurrentException())
    tx
