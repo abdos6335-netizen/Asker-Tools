@@ -13,7 +13,8 @@ struct AT_CoordinationProposal (
     affectedElementIds = #(), criticalViolationIds = #(), missingRuleIds = #()
 )
 struct AT_CoordinationActionCandidate (
-    actionId = "", description = "",
+    actionId = "", description = "", actionType = "TRANSLATE",
+    offset = [0,0,0], rotationAxis = [0,0,1], angleDegrees = 0.0, pivot = [0,0,0],
     targetClashIds = #(), resolvedClashIds = #(),
     introducedClashIds = #(), criticalViolationIds = #(),
     missingRuleIds = #(), affectedElementIds = #(),
