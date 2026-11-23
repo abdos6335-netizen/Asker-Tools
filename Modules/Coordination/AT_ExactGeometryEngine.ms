@@ -142,6 +142,31 @@ struct AT_ExactGeometryEngineStruct (
   )
   result
  ),
+ fn findDisciplineRecord inventory elementId = (for item in inventory where item.elementId==elementId do return item; undefined),
+ fn pairClearance recordA recordB inventory defaultClearance = (
+  local a=findDisciplineRecord inventory recordA.elementId
+  local b=findDisciplineRecord inventory recordB.elementId
+  local value=defaultClearance
+  if a!=undefined and a.requiredClearance!=undefined do value=amax value a.requiredClearance
+  if b!=undefined and b.requiredClearance!=undefined do value=amax value b.requiredClearance
+  value
+ ),
+ fn detectClashesWithClearances inventory defaultClearance:0.0 epsilon:1.0e-6 = (
+  local source=lastMeshes
+  local results=#(); lastErrors=#()
+  if (classOf defaultClearance!=Integer and classOf defaultClearance!=Float) or defaultClearance<0 then (
+   append lastErrors #("","INVALID_DEFAULT_CLEARANCE"); return results
+  )
+  for i=1 to source.count do for j=i+1 to source.count do (
+   local a=source[i]; local b=source[j]
+   local clearance=pairClearance a b inventory defaultClearance
+   if boxesOverlap a.minimum a.maximum b.minimum b.maximum tolerance:clearance do (
+    local result=inspectPair a b requiredClearance:clearance epsilon:epsilon
+    if result.status!="SEPARATED" do append results result
+   )
+  )
+  lastResults=results; results
+ ),
  fn detectClashes records:undefined requiredClearance:0.0 epsilon:1.0e-6 = (
   local source=if records==undefined then lastMeshes else records
   local results=#(); lastErrors=#()
