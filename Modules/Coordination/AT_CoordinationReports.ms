@@ -21,7 +21,7 @@ struct AT_CoordinationReportsStruct (
  ),
  fn buildDisciplineRows clashes = (
   local rows=#(#("Clash ID","Discipline A","Element A","Discipline B","Element B","Status","Severity"))
-  for c in clashes do append rows #(c.clashId,c.disciplineA,c.nameA,c.disciplineB,c.nameB,c.status,if c.status=="EXACT_MESH_INTERFERENCE" or c.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH" else if c.status=="CLEARANCE_VIOLATION" then "MEDIUM" else "INFORMATION")
+  for c in clashes do append rows #(c.clashId,c.disciplineA,c.nameA,c.disciplineB,c.nameB,c.status,AT_ClashManager.severityFor c)
   lastRows=rows; rows
  ),
  fn buildTrackingRows tracking = (
