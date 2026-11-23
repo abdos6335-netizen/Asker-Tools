@@ -81,7 +81,9 @@ struct AT_ExactGeometryEngineStruct (
     local hitDistance=rayHitDistance point direction tri
     if hitDistance!=undefined do (
      local duplicate=false
-     for previous in hitDistances where abs(previous-hitDistance)<=1.0e-6*(amax 1.0 (amax (abs previous) (abs hitDistance))) do duplicate=true
+     local meshDiagonal=length (meshRecord.maximum-meshRecord.minimum)
+     local hitTolerance=1.0e-9*(amax meshDiagonal (amax 1.0 (abs hitDistance)))
+     for previous in hitDistances where abs(previous-hitDistance)<=hitTolerance do duplicate=true
      if not duplicate do append hitDistances hitDistance
     )
    )
@@ -100,28 +102,39 @@ struct AT_ExactGeometryEngineStruct (
   (aminV.y <= bmaxV.y+tolerance and amaxV.y+tolerance >= bminV.y) and
   (aminV.z <= bmaxV.z+tolerance and amaxV.z+tolerance >= bminV.z)
  ),
- fn separatedOnAxis axis a b c d e f epsilon = (
+ fn separatedOnAxis axis a b c d e f epsilon axisThreshold:1.0e-12 = (
   local axisLength=length axis
-  if axisLength <= 1.0e-8 then return false
-  local p1=dot a axis; local p2=dot b axis; local p3=dot c axis
-  local q1=dot d axis; local q2=dot e axis; local q3=dot f axis
+  if axisLength<=axisThreshold then return false
+  /* Normalize every usable SAT axis so epsilon is a world-space distance,
+     independent of whether the axis came from a face normal or edge cross. */
+  local unitAxis=axis/axisLength
+  local p1=dot a unitAxis; local p2=dot b unitAxis; local p3=dot c unitAxis
+  local q1=dot d unitAxis; local q2=dot e unitAxis; local q3=dot f unitAxis
   local minP=amin p1 (amin p2 p3); local maxP=amax p1 (amax p2 p3)
   local minQ=amin q1 (amin q2 q3); local maxQ=amax q1 (amax q2 q3)
-  (maxP < minQ-epsilon*axisLength) or (maxQ < minP-epsilon*axisLength)
+  (maxP < minQ-epsilon) or (maxQ < minP-epsilon)
  ),
  fn trianglesIntersect ta tb epsilon:1.0e-6 = (
   local a=#(ta.a,ta.b,ta.c); local b=#(tb.a,tb.b,tb.c)
   local ea=#(ta.b-ta.a,ta.c-ta.b,ta.a-ta.c)
   local eb=#(tb.b-tb.a,tb.c-tb.b,tb.a-tb.c)
   local na=cross ea[1] ea[2]; local nb=cross eb[1] eb[2]
-  if separatedOnAxis na a[1] a[2] a[3] b[1] b[2] b[3] epsilon then return false
-  if separatedOnAxis nb a[1] a[2] a[3] b[1] b[2] b[3] epsilon then return false
-  for va in ea do for vb in eb do
-   if separatedOnAxis (cross va vb) a[1] a[2] a[3] b[1] b[2] b[3] epsilon then return false
-  for edge in ea do
-   if separatedOnAxis (cross na edge) a[1] a[2] a[3] b[1] b[2] b[3] epsilon then return false
-  for edge in eb do
-   if separatedOnAxis (cross nb edge) a[1] a[2] a[3] b[1] b[2] b[3] epsilon then return false
+  local naThreshold=1.0e-12*(length ea[1])*(length ea[2])
+  local nbThreshold=1.0e-12*(length eb[1])*(length eb[2])
+  if separatedOnAxis na a[1] a[2] a[3] b[1] b[2] b[3] epsilon axisThreshold:naThreshold then return false
+  if separatedOnAxis nb a[1] a[2] a[3] b[1] b[2] b[3] epsilon axisThreshold:nbThreshold then return false
+  for va in ea do for vb in eb do (
+   local threshold=1.0e-12*(length va)*(length vb)
+   if separatedOnAxis (cross va vb) a[1] a[2] a[3] b[1] b[2] b[3] epsilon axisThreshold:threshold then return false
+  )
+  for edge in ea do (
+   local threshold=1.0e-12*(length na)*(length edge)
+   if separatedOnAxis (cross na edge) a[1] a[2] a[3] b[1] b[2] b[3] epsilon axisThreshold:threshold then return false
+  )
+  for edge in eb do (
+   local threshold=1.0e-12*(length nb)*(length edge)
+   if separatedOnAxis (cross nb edge) a[1] a[2] a[3] b[1] b[2] b[3] epsilon axisThreshold:threshold then return false
+  )
   true
  ),
  fn pointTriangleDistanceSquared p a b c = (
