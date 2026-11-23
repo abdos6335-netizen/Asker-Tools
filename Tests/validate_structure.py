@@ -15,6 +15,8 @@ required = [
     'Modules/Coordination/AT_ExactGeometryEngine.ms',
     'Modules/Coordination/AT_DisciplineAdapter.ms',
     'Modules/Coordination/AT_RuleEngine.ms',
+    'Modules/Coordination/AT_CoordinationSimulation.ms',
+    'Modules/Coordination/AT_CoordinationSolutionGenerator.ms',
     'Documentation/Modules/MATERIAL_MANAGER.md',
     'Documentation/Modules/SCENE_MANAGER.md',
     'Documentation/Modules/ASSET_MANAGER.md',
@@ -43,6 +45,8 @@ checks = {
     'Modules/Coordination/AT_ExactGeometryEngine.ms': ['fn trianglesIntersect', 'fn triangleDistanceSquared', 'fn inspectPair', 'EXACT_MESH_INTERFERENCE', 'CLEARANCE_VIOLATION', 'fn detectClashes'],
     'Modules/Coordination/AT_DisciplineAdapter.ms': ['ARCHITECTURE', 'STRUCTURE', 'ELECTRICAL', 'HVAC', 'FIRE_FIGHTING', 'PLUMBING', 'LOW_CURRENT', 'INTERIOR_ELEMENTS', 'DISCIPLINE_MAPPING_MISSING', 'fn registerMapping'],
     'Modules/Coordination/AT_RuleEngine.ms': ['MANDATORY_CODE', 'AUTHORITY_APPROVAL', 'MANUFACTURER_SPEC', 'PROJECT_SPEC', 'ASKER_DEFAULT', 'ONLY_UNAPPROVED_RULES_AVAILABLE', 'fn evaluateBatch'],
+    'Modules/Coordination/AT_CoordinationSimulation.ms': ['fn cloneTranslatedMesh', 'fn simulateTranslation', 'EXACT_GEOMETRY_SIMULATION_PASSED', 'NEW_CLASHES_INTRODUCED', 'BLOCKED_RULE_MISSING'],
+    'Modules/Coordination/AT_CoordinationSolutionGenerator.ms': ['fn generateTranslations', 'separationOffset', 'requiresEngineeringApproval=true'],
 }
 for rel, tokens in checks.items():
     source = (ROOT / rel).read_text(encoding='utf-8')
