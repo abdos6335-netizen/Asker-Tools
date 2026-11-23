@@ -87,6 +87,10 @@ struct AT_DisciplineManagerStruct (
     else (
      local elementId=AT_DisciplineAdapter.lastInventory[lbInventory.selection].elementId
      local ok=AT_DisciplineAdapter.clearEnvelope elementId
+     if ok then (
+      edtClearance.text=""; edtServiceClearance.text=""; edtInstallationClearance.text=""
+      edtService.text=""; edtInstallation.text=""
+     )
      lblStatus.text=if ok then "Envelope override cleared; rescan clashes" else "No override exists for this element"
     )
    )
