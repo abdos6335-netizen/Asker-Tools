@@ -99,6 +99,16 @@ struct AT_CoordinationSelfTestsStruct (
    records=AT_ExactGeometryEngine.inspect #(farA,farB)
    found=AT_ExactGeometryEngine.detectClashes records:records
    addResult results "SEPARATED_BOXES" (found.count==0) found.count 0
+   local sharedEdgeTriA=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,0,0] [1,1,0] 1
+   local sharedEdgeTriB=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,1,0] [0,1,0] 2
+   local sharedEdgeHitA=AT_ExactGeometryEngine.rayHitDistance [0.5,0.5,-1] [0,0,1] sharedEdgeTriA
+   local sharedEdgeHitB=AT_ExactGeometryEngine.rayHitDistance [0.5,0.5,-1] [0,0,1] sharedEdgeTriB
+   addResult results "SHARED_EDGE_RAY_HIT_INCLUSIVE" (sharedEdgeHitA!=undefined and sharedEdgeHitB!=undefined and abs(sharedEdgeHitA-sharedEdgeHitB)<=1.0e-8) #(sharedEdgeHitA,sharedEdgeHitB) "same positive hit distance"
+   local vertexHitTriA=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,0,0] [1,1,0] 3
+   local vertexHitTriB=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,1,0] [0,1,0] 4
+   local sharedVertexHitA=AT_ExactGeometryEngine.rayHitDistance [0,0,-1] [0,0,1] vertexHitTriA
+   local sharedVertexHitB=AT_ExactGeometryEngine.rayHitDistance [0,0,-1] [0,0,1] vertexHitTriB
+   addResult results "SHARED_VERTEX_RAY_HIT_INCLUSIVE" (sharedVertexHitA!=undefined and sharedVertexHitB!=undefined and abs(sharedVertexHitA-sharedVertexHitB)<=1.0e-8) #(sharedVertexHitA,sharedVertexHitB) "same positive hit distance"
    local parallelOverlap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,0,0] [15,0,0]
    local parallelGap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,2,0] [15,2,0]
    addResult results "PARALLEL_OVERLAPPING_SEGMENTS_ZERO_DISTANCE" (parallelOverlap<=1.0e-8) parallelOverlap 0.0
