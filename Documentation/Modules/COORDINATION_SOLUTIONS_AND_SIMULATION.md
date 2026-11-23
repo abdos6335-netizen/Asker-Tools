@@ -10,7 +10,7 @@ Only a completed exact-geometry simulation with no newly introduced clashes is m
 
 APIs:
 - `AT_CoordinationSolutionGenerator.generateTranslations records clashes clearance:<number>`
-- `AT_CoordinationSimulation.simulateTranslation records movingElementId offset targetClashId:<string> ruleChecks:<array> simulationId:<string>` and `simulateRotation records movingElementId axis angleDegrees pivot targetClashId:<string> ruleChecks:<array> simulationId:<string>`. Both action types are evaluated against transformed in-memory triangle meshes; neither edits the source scene.
+- `AT_CoordinationSimulation.simulateTranslation records movingElementId offset targetClashId:<string> ruleChecks:<array> simulationId:<string>` and `simulateRotation records movingElementId axis angleDegrees pivot targetClashId:<string> ruleChecks:<array> simulationId:<string>`. Both action types are evaluated against transformed in-memory triangle meshes; neither edits the source scene. The simulation entry point independently revalidates the scan snapshot and blocks if the scene, discipline metadata, rule revision or jurisdiction changed.
 - `AT_CoordinationSimulation.toProposalCandidate simulation description:<string> risk:<number>`
 
 ## Validation boundary
