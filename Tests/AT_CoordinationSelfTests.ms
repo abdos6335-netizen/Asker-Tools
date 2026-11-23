@@ -99,6 +99,8 @@ struct AT_CoordinationSelfTestsStruct (
    records=AT_ExactGeometryEngine.inspect #(farA,farB)
    found=AT_ExactGeometryEngine.detectClashes records:records
    addResult results "SEPARATED_BOXES" (found.count==0) found.count 0
+   local invalidToleranceResults=AT_ExactGeometryEngine.detectClashes records:records epsilon:-1.0
+   addResult results "NEGATIVE_GEOMETRY_TOLERANCE_REJECTED" (invalidToleranceResults.count==0 and AT_ExactGeometryEngine.lastErrors.count>0 and AT_ExactGeometryEngine.lastErrors[1][2]=="INVALID_GEOMETRY_TOLERANCE") AT_ExactGeometryEngine.lastErrors "INVALID_GEOMETRY_TOLERANCE"
    local sharedEdgeTriA=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,0,0] [1,1,0] 1
    local sharedEdgeTriB=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,1,0] [0,1,0] 2
    local sharedEdgeHitA=AT_ExactGeometryEngine.rayHitDistance [0.5,0.5,-1] [0,0,1] sharedEdgeTriA
