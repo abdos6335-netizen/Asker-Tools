@@ -13,7 +13,7 @@ struct AT_RuleManagerStruct (
   true
  ),
  fn addRule ruleId disciplineA disciplineB checkType value unit severity sourceType sourceName revision jurisdiction approved mandatory effectiveDate notes = (
-  if ruleId=="" or checkType=="" then return false
+  if ruleId=="" or checkType=="" or sourceName=="" then return false
   local rule=AT_CoordinationRule ruleId:ruleId disciplineA:disciplineA disciplineB:disciplineB checkType:checkType value:value unit:unit severity:severity sourceType:sourceType sourceName:sourceName revision:revision jurisdiction:jurisdiction approved:approved mandatory:mandatory effectiveDate:effectiveDate notes:notes
   AT_RuleEngine.registerRule rule
  ),
@@ -53,7 +53,12 @@ struct AT_RuleManagerStruct (
    label lblStatus "Rules are project data; values must come from approved sources." align:#left
    on AT_CoordinationRuleManagerRollout open do (
     refreshList lbRules
-    edtRequired.text=AT_RuleEngine.requiredCheckTypes as string
+    local requiredText=""
+    for checkType in AT_RuleEngine.requiredCheckTypes do (
+     if requiredText!="" then requiredText+=";"
+     requiredText+=checkType
+    )
+    edtRequired.text=requiredText
    )
    on btnRegister pressed do (
     local value=undefined
