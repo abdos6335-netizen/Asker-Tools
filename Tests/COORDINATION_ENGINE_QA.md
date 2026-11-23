@@ -83,6 +83,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 ## Integrations and reports
 - Missing provider, unsupported capability, missing revision, provider exception.
 - Revision mismatch and stale sync token behavior.
+- Re-register a provider at a new revision and confirm its prior revision's lastSyncToken is invalidated; only a separately persisted token matching the new revision may be restored.
 - UTF-8 CSV escaping for commas, quotes, Unicode, CR/LF and file permission errors.
 - Verify clash/proposal report counts and values against source records.
 
