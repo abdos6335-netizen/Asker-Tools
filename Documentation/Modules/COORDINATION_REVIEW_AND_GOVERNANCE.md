@@ -14,3 +14,6 @@ APIs:
 
 ## Safety limits
 The current tracking and audit records are session-memory only; durable project storage, user identity authentication, concurrency control, full scene snapshots, linked-document revision locking, and multi-node atomic transactions are not implemented. Apply supports translation only and must not be used as an unattended engineering decision. A real project deployment requires in-host QA and explicit engineering review.
+
+
+The Clash Manager includes severity/discipline filters, text search, selection of both clash elements, and owner/status/due-date tracking. Filtering is presentation-only and does not change the underlying clash set or scan snapshot.
