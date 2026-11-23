@@ -8,8 +8,17 @@ struct AT_CoordinationIntegrationRecord (
 )
 struct AT_CoordinationIntegrationsStruct (
  version="0.1.0", registry=#(), syncHistory=#(), lastErrors=#(),
+ fn validCapabilities capabilities = (
+  if classOf capabilities!=Array then return false
+  local seen=#()
+  for capability in capabilities do (
+   if classOf capability!=String or capability=="" or (findItem seen capability)>0 then return false
+   append seen capability
+  )
+  true
+ ),
  fn register moduleName revision provider capabilities:#() = (
-  if moduleName=="" or revision=="" or provider==undefined then return false
+  if moduleName=="" or revision=="" or provider==undefined or not validCapabilities capabilities then return false
   local id="AT_INT_"+moduleName
   local rec=AT_CoordinationIntegrationRecord integrationId:id moduleName:moduleName revision:revision provider:provider capabilities:capabilities enabled:true
   local existing=undefined
@@ -36,6 +45,7 @@ struct AT_CoordinationIntegrationsStruct (
  fn exchange integrationId operation payload sourceRevision expectedPreviousRevision:"" = (
   local rec=get integrationId
   if rec==undefined or not rec.enabled then return #(#"INTEGRATION_UNAVAILABLE",undefined)
+  if operation=="" then return #(#"OPERATION_REQUIRED",undefined)
   if sourceRevision=="" then return #(#"SOURCE_REVISION_REQUIRED",undefined)
   if (findItem rec.capabilities operation)==0 then return #(#"CAPABILITY_NOT_SUPPORTED",undefined)
   if rec.lastSyncToken!=expectedPreviousRevision then (
