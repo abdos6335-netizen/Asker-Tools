@@ -1,3 +1,7 @@
+### Coordination governance hardening — 2026-11-23
+- Approval now verifies the complete simulation-derived clash/rule/affected-element identity sets, not only action ID and transform parameters.
+- Added in-host regression cases for order-independent identity matching and tampered resolved/introduced clash sets.
+
 # Changelog
 
 ## [0.6.1] - 2026-11-23
