@@ -4,7 +4,7 @@
 */
 global AT_CoordinationProjectStore
 struct AT_CoordinationProjectStoreStruct (
- version="0.1.0", lastPath="", lastErrors=#(),
+ version="0.2.0", lastPath="", lastErrors=#(), pendingIntegrationTokens=#(),
  fn setAttribute xmlNode attributeName value = (xmlNode.SetAttribute attributeName (if value==undefined then "" else value as string); true),
  fn getAttribute xmlNode attributeName = (xmlNode.GetAttribute attributeName as string),
  fn addChild xmlDoc parent name = (
@@ -40,6 +40,17 @@ struct AT_CoordinationProjectStoreStruct (
   setAttribute node "note" record.note
   setAttribute node "severity" record.severity
   true
+ ),
+ fn restoreIntegrationToken integrationId revision = (
+  for i=pendingIntegrationTokens.count to 1 by -1 do (
+   local token=pendingIntegrationTokens[i]
+   if token[1]==integrationId and token[3]==revision then (
+    local value=token[4]
+    deleteItem pendingIntegrationTokens i
+    return value
+   )
+  )
+  undefined
  ),
  fn writeEventRows xmlDoc parent events = (
   for event in events do (
@@ -93,6 +104,25 @@ struct AT_CoordinationProjectStoreStruct (
    )
    local trackingNode=addChild xml root "ClashTracking"
    for record in AT_ClashManager.tracking do writeTracking xml trackingNode record
+   local integrationStatesNode=addChild xml root "IntegrationStates"
+   local savedIntegrationIds=#()
+   for record in AT_CoordinationIntegrations.registry do (
+    local node=addChild xml integrationStatesNode "Integration"
+    setAttribute node "integrationId" record.integrationId
+    setAttribute node "moduleName" record.moduleName
+    setAttribute node "revision" record.revision
+    setAttribute node "lastSyncToken" record.lastSyncToken
+    setAttribute node "enabled" record.enabled
+    append savedIntegrationIds record.integrationId
+   )
+   for token in pendingIntegrationTokens where (findItem savedIntegrationIds token[1])==0 do (
+    local node=addChild xml integrationStatesNode "Integration"
+    setAttribute node "integrationId" token[1]
+    setAttribute node "moduleName" token[2]
+    setAttribute node "revision" token[3]
+    setAttribute node "lastSyncToken" token[4]
+    setAttribute node "enabled" token[5]
+   )
    local syncNode=addChild xml root "IntegrationHistory"
    writeEventRows xml syncNode AT_CoordinationIntegrations.syncHistory
    local auditNode=addChild xml root "GovernanceAudit"
@@ -120,6 +150,7 @@ struct AT_CoordinationProjectStoreStruct (
   local oldMappingRevision=AT_DisciplineAdapter.mappingRevision
   local oldOverrides=AT_DisciplineAdapter.envelopeOverrides
   local oldMetadataRevision=AT_DisciplineAdapter.metadataRevision
+  local oldPendingIntegrationTokens=pendingIntegrationTokens
   local xml=undefined
   try (
    xml=dotNetObject "System.Xml.XmlDocument"
@@ -166,6 +197,14 @@ struct AT_CoordinationProjectStoreStruct (
     for existing in loadedTracking where existing.clashId==clashId do throw ("DUPLICATE_STORED_CLASH_TRACKING_"+clashId)
     append loadedTracking (AT_ClashTrackingRecord clashId:clashId owner:(getAttribute node "owner") status:status dueDate:(getAttribute node "dueDate") note:(getAttribute node "note") severity:(getAttribute node "severity"))
    )
+   local loadedIntegrationTokens=#()
+   local integrationNodes=xml.SelectNodes "/AskerToolsCoordinationProject/IntegrationStates/Integration"
+   for node in integrationNodes do (
+    local id=getAttribute node "integrationId"
+    local revision=getAttribute node "revision"
+    if id=="" or revision=="" then throw "INVALID_STORED_INTEGRATION_STATE"
+    append loadedIntegrationTokens #(id,getAttribute node "moduleName",revision,getAttribute node "lastSyncToken",(toLower (getAttribute node "enabled"))=="true")
+   )
    local loadedSyncHistory=#()
    local syncNodes=xml.SelectNodes "/AskerToolsCoordinationProject/IntegrationHistory/Event"
    for node in syncNodes do append loadedSyncHistory #((getAttribute node "type"),(getAttribute node "data"))
@@ -181,6 +220,11 @@ struct AT_CoordinationProjectStoreStruct (
    AT_DisciplineAdapter.mappingRevision+=1
    AT_DisciplineAdapter.metadataRevision+=1
    AT_CoordinationIntegrations.syncHistory=loadedSyncHistory
+   pendingIntegrationTokens=loadedIntegrationTokens
+   for record in AT_CoordinationIntegrations.registry do (
+    local restored=restoreIntegrationToken record.integrationId record.revision
+    if restored!=undefined then record.lastSyncToken=restored
+   )
    AT_CoordinationGovernance.auditLog=loadedAudit
    AT_CoordinationGovernance.approvals=#()
    AT_CoordinationGovernance.transactions=#()
@@ -212,6 +256,7 @@ struct AT_CoordinationProjectStoreStruct (
    AT_DisciplineAdapter.mappingRevision=oldMappingRevision
    AT_DisciplineAdapter.envelopeOverrides=oldOverrides
    AT_DisciplineAdapter.metadataRevision=oldMetadataRevision
+   pendingIntegrationTokens=oldPendingIntegrationTokens
    append lastErrors #(path,getCurrentException())
    false
   )
