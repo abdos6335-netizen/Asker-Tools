@@ -40,7 +40,7 @@ struct AT_ClashManagerStruct (
   )
   result
  ),
- fn filteredClashIndices severityFilter:"ALL" disciplineFilter:"ALL" searchText:"" = (
+ fn filteredClashIndices severityFilter:"ALL" disciplineFilter:"ALL" statusFilter:"ALL" searchText:"" = (
   local matches=#()
   local query=toLower searchText
   for i=1 to clashes.count do (
@@ -49,14 +49,17 @@ struct AT_ClashManagerStruct (
    local severityMatch=(severityFilter=="ALL" or severity==severityFilter)
    local disciplineMatch=(disciplineFilter=="ALL" or clash.disciplineA==disciplineFilter or clash.disciplineB==disciplineFilter)
    local haystack=toLower (clash.nameA+" "+clash.nameB+" "+clash.elementA+" "+clash.elementB)
+   local trackingStatus="OPEN"
+   for record in tracking where record.clashId==clash.clashId do trackingStatus=record.status
+   local statusMatch=(statusFilter=="ALL" or trackingStatus==statusFilter)
    local textMatch=(query=="" or (findString haystack query)!=undefined)
-   if severityMatch and disciplineMatch and textMatch do append matches i
+   if severityMatch and disciplineMatch and statusMatch and textMatch do append matches i
   )
   visibleClashIndices=matches
   matches
  ),
- fn refreshClashList listControl severityFilter:"ALL" disciplineFilter:"ALL" searchText:"" = (
-  local indices=filteredClashIndices severityFilter:severityFilter disciplineFilter:disciplineFilter searchText:searchText
+ fn refreshClashList listControl severityFilter:"ALL" disciplineFilter:"ALL" statusFilter:"ALL" searchText:"" = (
+  local indices=filteredClashIndices severityFilter:severityFilter disciplineFilter:disciplineFilter statusFilter:statusFilter searchText:searchText
   listControl.items=for i in indices collect (clashLabel clashes[i])
   true
  ),
@@ -245,6 +248,7 @@ struct AT_ClashManagerStruct (
    label lblDisciplineErrors "Discipline inspection errors: 0" align:#left
    dropdownList ddlSeverityFilter "Severity filter" items:#("ALL","CRITICAL","HIGH","MEDIUM","LOW","INFORMATION") width:180
    dropdownList ddlDisciplineFilter "Discipline filter" items:#("ALL","ARCHITECTURE","STRUCTURE","ELECTRICAL","HVAC","FIRE_FIGHTING","PLUMBING","LOW_CURRENT","INTERIOR_ELEMENTS") width:260
+   dropdownList ddlStatusFilter "Status filter" items:#("ALL","OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") width:200
    editText edtClashSearch "Search element / ID" text:"" width:300
    button btnFilter "Apply Filters" width:140 height:26
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
@@ -355,7 +359,7 @@ struct AT_ClashManagerStruct (
    on btnDisciplines pressed do AT_DisciplineManager.show()
    on btnScan pressed do (
     local found=AT_ClashManager.scan jurisdiction:edtJurisdiction.text
-    AT_ClashManager.refreshClashList lbClashes severityFilter:"ALL" disciplineFilter:"ALL" searchText:""
+    AT_ClashManager.refreshClashList lbClashes severityFilter:"ALL" disciplineFilter:"ALL" statusFilter:"ALL" searchText:""
     lblSummary.text=(found.count as string)+" clashes | exact mesh analysis"
     lblCounts.text=AT_ClashManager.countsLabel()
     lblRuleMissing.text="Missing rule checks: "+(AT_ClashManager.lastRuleMissingPairs.count as string)
@@ -367,7 +371,7 @@ struct AT_ClashManagerStruct (
     AT_CoordinationSolutionGenerator.clear(); AT_SolutionEngine.clearResults()
     AT_ClashManager.lastSimulations=#(); AT_ClashManager.lastSimulationCandidates=#(); AT_ClashManager.lastSimulationResults=#()
     lbSolutions.items=#()
-    AT_ClashManager.refreshClashList lbClashes severityFilter:(ddlSeverityFilter.items[amax 1 ddlSeverityFilter.selection]) disciplineFilter:(ddlDisciplineFilter.items[amax 1 ddlDisciplineFilter.selection]) searchText:edtClashSearch.text
+    AT_ClashManager.refreshClashList lbClashes severityFilter:(ddlSeverityFilter.items[amax 1 ddlSeverityFilter.selection]) disciplineFilter:(ddlDisciplineFilter.items[amax 1 ddlDisciplineFilter.selection]) statusFilter:(ddlStatusFilter.items[amax 1 ddlStatusFilter.selection]) searchText:edtClashSearch.text
    )
    on btnGenerate pressed do (
     local actualClashIndex=if lbClashes.selection>0 and lbClashes.selection<=AT_ClashManager.visibleClashIndices.count then AT_ClashManager.visibleClashIndices[lbClashes.selection] else 0
