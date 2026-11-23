@@ -9,7 +9,7 @@ Classification precedence:
 3. Exact MAXScript class-name mapping.
 4. Exact node-name mapping.
 
-Unmapped elements are retained as `UNKNOWN` and listed in `lastUnclassified`. Each inventory record carries node handle ID, source/revision, bounds, warnings, and optional explicit clearance/service/installation envelopes. No envelope or engineering clearance is invented. The mapping registry is project configuration and must be populated by the user or an approved importer.
+Unmapped elements are retained as `UNKNOWN` and listed in `lastUnclassified`. Each inventory record carries node handle ID, source/revision, bounds, warnings, and optional explicit clearance/service/installation envelopes. The Clash Manager now applies the greater of the two elements' explicitly assigned required-clearance values, falling back to the scan default when neither side supplies one. Service and installation envelope geometry is stored as metadata but is not yet expanded into collision geometry. No envelope or engineering clearance is invented. The mapping registry is project configuration and must be populated by the user or an approved importer.
 
 API: `registerMapping`, `clearMappings`, `inspect`, `setEnvelope`, `clear`.
 
