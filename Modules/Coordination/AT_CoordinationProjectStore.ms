@@ -95,6 +95,7 @@ struct AT_CoordinationProjectStoreStruct (
  fn load path = (
   if path=="" or not doesFileExist path then return false
   local oldRules=AT_RuleEngine.rules
+  local oldRuleRevision=AT_RuleEngine.registryRevision
   local oldChecks=AT_RuleEngine.requiredCheckTypes
   local oldTracking=AT_ClashManager.tracking
   local xml=undefined
@@ -148,6 +149,7 @@ struct AT_CoordinationProjectStoreStruct (
    true
   ) catch (
    AT_RuleEngine.rules=oldRules
+   AT_RuleEngine.registryRevision=oldRuleRevision
    AT_RuleEngine.requiredCheckTypes=oldChecks
    AT_ClashManager.tracking=oldTracking
    append lastErrors #(path,getCurrentException())
