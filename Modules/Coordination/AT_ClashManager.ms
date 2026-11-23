@@ -16,6 +16,7 @@ struct AT_ClashManagerStruct (
   local t=trackingFor clashId
   t.owner=owner; t.status=status; t.dueDate=dueDate; t.note=note; true
  ),
+ fn getTracking clashId = (trackingFor clashId),
  fn counts = (
   local result=#(#("HIGH",0),#("MEDIUM",0),#("LOW",0),#("INFORMATION",0))
   for c in clashes do (
@@ -58,12 +59,37 @@ struct AT_ClashManagerStruct (
    label lblSummary "Ready" align:#left
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
+   group "Assignment and status" (
+    editText edtOwner "Owner" text:"" width:300
+    dropdownList ddlStatus "Status" items:#("OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") width:300
+    editText edtDue "Due date" text:"" width:300
+    editText edtNote "Note" text:"" width:580
+    button btnSave "Save clash tracking" width:180 height:26
+   )
    on btnScan pressed do (
     local found=AT_ClashManager.scan()
     lbClashes.items=for c in found collect (c.status+" | "+c.disciplineA+":"+c.nameA+" <> "+c.disciplineB+":"+c.nameB+" | d="+(formattedPrint c.minimumDistance format:".4f"))
     lblSummary.text=found.count as string+" clashes | exact mesh surface analysis"
    )
    on btnSelect pressed do AT_ClashManager.selectClash lbClashes.selection
+   on lbClashes selected index do (
+    if index>0 and index<=AT_ClashManager.clashes.count do (
+     local record=AT_ClashManager.getTracking AT_ClashManager.clashes[index].clashId
+     edtOwner.text=record.owner
+     edtDue.text=record.dueDate
+     edtNote.text=record.note
+     local statusIndex=findItem ddlStatus.items record.status
+     ddlStatus.selection=if statusIndex>0 then statusIndex else 1
+    )
+   )
+   on btnSave pressed do (
+    if lbClashes.selection>0 and lbClashes.selection<=AT_ClashManager.clashes.count then (
+     local clashId=AT_ClashManager.clashes[lbClashes.selection].clashId
+     local status=if ddlStatus.selection>0 then ddlStatus.items[ddlStatus.selection] else "OPEN"
+     AT_ClashManager.setTracking clashId owner:edtOwner.text status:status dueDate:edtDue.text note:edtNote.text
+     lblSummary.text="Tracking saved for "+clashId
+    )
+   )
   )
   createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
  ),
