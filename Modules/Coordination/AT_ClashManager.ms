@@ -269,6 +269,9 @@ struct AT_ClashManagerStruct (
     button btnExportApprovals "Export Approved Solutions" width:210 height:26
     button btnExportProposals "Export Proposal Results" width:210 height:26
    )
+   group "Internal QA" (
+    button btnSelfTests "Run Non-Destructive Internal Self-Tests" width:270 height:28
+   )
    group "Project data persistence" (
     editText edtStorePath "Project XML path" text:"" width:580
     button btnSaveProject "Save Project Data" width:180 height:26
@@ -320,6 +323,10 @@ struct AT_ClashManagerStruct (
     local rows=AT_CoordinationReports.buildAuditRows AT_CoordinationGovernance.auditLog
     local ok=AT_CoordinationReports.exportCSV rows edtReportPath.text
     lblSummary.text=if ok then "Audit CSV exported" else "Audit CSV export failed"
+   )
+   on btnSelfTests pressed do (
+    AT_CoordinationSelfTests.run()
+    lblSummary.text=AT_CoordinationSelfTests.summary()
    )
    on btnSaveProject pressed do (
     local ok=AT_CoordinationProjectStore.save edtStorePath.text
