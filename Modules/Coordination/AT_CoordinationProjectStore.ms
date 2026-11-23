@@ -73,6 +73,24 @@ struct AT_CoordinationProjectStoreStruct (
     local checkNode=addChild xml checksNode "Check"
     setAttribute checkNode "type" checkType
    )
+   local mappingsNode=addChild xml root "DisciplineMappings"
+   for mapping in AT_DisciplineAdapter.mappings do (
+    local node=addChild xml mappingsNode "Mapping"
+    setAttribute node "matchKind" mapping.matchKind
+    setAttribute node "matchValue" mapping.matchValue
+    setAttribute node "discipline" mapping.discipline
+    setAttribute node "elementType" mapping.elementType
+    setAttribute node "sourceLabel" mapping.sourceLabel
+    setAttribute node "revision" mapping.revision
+   )
+   local overridesNode=addChild xml root "DisciplineEnvelopeOverrides"
+   for override in AT_DisciplineAdapter.envelopeOverrides do (
+    local node=addChild xml overridesNode "Element"
+    setAttribute node "elementId" override.elementId
+    setAttribute node "requiredClearance" override.requiredClearance
+    setAttribute node "serviceEnvelope" override.serviceEnvelope
+    setAttribute node "installationEnvelope" override.installationEnvelope
+   )
    local trackingNode=addChild xml root "ClashTracking"
    for record in AT_ClashManager.tracking do writeTracking xml trackingNode record
    local syncNode=addChild xml root "IntegrationHistory"
@@ -98,6 +116,10 @@ struct AT_CoordinationProjectStoreStruct (
   local oldRuleRevision=AT_RuleEngine.registryRevision
   local oldChecks=AT_RuleEngine.requiredCheckTypes
   local oldTracking=AT_ClashManager.tracking
+  local oldMappings=AT_DisciplineAdapter.mappings
+  local oldMappingRevision=AT_DisciplineAdapter.mappingRevision
+  local oldOverrides=AT_DisciplineAdapter.envelopeOverrides
+  local oldMetadataRevision=AT_DisciplineAdapter.metadataRevision
   local xml=undefined
   try (
    xml=dotNetObject "System.Xml.XmlDocument"
@@ -115,6 +137,21 @@ struct AT_CoordinationProjectStoreStruct (
    local loadedChecks=#()
    local checkNodes=xml.SelectNodes "/AskerToolsCoordinationProject/RequiredCheckTypes/Check"
    for node in checkNodes do append loadedChecks (getAttribute node "type")
+   local loadedMappings=#()
+   local mappingNodes=xml.SelectNodes "/AskerToolsCoordinationProject/DisciplineMappings/Mapping"
+   for node in mappingNodes do (
+    local mapping=AT_DisciplineMapping matchKind:(getAttribute node "matchKind") matchValue:(getAttribute node "matchValue") discipline:(getAttribute node "discipline") elementType:(getAttribute node "elementType") sourceLabel:(getAttribute node "sourceLabel") revision:(getAttribute node "revision")
+    if mapping.matchKind=="" or mapping.matchValue=="" or not AT_DisciplineAdapter.validDiscipline mapping.discipline then throw "INVALID_STORED_DISCIPLINE_MAPPING"
+    append loadedMappings mapping
+   )
+   local loadedOverrides=#()
+   local overrideNodes=xml.SelectNodes "/AskerToolsCoordinationProject/DisciplineEnvelopeOverrides/Element"
+   for node in overrideNodes do (
+    local clearanceText=getAttribute node "requiredClearance"
+    local clearance=if clearanceText=="" then undefined else (clearanceText as float)
+    if clearance!=undefined and clearance<0 then throw "INVALID_STORED_DISCIPLINE_CLEARANCE"
+    append loadedOverrides (AT_DisciplineEnvelopeOverride elementId:(getAttribute node "elementId") requiredClearance:clearance serviceEnvelope:(getAttribute node "serviceEnvelope") installationEnvelope:(getAttribute node "installationEnvelope"))
+   )
    local loadedTracking=#()
    local trackingNodes=xml.SelectNodes "/AskerToolsCoordinationProject/ClashTracking/Clash"
    for node in trackingNodes do (
@@ -134,6 +171,10 @@ struct AT_CoordinationProjectStoreStruct (
    for rule in loadedRules do if not AT_RuleEngine.registerRule rule then throw ("INVALID_STORED_RULE_"+rule.ruleId)
    if not AT_RuleEngine.setRequiredCheckTypes loadedChecks then throw "INVALID_STORED_REQUIRED_CHECKS"
    AT_ClashManager.tracking=loadedTracking
+   AT_DisciplineAdapter.mappings=loadedMappings
+   AT_DisciplineAdapter.envelopeOverrides=loadedOverrides
+   AT_DisciplineAdapter.mappingRevision+=1
+   AT_DisciplineAdapter.metadataRevision+=1
    AT_CoordinationIntegrations.syncHistory=loadedSyncHistory
    AT_CoordinationGovernance.auditLog=loadedAudit
    AT_CoordinationGovernance.approvals=#()
@@ -157,6 +198,10 @@ struct AT_CoordinationProjectStoreStruct (
    AT_RuleEngine.registryRevision=oldRuleRevision
    AT_RuleEngine.requiredCheckTypes=oldChecks
    AT_ClashManager.tracking=oldTracking
+   AT_DisciplineAdapter.mappings=oldMappings
+   AT_DisciplineAdapter.mappingRevision=oldMappingRevision
+   AT_DisciplineAdapter.envelopeOverrides=oldOverrides
+   AT_DisciplineAdapter.metadataRevision=oldMetadataRevision
    append lastErrors #(path,getCurrentException())
    false
   )
