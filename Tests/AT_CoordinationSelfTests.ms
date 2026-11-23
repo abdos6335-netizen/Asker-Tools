@@ -27,6 +27,11 @@ struct AT_CoordinationSelfTestsStruct (
   local savedSolutionProposals=AT_SolutionEngine.lastProposals
   local savedRejectedCandidates=AT_SolutionEngine.lastRejectedCandidates
   local savedSolutionWeights=AT_SolutionEngine.weights
+  local savedDisciplineInventory=AT_DisciplineAdapter.lastInventory
+  local savedDisciplineUnclassified=AT_DisciplineAdapter.lastUnclassified
+  local savedDisciplineErrors=AT_DisciplineAdapter.lastErrors
+  local savedEnvelopeOverrides=AT_DisciplineAdapter.envelopeOverrides
+  local savedDisciplineMetadataRevision=AT_DisciplineAdapter.metadataRevision
   lastErrors=#()
   try (
    local overlapA=box length:10 width:10 height:10 pos:[0,0,0]
@@ -154,6 +159,19 @@ struct AT_CoordinationSelfTestsStruct (
    addResult results "TINY_SEGMENT_POINT_DISTANCE_SCALE" (abs(tinyPointDistance-1.0e-12)<=1.0e-18) tinyPointDistance 1.0e-12
    addResult results "TINY_PARALLEL_SEGMENT_OVERLAP_ZERO" (tinyParallelOverlap<=1.0e-24) tinyParallelOverlap 0.0
 
+   local qaEnvelopeA=AT_DisciplineElement elementId:"QA_ENVELOPE_A" discipline:"HVAC"
+   local qaEnvelopeB=AT_DisciplineElement elementId:"QA_ENVELOPE_B" discipline:"STRUCTURE"
+   AT_DisciplineAdapter.lastInventory=#(qaEnvelopeA,qaEnvelopeB)
+   AT_DisciplineAdapter.envelopeOverrides=#()
+   local envelopeSet=AT_DisciplineAdapter.setEnvelope "QA_ENVELOPE_A" serviceClearance:4.5 installationClearance:6.0
+   addResult results "SERVICE_INSTALLATION_CLEARANCE_STORED" (envelopeSet and qaEnvelopeA.serviceClearance==4.5 and qaEnvelopeA.installationClearance==6.0 and AT_DisciplineAdapter.envelopeOverrides[1].serviceClearance==4.5 and AT_DisciplineAdapter.envelopeOverrides[1].installationClearance==6.0) #(qaEnvelopeA.serviceClearance,qaEnvelopeA.installationClearance) #(4.5,6.0)
+   local qaMeshA=AT_ExactMeshRecord elementId:"QA_ENVELOPE_A" minimum:[0,0,0] maximum:[1,1,1] serviceClearance:4.5 installationClearance:6.0
+   local qaMeshB=AT_ExactMeshRecord elementId:"QA_ENVELOPE_B" minimum:[0,0,0] maximum:[1,1,1]
+   local envelopePairClearance=AT_ExactGeometryEngine.pairClearance qaMeshA qaMeshB AT_DisciplineAdapter.lastInventory 0.0
+   addResult results "SERVICE_INSTALLATION_CLEARANCE_PAIR_MAX" (envelopePairClearance==6.0) envelopePairClearance 6.0
+   local envelopeCleared=AT_DisciplineAdapter.clearEnvelope "QA_ENVELOPE_A"
+   addResult results "SERVICE_INSTALLATION_CLEARANCE_CLEAR" (envelopeCleared and qaEnvelopeA.serviceClearance==undefined and qaEnvelopeA.installationClearance==undefined) #(qaEnvelopeA.serviceClearance,qaEnvelopeA.installationClearance) #(undefined,undefined)
+
    local unitResult=AT_UnitConversionEngine.toSystemUnits 100.0 "mm"
    addResult results "MILLIMETER_TO_MASTER_UNIT_CONVERSION" (unitResult.valid and abs(unitResult.systemValue-3.937007874)<0.001) unitResult.systemValue 3.937007874
 
@@ -228,6 +246,11 @@ struct AT_CoordinationSelfTestsStruct (
   AT_SolutionEngine.lastProposals=savedSolutionProposals
   AT_SolutionEngine.lastRejectedCandidates=savedRejectedCandidates
   AT_SolutionEngine.weights=savedSolutionWeights
+  AT_DisciplineAdapter.lastInventory=savedDisciplineInventory
+  AT_DisciplineAdapter.lastUnclassified=savedDisciplineUnclassified
+  AT_DisciplineAdapter.lastErrors=savedDisciplineErrors
+  AT_DisciplineAdapter.envelopeOverrides=savedEnvelopeOverrides
+  AT_DisciplineAdapter.metadataRevision=savedDisciplineMetadataRevision
   lastResults=results
   results
  ),
