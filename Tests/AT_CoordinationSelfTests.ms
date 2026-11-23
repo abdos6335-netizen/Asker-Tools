@@ -235,6 +235,13 @@ struct AT_CoordinationSelfTestsStruct (
    local scoreRiskWeightHigh=AT_SolutionEngine.scoreProposal riskProposal
    local riskEvaluation=AT_SolutionEngine.evaluateProposal riskProposal
    addResult results "RISK_NOT_ASSESSED_EXCLUDED_FROM_SCORE" (scoreRiskWeightZero==scoreRiskWeightHigh and riskEvaluation.riskAssessment=="NOT_ASSESSED" and (findItem riskEvaluation.reasons "RISK_NOT_ASSESSED")>0) #(scoreRiskWeightZero,scoreRiskWeightHigh,riskEvaluation.riskAssessment) "equal scores and NOT_ASSESSED"
+   local duplicateIdCandidate=AT_CoordinationActionCandidate actionId:"QA_DUPLICATE_IDS" targetClashIds:#("QA_CLASH","QA_CLASH") affectedElementIds:#("QA_NODE")
+   local duplicateIdIssues=AT_SolutionEngine.validateCandidate duplicateIdCandidate
+   addResult results "CANDIDATE_DUPLICATE_TARGET_IDS_REJECTED" ((findItem duplicateIdIssues "INVALID_TARGET_CLASH_ID_SET")>0) duplicateIdIssues "INVALID_TARGET_CLASH_ID_SET"
+   local mismatchProposal=AT_SolutionEngine.buildProposal riskCandidate
+   mismatchProposal.resolvedClashes+=1
+   local mismatchEvaluation=AT_SolutionEngine.evaluateProposal mismatchProposal
+   addResult results "PROPOSAL_COUNT_ID_MISMATCH_REJECTED" (not mismatchEvaluation.eligible and (findItem mismatchEvaluation.reasons "RESOLVED_CLASH_COUNT_MISMATCH")>0) mismatchEvaluation.reasons "RESOLVED_CLASH_COUNT_MISMATCH"
 
    AT_RuleEngine.clearAll()
    local accessRule=AT_CoordinationRule ruleId:"QA_ACCESS_RULE" disciplineA:"HVAC" disciplineB:"STRUCTURE" checkType:"ACCESS" value:1.0 unit:"system" sourceType:"PROJECT_SPEC" sourceName:"QA Project" approved:true
