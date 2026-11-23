@@ -102,6 +102,7 @@ struct AT_CoordinationProjectStoreStruct (
    xml=dotNetObject "System.Xml.XmlDocument"
    xml.Load path
    if (xml.DocumentElement.Name as string)!="AskerToolsCoordinationProject" then throw "INVALID_PROJECT_STORE_ROOT"
+   if getAttribute xml.DocumentElement "schemaVersion"!="1" then throw "UNSUPPORTED_PROJECT_STORE_SCHEMA"
    local loadedRules=#()
    local ruleNodes=xml.SelectNodes "/AskerToolsCoordinationProject/Rules/Rule"
    for node in ruleNodes do (
@@ -115,7 +116,13 @@ struct AT_CoordinationProjectStoreStruct (
    for node in checkNodes do append loadedChecks (getAttribute node "type")
    local loadedTracking=#()
    local trackingNodes=xml.SelectNodes "/AskerToolsCoordinationProject/ClashTracking/Clash"
-   for node in trackingNodes do append loadedTracking (AT_ClashTrackingRecord clashId:(getAttribute node "clashId") owner:(getAttribute node "owner") status:(getAttribute node "status") dueDate:(getAttribute node "dueDate") note:(getAttribute node "note") severity:(getAttribute node "severity"))
+   for node in trackingNodes do (
+    local status=getAttribute node "status"
+    local clashId=getAttribute node "clashId"
+    if clashId=="" or (findItem #("OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") status)==0 then throw "INVALID_STORED_CLASH_TRACKING"
+    for existing in loadedTracking where existing.clashId==clashId do throw ("DUPLICATE_STORED_CLASH_TRACKING_"+clashId)
+    append loadedTracking (AT_ClashTrackingRecord clashId:clashId owner:(getAttribute node "owner") status:status dueDate:(getAttribute node "dueDate") note:(getAttribute node "note") severity:(getAttribute node "severity"))
+   )
    local loadedSyncHistory=#()
    local syncNodes=xml.SelectNodes "/AskerToolsCoordinationProject/IntegrationHistory/Event"
    for node in syncNodes do append loadedSyncHistory #((getAttribute node "type"),(getAttribute node "data"))
