@@ -10,12 +10,40 @@ struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", name
 struct AT_ExactGeometryEngineStruct (
  version="0.2.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
  fn idForNode n = (try ((getHandleByAnim n) as string) catch ("")),
- fn addEdgeCount edgeCounts indexA indexB = (
+ fn addEdgeCount edgeCounts indexA indexB faceIndex = (
   local low=amin indexA indexB; local high=amax indexA indexB
   local key=(low as string)+"_"+(high as string)
   local found=0
   for i=1 to edgeCounts.count where edgeCounts[i][1]==key do found=i
-  if found==0 then append edgeCounts #(key,1) else edgeCounts[found][2]+=1
+  if found==0 then append edgeCounts #(key,1,low,high,#(faceIndex))
+  else (edgeCounts[found][2]+=1; appendIfUnique edgeCounts[found][5] faceIndex)
+  true
+ ),
+ fn vertexLinksManifold edgeCounts = (
+  local vertices=#()
+  for edge in edgeCounts do (appendIfUnique vertices edge[3]; appendIfUnique vertices edge[4])
+  for vertex in vertices do (
+   local incidentFaces=#(); local adjacency=#()
+   for edge in edgeCounts where edge[3]==vertex or edge[4]==vertex do (
+    for faceIndex in edge[5] do appendIfUnique incidentFaces faceIndex
+    if edge[2]==2 and edge[5].count==2 do append adjacency #(edge[5][1],edge[5][2])
+   )
+   if incidentFaces.count<3 then return false
+   for faceIndex in incidentFaces do (
+    local degree=0
+    for link in adjacency where link[1]==faceIndex or link[2]==faceIndex do degree+=1
+    if degree!=2 then return false
+   )
+   local visited=#(incidentFaces[1]); local changed=true
+   while changed do (
+    changed=false
+    for link in adjacency do (
+     if (findItem visited link[1])>0 and (findItem visited link[2])==0 then (append visited link[2]; changed=true)
+     if (findItem visited link[2])>0 and (findItem visited link[1])==0 then (append visited link[1]; changed=true)
+    )
+   )
+   if visited.count!=incidentFaces.count then return false
+  )
   true
  ),
  fn rayHitsTriangle origin direction tri epsilon:1.0e-7 = (
@@ -150,9 +178,9 @@ struct AT_ExactGeometryEngineStruct (
    else (
     append record.triangles (makeTriangle p1 p2 p3 faceIndex)
     record.validFaceCount+=1
-    addEdgeCount edgeCounts face.x face.y
-    addEdgeCount edgeCounts face.y face.z
-    addEdgeCount edgeCounts face.z face.x
+    addEdgeCount edgeCounts face.x face.y faceIndex
+    addEdgeCount edgeCounts face.y face.z faceIndex
+    addEdgeCount edgeCounts face.z face.x faceIndex
    )
   )
   if record.validFaceCount==0 then throw "NO_VALID_TRIANGLE_FACES"
@@ -163,6 +191,7 @@ struct AT_ExactGeometryEngineStruct (
    if edge[2]!=2 do record.isClosed=false
    if edge[2]>2 do record.isManifold=false
   )
+  if record.isClosed and record.isManifold and not vertexLinksManifold edgeCounts then record.isManifold=false
   record
  ),
  fn inspect nodes:undefined includeHidden:false = (
