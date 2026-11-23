@@ -25,6 +25,11 @@ required = [
     'Documentation/Modules/SCENE_MANAGER.md',
     'Documentation/Modules/ASSET_MANAGER.md',
     'Documentation/Modules/COORDINATION_SOLUTION_ENGINE.md',
+    'Documentation/Modules/COORDINATION_DISCIPLINES_AND_RULES.md',
+    'Documentation/Modules/COORDINATION_SOLUTIONS_AND_SIMULATION.md',
+    'Documentation/Modules/COORDINATION_REVIEW_AND_GOVERNANCE.md',
+    'Documentation/Modules/COORDINATION_INTEGRATIONS_AND_REPORTS.md',
+    'Tests/COORDINATION_ENGINE_QA.md',
 ]
 for rel in required:
     path = ROOT / rel
@@ -42,7 +47,7 @@ checks = {
     'Modules/SceneManager/AT_SceneManager.ms': ['fn inventory', 'fn selectByClass', 'fn selectByLayer', 'fn isolateNodes'],
     'Modules/Assets/AT_AssetManager.ms': ['fn scan', 'doesFileExist', 'fn missing'],
     'Modules/Cleanup/AT_Cleanup.ms': ['UNASSIGNED_MATERIAL_CANDIDATE', 'HIDDEN_NODE', 'fn scan'],
-    'Core/AT_Core.ms': ['version = "0.5.0"'],
+    'Core/AT_Core.ms': ['version = "0.6.0"'],
     'Modules/Materials/AT_MaterialManager.ms': ['#filePostMerge', '#postImport', 'SHA256', 'AutoCollect', 'REV(?:ISION)?', 'centralizeBitmap', 'changeMapsFolder'],
     'Modules/Coordination/AT_SolutionEngine.ms': ['fn validateCandidate', 'fn buildProposal', 'fn generateProposals', 'fn generateAndRank', 'fn validateProposal', 'fn evaluateProposal', 'fn evaluate', 'fn setWeights', 'SIMULATION_NOT_VALIDATED', 'CRITICAL_RULE_VIOLATION', 'REQUIRED_RULE_MISSING', 'INTRODUCES_NEW_CLASHES'],
     'Modules/Coordination/AT_CoordinationGeometryAdapter.ms': ['fn inspect', 'fn detectClashes', 'fn generateMoveCandidates', 'fn simulateAABBMove', 'AABB_CLEAR_ONLY_REQUIRES_EXACT_VALIDATION', 'simulationValidated = false'],
