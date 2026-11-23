@@ -185,7 +185,7 @@ struct AT_ExactGeometryEngineStruct (
     intersected=true; result.intersectingFaceA=ta.faceIndex; result.intersectingFaceB=tb.faceIndex
    ) else if not intersected do best=amin best (triangleDistanceSquared ta tb)
   )
-  if intersected then (result.status="EXACT_MESH_INTERFERENCE"; result.minimumDistance=0.0)
+  if intersected then (result.status="EXACT_MESH_INTERFERENCE"; result.minimumDistance=0.0; result.minimumDistanceKnown=true)
   else (
    if best==1.0e30 then (result.minimumDistance=undefined; result.minimumDistanceKnown=false)
    else (result.minimumDistance=sqrt best; result.minimumDistanceKnown=true)
