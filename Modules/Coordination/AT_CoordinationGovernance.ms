@@ -38,7 +38,7 @@ struct AT_CoordinationGovernanceStruct (
   append transactions tx
   try (
    undo ("Asker Tools Coordination Apply "+proposalId) on (
-    move nodeRef offset
+    in coordsys world (move nodeRef offset)
    )
    tx.afterTransform=nodeRef.transform
    tx.state="APPLIED"
