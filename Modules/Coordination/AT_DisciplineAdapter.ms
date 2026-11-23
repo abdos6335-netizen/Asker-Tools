@@ -9,13 +9,16 @@ struct AT_DisciplineElement (
     requiredClearance=undefined, serviceEnvelope=undefined,
     installationEnvelope=undefined, metadata=#(), warnings=#()
 )
+struct AT_DisciplineEnvelopeOverride (
+    elementId="", requiredClearance=undefined, serviceEnvelope=undefined, installationEnvelope=undefined
+)
 struct AT_DisciplineMapping (
     matchKind="USER_PROPERTY", matchValue="", discipline="UNKNOWN",
     elementType="UNSPECIFIED", sourceLabel="PROJECT_MAPPING", revision=""
 )
 struct AT_DisciplineAdapterStruct (
-    version="0.1.0", supportedDisciplines=#("ARCHITECTURE","STRUCTURE","ELECTRICAL","HVAC","FIRE_FIGHTING","PLUMBING","LOW_CURRENT","INTERIOR_ELEMENTS"),
-    mappings=#(), lastInventory=#(), lastUnclassified=#(), lastErrors=#(),
+    version="0.2.0", mappingRevision=0, metadataRevision=0, supportedDisciplines=#("ARCHITECTURE","STRUCTURE","ELECTRICAL","HVAC","FIRE_FIGHTING","PLUMBING","LOW_CURRENT","INTERIOR_ELEMENTS"),
+    mappings=#(), envelopeOverrides=#(), lastInventory=#(), lastUnclassified=#(), lastErrors=#(),
     fn validDiscipline value = (findItem supportedDisciplines (toUpper value) > 0),
     fn registerMapping matchKind matchValue discipline elementType:"UNSPECIFIED" sourceLabel:"PROJECT_MAPPING" revision:"" = (
         local d=toUpper discipline
@@ -23,9 +26,20 @@ struct AT_DisciplineAdapterStruct (
         local m=AT_DisciplineMapping matchKind:matchKind matchValue:matchValue discipline:d elementType:elementType sourceLabel:sourceLabel revision:revision
         for i=mappings.count to 1 by -1 where mappings[i].matchKind==matchKind and mappings[i].matchValue==matchValue do deleteItem mappings i
         append mappings m
+        mappingRevision+=1
         true
     ),
-    fn clearMappings = (mappings=#(); true),
+    fn clearMappings = (mappings=#(); mappingRevision+=1; true),
+    fn findEnvelopeOverride elementId = (for item in envelopeOverrides where item.elementId==elementId do return item; undefined),
+    fn applyEnvelopeOverride element = (
+        local override=findEnvelopeOverride element.elementId
+        if override!=undefined then (
+            element.requiredClearance=override.requiredClearance
+            element.serviceEnvelope=override.serviceEnvelope
+            element.installationEnvelope=override.installationEnvelope
+        )
+        element
+    ),
     fn findMapping node = (
         local userDiscipline=""
         try (userDiscipline=getUserProp node "AT_DISCIPLINE") catch()
@@ -49,8 +63,9 @@ struct AT_DisciplineAdapterStruct (
             e.discipline=m.discipline; e.elementType=m.elementType
             e.source=m.sourceLabel; e.sourceRevision=m.revision
         ) else append e.warnings "DISCIPLINE_MAPPING_MISSING"
+        applyEnvelopeOverride e
         try (
-            local b=nodeGetBoundingBox node node.transform
+            local b=nodeGetBoundingBox node node.objectTransform
             e.boundsMin=b[1]; e.boundsMax=b[2]
         ) catch (append e.warnings "BOUNDING_BOX_UNAVAILABLE")
         e
@@ -72,9 +87,15 @@ struct AT_DisciplineAdapterStruct (
         local target=undefined
         for e in lastInventory where e.elementId==elementId do target=e
         if target==undefined then return false
-        if requiredClearance!=undefined and (classOf requiredClearance==Integer or classOf requiredClearance==Float) and requiredClearance>=0 then target.requiredClearance=requiredClearance
-        if serviceEnvelope!=undefined then target.serviceEnvelope=serviceEnvelope
-        if installationEnvelope!=undefined then target.installationEnvelope=installationEnvelope
+        local override=findEnvelopeOverride elementId
+        if override==undefined then (override=AT_DisciplineEnvelopeOverride elementId:elementId; append envelopeOverrides override)
+        if requiredClearance!=undefined then (
+            if (classOf requiredClearance!=Integer and classOf requiredClearance!=Float) or requiredClearance<0 then return false
+            target.requiredClearance=requiredClearance; override.requiredClearance=requiredClearance
+        )
+        if serviceEnvelope!=undefined then (target.serviceEnvelope=serviceEnvelope; override.serviceEnvelope=serviceEnvelope)
+        if installationEnvelope!=undefined then (target.installationEnvelope=installationEnvelope; override.installationEnvelope=installationEnvelope)
+        metadataRevision+=1
         true
     ),
     fn clear = (lastInventory=#(); lastUnclassified=#(); lastErrors=#(); true)
