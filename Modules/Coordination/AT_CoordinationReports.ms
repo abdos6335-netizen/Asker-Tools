@@ -3,7 +3,7 @@
 */
 global AT_CoordinationReports
 struct AT_CoordinationReportsStruct (
- version="0.1.0", lastRows=#(), lastErrors=#(),
+ version="0.2.0", lastRows=#(), lastErrors=#(),
  fn buildClashRows clashes = (
   local rows=#(#("Clash ID","Element A","Element B","Status","Minimum Distance","Distance Measured","Required Clearance","Shortfall","Severity"))
   for c in clashes do append rows #(c.clashId,c.elementA,c.elementB,c.status,c.minimumDistance,c.minimumDistanceKnown,c.requiredClearance,c.clearanceShortfall,AT_ClashManager.severityFor c)
