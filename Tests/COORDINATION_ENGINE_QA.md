@@ -49,6 +49,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Clearance enforcement and invalid negative/non-numeric inputs.
 - Rule-missing and critical-rule blocks.
 - Confirm source scene transforms and geometry remain unchanged during simulation.
+- Change a node transform, pivot, vertex position, classification, mapping or envelope between scan/simulation/approval/apply; every stale snapshot must be blocked.
 
 ## Clash manager and governance
 - Stable clash selection, owner/status/due date persistence behavior.
