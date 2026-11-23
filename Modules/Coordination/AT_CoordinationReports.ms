@@ -39,6 +39,11 @@ struct AT_CoordinationReportsStruct (
   for item in missingPairs do append rows #(item[1],item[2],item[3],item[4])
   lastRows=rows; rows
  ),
+ fn buildRegisteredRuleRows rules = (
+  local rows=#(#("Rule ID","Discipline A","Discipline B","Check Type","Value","Unit","Severity","Source Type","Source Name","Revision","Jurisdiction","Approved","Mandatory","Effective Date","Notes"))
+  for rule in rules do append rows #(rule.ruleId,rule.disciplineA,rule.disciplineB,rule.checkType,rule.value,rule.unit,rule.severity,rule.sourceType,rule.sourceName,rule.revision,rule.jurisdiction,rule.approved,rule.mandatory,rule.effectiveDate,rule.notes)
+  lastRows=rows; rows
+ ),
  fn buildTrackingRows tracking = (
   local rows=#(#("Clash ID","Owner","Status","Due Date","Note"))
   for item in tracking do append rows #(item.clashId,item.owner,item.status,item.dueDate,item.note)
@@ -148,6 +153,7 @@ struct AT_CoordinationReportsStruct (
    #("Clearance Violations",buildClearanceRows AT_ClashManager.clashes),
    #("Discipline Coordination",buildDisciplineRows AT_ClashManager.clashes),
    #("Missing Rules",buildRuleMissingRows AT_ClashManager.lastRuleMissingPairs),
+   #("Registered Project Rules",buildRegisteredRuleRows AT_RuleEngine.rules),
    #("Geometry Inspection Errors",buildGeometryErrorRows AT_ClashManager.lastGeometryErrors),
    #("Discipline Inspection Errors",buildDisciplineErrorRows AT_ClashManager.lastDisciplineErrors),
    #("Clash Tracking",buildTrackingRows AT_ClashManager.tracking),
