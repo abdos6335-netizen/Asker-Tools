@@ -127,7 +127,7 @@ struct AT_RuleEngineStruct (
         )
         if clash.disciplineA=="UNKNOWN" or clash.disciplineB=="UNKNOWN" then (
             local missing=AT_RuleEvaluation checkType:requestedChecks[1] reason:"DISCIPLINE_CLASSIFICATION_REQUIRED"
-            if recordResult do append lastEvaluations missing
+            if recordResults do append lastEvaluations missing
             return #(missing)
         )
         local results=#()
