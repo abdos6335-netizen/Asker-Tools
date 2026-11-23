@@ -3,7 +3,7 @@
 */
 global AT_CoordinationSimulation
 struct AT_CoordinationSimulationResult (
- simulationId="", movingElementId="", offset=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
+ simulationId="", movingElementId="", sourceTransform=undefined, offset=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
  resolvedClashIds=#(), introducedClashIds=#(), remainingClashIds=#(),
  ruleMissingIds=#(), criticalViolationIds=#(), affectedElementIds=#(),
  beforeCount=0, afterCount=0, diagnostics=#()
@@ -13,7 +13,7 @@ struct AT_CoordinationSimulationStruct (
  fn translatedPoint p offset = (p+offset),
  fn cloneTranslatedMesh source offset = (
   local copy=AT_ExactMeshRecord()
-  copy.nodeRef=source.nodeRef; copy.elementId=source.elementId; copy.nodeName=source.nodeName
+  copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.elementId=source.elementId; copy.nodeName=source.nodeName
   copy.faceCount=source.faceCount
   copy.minimum=source.minimum+offset; copy.maximum=source.maximum+offset
   for t in source.triangles do append copy.triangles (AT_ExactTriangle a:(translatedPoint t.a offset) b:(translatedPoint t.b offset) c:(translatedPoint t.c offset) minimum:(t.minimum+offset) maximum:(t.maximum+offset) faceIndex:t.faceIndex)
@@ -32,6 +32,7 @@ struct AT_CoordinationSimulationStruct (
   local result=AT_CoordinationSimulationResult()
   result.simulationId=if simulationId=="" then ("SIM_"+movingElementId) else simulationId
   result.movingElementId=movingElementId; result.offset=offset
+  if classOf offset!=Point3 then (result.status="INVALID_OFFSET_VECTOR"; append lastResults result; return result)
   if targetClashId!="" do append result.targetClashIds targetClashId
   result.criticalViolationIds=criticalViolationIds
   for c in ruleChecks where c.status!="RULE_FOUND" do appendIfUnique result.ruleMissingIds (if c.ruleId=="" then c.reason else c.ruleId)
@@ -46,7 +47,7 @@ struct AT_CoordinationSimulationStruct (
   local before=collectClashes records requiredClearance 1.0e-6
   local simulated=#(); local found=false
   for source in records do (
-   if source.elementId==movingElementId then (append simulated (cloneTranslatedMesh source offset); found=true)
+   if source.elementId==movingElementId then (result.sourceTransform=source.sourceTransform; append simulated (cloneTranslatedMesh source offset); found=true)
    else append simulated source
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
