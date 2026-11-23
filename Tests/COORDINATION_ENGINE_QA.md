@@ -30,7 +30,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Remove/change a mapping and confirm the scan revision invalidates prior alternatives.
 - Apply numeric clearance with mm/cm/m/in/ft/system units and confirm master-unit conversion.
 - Save/load mapping and envelope overrides in the project XML store.
-- Service and installation envelope references remain metadata until geometric expansion is implemented.
+- Numeric per-element service and installation clearances must propagate from the discipline inventory into scan snapshots, exact pair clearance, and non-destructive simulation. Textual service/installation envelope references remain metadata until a geometric envelope provider is implemented.
 
 ## Discipline adapters
 - Verify all eight discipline labels.
