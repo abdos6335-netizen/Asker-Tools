@@ -30,7 +30,8 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Remove/change a mapping and confirm the scan revision invalidates prior alternatives.
 - Apply numeric clearance with mm/cm/m/in/ft/system units and confirm master-unit conversion.
 - Save/load mapping and envelope overrides in the project XML store.
-- Numeric per-element service and installation clearances must propagate from the discipline inventory into scan snapshots, exact pair clearance, and non-destructive simulation. Textual service/installation envelope references remain metadata until a geometric envelope provider is implemented.
+- Numeric per-element service and installation clearances must propagate from the discipline inventory into scan snapshots, exact pair clearance, stale-scene validation, and non-destructive simulation. Textual service/installation envelope references remain metadata until a geometric envelope provider is implemented.
+- Clash scan and stale-scene validation must not call undeclared geometry-engine methods; static validation explicitly guards this integration contract.
 
 ## Discipline adapters
 - Verify all eight discipline labels.
