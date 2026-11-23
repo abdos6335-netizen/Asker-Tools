@@ -5,6 +5,14 @@ struct AT_DisciplineManagerStruct (
  fn mappingLabel mapping = (
   mapping.matchKind+" | "+mapping.matchValue+" => "+mapping.discipline+" / "+mapping.elementType+" | "+mapping.sourceLabel+" | "+mapping.revision
  ),
+ fn parseClearance textValue unit = (
+  if textValue=="" then return #(true,undefined)
+  local raw=undefined
+  try (raw=textValue as float) catch()
+  if raw==undefined then return #(false,undefined)
+  local converted=AT_UnitConversionEngine.toSystemUnits raw unit
+  if converted.valid then #(true,converted.systemValue) else #(false,undefined)
+ ),
  fn refreshMappings listControl = (listControl.items=for m in AT_DisciplineAdapter.mappings collect (mappingLabel m); true),
  fn refreshInventory listControl = (
   AT_DisciplineAdapter.inspect()
@@ -32,7 +40,9 @@ struct AT_DisciplineManagerStruct (
    group "Per-element engineering envelopes" (
     button btnRefresh "Refresh Scene Inventory" width:200 height:28
     listbox lbInventory "Scene elements" items:#() width:680 height:12
-    editText edtClearance "Required clearance (optional)" text:"" width:300
+    editText edtClearance "General clearance (optional)" text:"" width:300
+    editText edtServiceClearance "Service clearance (optional)" text:"" width:300
+    editText edtInstallationClearance "Installation clearance (optional)" text:"" width:300
     dropdownList ddlUnit "Clearance unit" items:#("mm","cm","m","in","ft","system") width:300
     editText edtService "Service envelope reference (optional)" text:"" width:650
     editText edtInstallation "Installation envelope reference (optional)" text:"" width:650
@@ -71,24 +81,17 @@ struct AT_DisciplineManagerStruct (
    on btnApplyEnvelope pressed do (
     if lbInventory.selection<1 or lbInventory.selection>AT_DisciplineAdapter.lastInventory.count then lblStatus.text="Select an element first"
     else (
-     local required=undefined
-     local valid=true
-     if edtClearance.text!="" do (
-      local raw=undefined
-      try (raw=edtClearance.text as float) catch (valid=false)
-      if valid then (
-       local unit=ddlUnit.items[amax 1 ddlUnit.selection]
-       local converted=AT_UnitConversionEngine.toSystemUnits raw unit
-       if converted.valid then required=converted.systemValue else valid=false
-      )
-     )
-     if not valid then lblStatus.text="Clearance value/unit is invalid"
+     local unit=ddlUnit.items[amax 1 ddlUnit.selection]
+     local generalResult=AT_DisciplineManager.parseClearance edtClearance.text unit
+     local serviceResult=AT_DisciplineManager.parseClearance edtServiceClearance.text unit
+     local installResult=AT_DisciplineManager.parseClearance edtInstallationClearance.text unit
+     if not generalResult[1] or not serviceResult[1] or not installResult[1] then lblStatus.text="One or more clearance values/units are invalid"
      else (
       local elementId=AT_DisciplineAdapter.lastInventory[lbInventory.selection].elementId
       local service=if edtService.text=="" then undefined else edtService.text
       local install=if edtInstallation.text=="" then undefined else edtInstallation.text
-      local ok=AT_DisciplineAdapter.setEnvelope elementId requiredClearance:required serviceEnvelope:service installationEnvelope:install
-      lblStatus.text=if ok then "Element envelope saved; rescan clashes before simulation" else "Envelope update failed"
+      local ok=AT_DisciplineAdapter.setEnvelope elementId requiredClearance:generalResult[2] serviceClearance:serviceResult[2] installationClearance:installResult[2] serviceEnvelope:service installationEnvelope:install
+      lblStatus.text=if ok then "Clearance/envelope overrides saved; rescan clashes before simulation" else "Envelope update failed"
      )
     )
    )
