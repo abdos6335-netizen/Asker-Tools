@@ -3,12 +3,12 @@
 */
 global AT_ExactGeometryEngine
 struct AT_ExactTriangle (a=[0,0,0], b=[0,0,0], c=[0,0,0], minimum=[0,0,0], maximum=[0,0,0], faceIndex=0)
-struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, sourcePivot=[0,0,0], elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0, validFaceCount=0, invalidFaceCount=0, requiredClearance=undefined, serviceClearance=undefined, installationClearance=undefined, isClosed=false, isManifold=false, topologyChecked=false)
+struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, sourcePivot=[0,0,0], elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0, validFaceCount=0, invalidFaceCount=0, requiredClearance=undefined, serviceClearance=undefined, installationClearance=undefined, isClosed=false, isManifold=false, isConnected=false, topologyChecked=false)
 struct AT_ExactPairClearanceRecord (elementA="", elementB="", requiredClearance=0.0, severity="INFORMATION", ruleIds=#())
 
 struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", ruleSeverity="INFORMATION", ruleIds=#(), status="SEPARATED", minimumDistance=undefined, minimumDistanceKnown=false, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
 struct AT_ExactGeometryEngineStruct (
- version="0.2.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
+ version="0.3.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
  fn idForNode n = (try ((getHandleByAnim n) as string) catch ("")),
  fn addEdgeCount edgeCounts indexA indexB faceIndex = (
   local low=amin indexA indexB; local high=amax indexA indexB
@@ -46,6 +46,26 @@ struct AT_ExactGeometryEngineStruct (
   )
   true
  ),
+ fn faceConnectivity edgeCounts faceCount = (
+  if faceCount<=0 then return false
+  local adjacency=#()
+  for i=1 to faceCount do append adjacency #()
+  for edge in edgeCounts where edge[2]==2 and edge[5].count==2 do (
+   local faceA=edge[5][1]; local faceB=edge[5][2]
+   if faceA>=1 and faceA<=faceCount and faceB>=1 and faceB<=faceCount and faceA!=faceB do (
+    appendIfUnique adjacency[faceA] faceB
+    appendIfUnique adjacency[faceB] faceA
+   )
+  )
+  local visited=#(1); local queue=#(1); local cursor=1
+  while cursor<=queue.count do (
+   local current=queue[cursor]; cursor+=1
+   for neighbor in adjacency[current] where (findItem visited neighbor)==0 do (
+    append visited neighbor; append queue neighbor
+   )
+  )
+  visited.count==faceCount
+ ),
  fn rayHitDistance origin direction tri epsilon:1.0e-7 = (
   /* Inclusive barycentric boundaries are intentional: adjacent triangles may
      both report a shared-edge/vertex hit. pointInsideClosedMesh deduplicates
@@ -70,7 +90,7 @@ struct AT_ExactGeometryEngineStruct (
   (rayHitDistance origin direction tri epsilon:epsilon)!=undefined
  ),
  fn pointInsideClosedMesh point meshRecord = (
-  if not meshRecord.isClosed or not meshRecord.isManifold then return false
+  if not meshRecord.isClosed or not meshRecord.isManifold or not meshRecord.isConnected then return false
   if point.x<meshRecord.minimum.x or point.x>meshRecord.maximum.x or point.y<meshRecord.minimum.y or point.y>meshRecord.maximum.y or point.z<meshRecord.minimum.z or point.z>meshRecord.maximum.z then return false
   local directions=#([1.0,0.371390676,0.529103],[0.217,1.0,0.413],[0.619,0.283,1.0])
   local insideVotes=0
@@ -236,6 +256,7 @@ struct AT_ExactGeometryEngineStruct (
    if edge[2]>2 do record.isManifold=false
   )
   if record.isClosed and record.isManifold and not vertexLinksManifold edgeCounts then record.isManifold=false
+  if record.isClosed and record.isManifold then record.isConnected=faceConnectivity edgeCounts record.faceCount
   record
  ),
  fn inspect nodes:undefined includeHidden:false = (
