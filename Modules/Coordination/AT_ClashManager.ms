@@ -15,8 +15,15 @@ struct AT_ClashManagerStruct (
   local distanceText=if clash.minimumDistanceKnown then (formattedPrint clash.minimumDistance format:".4f") else "not measured"
   clash.status+" | "+clash.disciplineA+":"+clash.nameA+" <> "+clash.disciplineB+":"+clash.nameB+" | d="+distanceText
  ),
- fn load clashes = (this.clashes=clashes; selectedIndex=if clashes.count>0 then 1 else 0; true),
- fn trackingFor clashId = (for t in tracking where t.clashId==clashId do return t; local t=AT_ClashTrackingRecord clashId:clashId; append tracking t; t),
+ fn load clashes = (AT_ClashManager.clashes=clashes; selectedIndex=if clashes.count>0 then 1 else 0; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); true),
+ fn trackingFor clashId = (
+  for t in tracking where t.clashId==clashId do return t
+  local severity="INFORMATION"
+  for clash in clashes where clash.clashId==clashId do severity=severityFor clash
+  local record=AT_ClashTrackingRecord clashId:clashId severity:severity
+  append tracking record
+  record
+ ),
  fn setTracking clashId owner:"" status:"OPEN" dueDate:"" note:"" = (
   if (findItem #("OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") status)==0 then return false
   local t=trackingFor clashId
