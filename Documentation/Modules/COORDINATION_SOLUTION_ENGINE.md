@@ -87,3 +87,23 @@ This is a broad-phase bounding-box engine, not an exact mesh/solid intersection 
 - `AT_CoordinationGeometryAdapter.clear()`
 
 `clearance` is a geometric offset input, not a code value. The adapter does not invent one.
+
+
+## Part 1 — triangle-mesh interference and clearance engine (0.1.0)
+
+AT_ExactGeometryEngine adds a read-only narrow-phase mesh check after a world-AABB broad-phase filter.
+
+- inspect snapshots valid scene nodes to triangle meshes and stores transformed world-space triangles, face indices, and bounds.
+- detectClashes checks candidate node pairs and then triangle pairs. Triangle intersection uses a separating-axis test, including coplanar in-plane axes.
+- For non-intersecting triangle pairs within the requested distance, minimum surface distance is computed from point-to-triangle and edge-to-edge distances.
+- Results distinguish EXACT_MESH_INTERFERENCE, CLEARANCE_VIOLATION, and SEPARATED, and include minimum distance, shortfall, face indices, and tested triangle-pair count.
+- Clearance is an explicit numeric input. The engine does not invent project, code, manufacturer, or discipline values.
+- The engine is read-only and never marks a proposed move as simulation-validated.
+
+### API
+- AT_ExactGeometryEngine.inspect nodes:<array> includeHidden:false
+- AT_ExactGeometryEngine.detectClashes records:<array> requiredClearance:<number> epsilon:<number>
+- AT_ExactGeometryEngine.clear()
+
+### Known limits / validation gate
+This is triangle-surface intersection for the mesh snapshot supplied by 3ds Max, not a BIM solid-kernel or semantic-object engine. Tessellation quality, open/non-manifold surfaces, hidden internal faces, object semantics, intentional contacts, and project-specific tolerance policies still require review. A distance result is geometric only, not code compliance or proof of installation/service access. Dense meshes may be expensive because the current implementation is pairwise after AABB filtering. MAXScript runtime behavior, snapshot coordinate conventions, and numeric edge cases have not been verified in 3ds Max in this session.
