@@ -117,3 +117,6 @@ Degenerate zero-area triangles are excluded from distance/intersection calculati
 
 
 Minimum surface distance is only populated when the triangle-level broad phase evaluated at least one pair within the requested clearance tolerance. Otherwise `minimumDistanceKnown=false` and the value remains undefined rather than reporting an invented large distance. A separated pair can therefore be known to exceed the requested clearance without claiming its exact minimum distance.
+
+
+Scene inventory is limited to supported geometry and shape superclasses; cameras, lights and helper nodes are not treated as clash solids. Non-renderable/empty shapes are reported as geometry inspection errors rather than silently accepted as clear.
