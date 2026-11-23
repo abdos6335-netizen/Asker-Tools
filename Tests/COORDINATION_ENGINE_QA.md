@@ -45,6 +45,12 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Apply translation, exception during apply, rollback, repeated rollback, deleted node.
 - Confirm audit sequence and transaction state transitions.
 
+## Project persistence
+- Save and reload rules, required check types, clash tracking, integration history and audit history.
+- Reject unsupported schema versions, invalid/duplicate tracking IDs and malformed rule records without replacing the prior in-memory project state.
+- Verify backup creation and recovery when destination replacement fails.
+- Confirm active approvals and scene transactions are cleared on project load and must be re-approved.
+
 ## Integrations and reports
 - Missing provider, unsupported capability, missing revision, provider exception.
 - Revision mismatch and stale sync token behavior.
