@@ -57,7 +57,8 @@ struct AT_CoordinationSimulationStruct (
    append lastResults result
    return result
   )
-  local before=for clash in beforeRecords collect clash.clashId
+  local before=#()
+  for clash in beforeRecords do append before clash.clashId
   local simulated=#(); local found=false
   for source in records do (
    if source.elementId==movingElementId then (result.sourceTransform=source.sourceTransform; append simulated (cloneTranslatedMesh source offset); found=true)
@@ -71,7 +72,8 @@ struct AT_CoordinationSimulationStruct (
    append lastResults result
    return result
   )
-  local after=for clash in afterRecords collect clash.clashId
+  local after=#()
+  for clash in afterRecords do append after clash.clashId
   result.beforeCount=before.count; result.afterCount=after.count; result.baselineClashIds=before
   for id in before where (findItem after id)==0 do append result.resolvedClashIds id
   for id in after where (findItem before id)==0 do append result.introducedClashIds id
