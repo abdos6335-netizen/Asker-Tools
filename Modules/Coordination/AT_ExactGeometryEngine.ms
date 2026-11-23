@@ -38,7 +38,7 @@ struct AT_ExactGeometryEngineStruct (
   for direction in directions do (
    local hits=0
    for tri in meshRecord.triangles where rayHitsTriangle point direction tri do hits+=1
-   if mod hits 2==1 do insideVotes+=1
+   if (mod hits 2)==1 do insideVotes+=1
   )
   insideVotes>=2
  ),
