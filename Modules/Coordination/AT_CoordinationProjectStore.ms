@@ -278,6 +278,32 @@ struct AT_CoordinationProjectStoreStruct (
    false
   )
  ),
+ fn restoreBackup path = (
+  if path=="" then return false
+  local backupPath=path+".bak"
+  local tempPath=path+".restore.tmp"
+  local previousPath=path+".pre-restore"
+  local fileClass=dotNetClass "System.IO.File"
+  local xml=undefined
+  try (
+   if not fileClass.Exists backupPath then throw "PROJECT_BACKUP_NOT_FOUND"
+   xml=dotNetObject "System.Xml.XmlDocument"
+   xml.Load backupPath
+   if xml.DocumentElement==undefined or (xml.DocumentElement.Name as string)!="AskerToolsCoordinationProject" then throw "INVALID_PROJECT_BACKUP_ROOT"
+   if getAttribute xml.DocumentElement "schemaVersion"!="1" then throw "UNSUPPORTED_PROJECT_BACKUP_SCHEMA"
+   fileClass.Copy backupPath tempPath true
+   if fileClass.Exists path then (
+    if fileClass.Exists previousPath then fileClass.Delete previousPath
+    fileClass.Replace tempPath path previousPath
+   ) else fileClass.Move tempPath path
+   lastPath=path; lastErrors=#()
+   true
+  ) catch (
+   append lastErrors #(path,getCurrentException())
+   try (if fileClass.Exists tempPath do fileClass.Delete tempPath) catch()
+   false
+  )
+ ),
  fn clearErrors = (lastErrors=#(); true)
 )
 AT_CoordinationProjectStore=AT_CoordinationProjectStoreStruct()
