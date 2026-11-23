@@ -3,7 +3,7 @@
 */
 global AT_CoordinationSolutionGenerator
 struct AT_CoordinationSolutionGeneratorStruct (
- version="0.1.0", lastCandidates=#(), lastErrors=#(),
+ version="0.2.0", lastCandidates=#(), lastRotationCandidates=#(), lastErrors=#(),
  fn findRecord records elementId = (for r in records where r.elementId==elementId do return r; undefined),
  fn separationOffset moving fixed axis sign clearance = (
   local delta=[0,0,0]
@@ -26,6 +26,7 @@ struct AT_CoordinationSolutionGeneratorStruct (
      local c=AT_CoordinationActionCandidate()
      c.actionId="TX_"+moving.elementId+"_"+clash.clashId+"_"+(axis as string)+"_"+(sign as string)
      c.description="Translate "+moving.nodeName+" along axis "+(axis as string)+" by "+(offset as string)
+     c.actionType="TRANSLATE"; c.offset=offset
      c.targetClashIds=#(clash.clashId)
      c.affectedElementIds=#(moving.elementId)
      c.requiresEngineeringApproval=true
@@ -36,6 +37,35 @@ struct AT_CoordinationSolutionGeneratorStruct (
   )
   lastCandidates=result; result
  ),
- fn clear = (lastCandidates=#(); lastErrors=#(); true)
+ fn generateRotations records clashes angles:#(15.0,-15.0,30.0,-30.0) = (
+  local result=#(); lastErrors=#()
+  for clash in clashes do (
+   local a=findRecord records clash.elementA
+   local b=findRecord records clash.elementB
+   if a==undefined or b==undefined then append lastErrors #(clash.clashId,"CLASH_ELEMENT_NOT_FOUND")
+   else for moving in #(a,b) do for axisIndex=1 to 3 do for angle in angles do (
+    local axis=if axisIndex==1 then [1,0,0] else if axisIndex==2 then [0,1,0] else [0,0,1]
+    local pivot=moving.nodeRef.transform.row4
+    local c=AT_CoordinationActionCandidate()
+    c.actionId="ROT_"+moving.elementId+"_"+clash.clashId+"_"+(axisIndex as string)+"_"+(angle as string)
+    c.description="Rotate "+moving.nodeName+" by "+(angle as string)+" degrees around axis "+(axisIndex as string)
+    c.actionType="ROTATE"; c.rotationAxis=axis; c.angleDegrees=angle; c.pivot=pivot
+    c.targetClashIds=#(clash.clashId)
+    c.affectedElementIds=#(moving.elementId)
+    c.requiresEngineeringApproval=true; c.simulationValidated=false
+    append result c
+   )
+  )
+  lastRotationCandidates=result
+  result
+ ),
+ fn generateAllAlternatives records clashes clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
+  local translations=generateTranslations records clashes clearance:clearance
+  local rotations=generateRotations records clashes angles:angles
+  translations+rotations
+ ),
+ fn toProposalCandidates = (
+  local result = #()
+  for move in (lastCandidates+lastRotationCandidates) do (
 )
 AT_CoordinationSolutionGenerator=AT_CoordinationSolutionGeneratorStruct()
