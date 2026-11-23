@@ -6,7 +6,7 @@ struct AT_CoordinationReportsStruct (
  version="0.1.0", lastRows=#(), lastErrors=#(),
  fn buildClashRows clashes = (
   local rows=#(#("Clash ID","Element A","Element B","Status","Minimum Distance","Required Clearance","Shortfall","Severity"))
-  for c in clashes do append rows #(c.clashId,c.elementA,c.elementB,c.status,c.minimumDistance,c.requiredClearance,c.clearanceShortfall,if c.status=="EXACT_MESH_INTERFERENCE" then "HIGH" else if c.status=="CLEARANCE_VIOLATION" then "MEDIUM" else "INFORMATION")
+  for c in clashes do append rows #(c.clashId,c.elementA,c.elementB,c.status,c.minimumDistance,c.requiredClearance,c.clearanceShortfall,if c.status=="EXACT_MESH_INTERFERENCE" or c.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH" else if c.status=="CLEARANCE_VIOLATION" then "MEDIUM" else "INFORMATION")
   lastRows=rows; rows
  ),
  fn buildProposalRows results = (
