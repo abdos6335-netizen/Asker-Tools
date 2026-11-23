@@ -73,6 +73,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Reject approval without exact validated simulation, approver, date, and reason.
 - Reject candidate/simulation identity mismatch and affected-element mismatch.
 - Apply translation, exception during apply, rollback, repeated rollback, deleted node.
+- If apply fails, confirm the engine compares restored transform/objectTransform/pivot with the original snapshot and records APPLY_FAILED_RESTORE_FAILED when restoration cannot be verified; rollback exceptions must record ROLLBACK_FAILED.
 - Confirm audit sequence and transaction state transitions.
 
 ## Approval identity integrity
