@@ -114,3 +114,6 @@ The geometry snapshot now records undirected edge incidence to distinguish close
 
 
 Degenerate zero-area triangles are excluded from distance/intersection calculations and counted. A mesh with no valid triangles is rejected from the geometry inventory; any mesh with skipped faces is not considered closed/manifold for containment validation.
+
+
+Minimum surface distance is only populated when the triangle-level broad phase evaluated at least one pair within the requested clearance tolerance. Otherwise `minimumDistanceKnown=false` and the value remains undefined rather than reporting an invented large distance. A separated pair can therefore be known to exceed the requested clearance without claiming its exact minimum distance.
