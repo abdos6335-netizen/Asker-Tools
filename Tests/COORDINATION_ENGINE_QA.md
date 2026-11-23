@@ -54,6 +54,8 @@ This is the required in-host validation plan for the completed nine-part impleme
 
 ## Candidate generation and simulation
 - Unassessed risk must be labeled NOT_ASSESSED and omitted from score penalty, never displayed as zero risk.
+- Candidate and proposal ID sets must contain unique, non-empty identifiers; candidate target and affected-element sets cannot be empty.
+- Proposal count fields must exactly match their corresponding resolved/new/critical/missing/affected ID arrays; tampered counts must be rejected before ranking.
 - Six translation candidates for each side of a clash.
 - Target clash resolution, remaining clashes, introduced clashes.
 - Exact mesh simulation against every other inventory element.
