@@ -10,7 +10,7 @@ APIs:
 - `AT_ClashManager.scan jurisdiction:<string>`, `counts`, `selectClash index`, `setTracking clashId owner:<string> status:<string> dueDate:<string> note:<string>`, `filteredClashIndices`
 - `AT_CoordinationGovernance.approve candidate simulation approver reason approvalDate`
 - `AT_CoordinationGovernance.applyTranslation proposalId nodeRef offset transactionId` or `applyRotation proposalId nodeRef axis angleDegrees pivot transactionId`
-- `AT_CoordinationGovernance.rollback transactionId reason`
+- `AT_CoordinationGovernance.rollback transactionId reason`; the Clash Manager exposes a rollback action with transaction ID and required reason.
 - `AT_CoordinationProjectStore.save path` and `load path` persist project rule/mapping/tracking/integration/audit state; active approvals and transactions are cleared on load.
 
 ## Safety limits
