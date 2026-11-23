@@ -16,6 +16,7 @@ struct AT_CoordinationSelfTestsStruct (
   local savedGeometryResults=AT_ExactGeometryEngine.lastResults
   local savedGeometryErrors=AT_ExactGeometryEngine.lastErrors
   local savedRules=AT_RuleEngine.rules
+  local savedRequiredCheckTypes=AT_RuleEngine.requiredCheckTypes
   local savedRuleEvaluations=AT_RuleEngine.lastEvaluations
   local savedRuleErrors=AT_RuleEngine.lastErrors
   local savedMoveCandidates=AT_CoordinationSolutionGenerator.lastCandidates
@@ -99,6 +100,7 @@ struct AT_CoordinationSelfTestsStruct (
   AT_ExactGeometryEngine.lastResults=savedGeometryResults
   AT_ExactGeometryEngine.lastErrors=savedGeometryErrors
   AT_RuleEngine.rules=savedRules
+  AT_RuleEngine.requiredCheckTypes=savedRequiredCheckTypes
   AT_RuleEngine.lastEvaluations=savedRuleEvaluations
   AT_RuleEngine.lastErrors=savedRuleErrors
   AT_CoordinationSolutionGenerator.lastCandidates=savedMoveCandidates
