@@ -112,6 +112,11 @@ struct AT_ClashManagerStruct (
   if lastScanRuleRevision!=AT_RuleEngine.registryRevision or jurisdiction!=lastScanJurisdiction or (AT_RuleEngine.requiredCheckTypes as string)!=(lastScanRequiredChecks as string) then (lastError="RULES_OR_JURISDICTION_CHANGED_RESCAN_REQUIRED"; return undefined)
   if lastDisciplineMappingRevision!=AT_DisciplineAdapter.mappingRevision or lastDisciplineMetadataRevision!=AT_DisciplineAdapter.metadataRevision then (lastError="DISCIPLINE_METADATA_CHANGED_RESCAN_REQUIRED"; return undefined)
   local action=actions[index]
+  local movingId=action.affectedElementIds[1]
+  for missing in lastRuleMissingPairs where missing[1]==movingId or missing[2]==movingId do (
+   lastError="RULE_MISSING_FOR_AFFECTED_ELEMENT: "+missing[3]+" | "+missing[4]
+   return undefined
+  )
   local clash=undefined
   for c in clashes where c.clashId==action.targetClashIds[1] do clash=c
   if clash==undefined then return undefined
