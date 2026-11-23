@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0 - Coordination Solution Engine foundation
+- Added deterministic evaluation and ranking of structured coordination proposals.
+- Blocked ineligible proposals with critical violations, missing required rules, or newly introduced clashes.
+- Added configurable scoring weights and stable tie-breaking by proposal ID.
+- Kept evaluation read-only; no automatic geometry changes or engineering approvals.
+- Added module documentation and static validation coverage.
+- Updated core version to 0.5.0.
+
 ## 0.4.0 - Project Material & Map Manager
 - Added project-aware MAPS folder configuration persisted per project.
 - Added revision filename normalization for REV/REVISION numbered suffixes.
