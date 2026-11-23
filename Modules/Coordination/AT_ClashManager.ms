@@ -39,8 +39,15 @@ struct AT_ClashManagerStruct (
   true
  ),
  fn scan requiredClearance:0.0 = (
+  AT_DisciplineAdapter.inspect()
   AT_ExactGeometryEngine.inspect()
   local found=AT_ExactGeometryEngine.detectClashes requiredClearance:requiredClearance
+  for clash in found do (
+   for element in AT_DisciplineAdapter.lastInventory do (
+    if element.elementId==clash.elementA then (clash.nameA=element.nodeName; clash.disciplineA=element.discipline)
+    if element.elementId==clash.elementB then (clash.nameB=element.nodeName; clash.disciplineB=element.discipline)
+   )
+  )
   load found
   found
  ),
@@ -53,7 +60,7 @@ struct AT_ClashManagerStruct (
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
    on btnScan pressed do (
     local found=AT_ClashManager.scan()
-    lbClashes.items=for c in found collect (c.status+" | "+c.elementA+" <> "+c.elementB+" | d="+(formattedPrint c.minimumDistance format:".4f"))
+    lbClashes.items=for c in found collect (c.status+" | "+c.disciplineA+":"+c.nameA+" <> "+c.disciplineB+":"+c.nameB+" | d="+(formattedPrint c.minimumDistance format:".4f"))
     lblSummary.text=found.count as string+" clashes | exact mesh surface analysis"
    )
    on btnSelect pressed do AT_ClashManager.selectClash lbClashes.selection
