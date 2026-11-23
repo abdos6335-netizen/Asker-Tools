@@ -103,6 +103,12 @@ struct AT_CoordinationSelfTestsStruct (
    local parallelGap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [10,0,0] [5,2,0] [15,2,0]
    addResult results "PARALLEL_OVERLAPPING_SEGMENTS_ZERO_DISTANCE" (parallelOverlap<=1.0e-8) parallelOverlap 0.0
    addResult results "PARALLEL_SEPARATED_SEGMENTS_DISTANCE" (abs(parallelGap-4.0)<=1.0e-8) parallelGap 4.0
+   local pointOnSegment=AT_ExactGeometryEngine.pointSegmentDistanceSquared [1,1,0] [0,0,0] [2,0,0]
+   local pointOnDegenerate=AT_ExactGeometryEngine.pointSegmentDistanceSquared [1,0,0] [0,0,0] [0,0,0]
+   local skewDistance=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [1,0,0] [0.5,-1,1] [0.5,1,1]
+   addResult results "POINT_TO_SEGMENT_PERPENDICULAR_DISTANCE" (abs(pointOnSegment-1.0)<=1.0e-8) pointOnSegment 1.0
+   addResult results "POINT_TO_DEGENERATE_SEGMENT_DISTANCE" (abs(pointOnDegenerate-1.0)<=1.0e-8) pointOnDegenerate 1.0
+   addResult results "SKEW_SEGMENT_INTERIOR_DISTANCE" (abs(skewDistance-1.0)<=1.0e-8) skewDistance 1.0
 
    local unitResult=AT_UnitConversionEngine.toSystemUnits 100.0 "mm"
    addResult results "MILLIMETER_TO_MASTER_UNIT_CONVERSION" (unitResult.valid and abs(unitResult.systemValue-3.937007874)<0.001) unitResult.systemValue 3.937007874
