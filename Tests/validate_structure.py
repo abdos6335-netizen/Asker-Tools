@@ -14,6 +14,7 @@ required = [
     'Modules/Coordination/AT_CoordinationGeometryAdapter.ms',
     'Modules/Coordination/AT_ExactGeometryEngine.ms',
     'Modules/Coordination/AT_DisciplineAdapter.ms',
+    'Modules/Coordination/AT_DisciplineManager.ms',
     'Modules/Coordination/AT_RuleEngine.ms',
     'Modules/Coordination/AT_RuleManager.ms',
     'Modules/Coordination/AT_UnitConversionEngine.ms',
