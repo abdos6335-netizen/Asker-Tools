@@ -60,15 +60,16 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Confirm audit sequence and transaction state transitions.
 
 ## Project persistence
-- Save and reload rules, required check types, clash tracking, integration history and audit history.
+- Save and reload rules, required check types, discipline mappings, element clearance/envelope metadata, clash tracking, integration revision tokens/history and audit history.
 - Reject unsupported schema versions, invalid/duplicate tracking IDs and malformed rule records without replacing the prior in-memory project state.
 - Verify backup creation and recovery when destination replacement fails.
 - Confirm active approvals and scene transactions are cleared on project load and must be re-approved.
+- Confirm a single approval cannot be applied twice; rollback does not re-arm it.
 
 ## Integrations and reports
 - Missing provider, unsupported capability, missing revision, provider exception.
 - Revision mismatch and stale sync token behavior.
-- CSV escaping for commas, quotes, Unicode and newlines; file permission errors.
+- UTF-8 CSV escaping for commas, quotes, Unicode, CR/LF and file permission errors.
 - Verify clash/proposal report counts and values against source records.
 
 ## Version matrix
