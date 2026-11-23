@@ -105,9 +105,9 @@ struct AT_ExactGeometryEngineStruct (
   record.minimum=bounds[1]; record.maximum=bounds[2]
   for faceIndex=1 to faceTotal do (
    local face=getFace meshValue faceIndex
-   local p1=(getVert meshValue face.x)*node.transform
-   local p2=(getVert meshValue face.y)*node.transform
-   local p3=(getVert meshValue face.z)*node.transform
+   local p1=getVert meshValue face.x
+   local p2=getVert meshValue face.y
+   local p3=getVert meshValue face.z
    append record.triangles (makeTriangle p1 p2 p3 faceIndex)
   )
   record
