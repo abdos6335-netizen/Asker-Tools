@@ -10,7 +10,7 @@ struct AT_DisciplineElement (
     installationEnvelope=undefined, metadata=#(), warnings=#()
 )
 struct AT_DisciplineEnvelopeOverride (
-    elementId="", requiredClearance=undefined, serviceEnvelope=undefined, installationEnvelope=undefined
+    elementId="", requiredClearance=undefined, serviceClearance=undefined, installationClearance=undefined, serviceEnvelope=undefined, installationEnvelope=undefined
 )
 struct AT_DisciplineMapping (
     matchKind="USER_PROPERTY", matchValue="", discipline="UNKNOWN",
@@ -44,6 +44,8 @@ struct AT_DisciplineAdapterStruct (
         local override=findEnvelopeOverride element.elementId
         if override!=undefined then (
             if override.requiredClearance!=undefined then element.requiredClearance=override.requiredClearance
+            if override.serviceClearance!=undefined then element.serviceClearance=override.serviceClearance
+            if override.installationClearance!=undefined then element.installationClearance=override.installationClearance
             if override.serviceEnvelope!=undefined then element.serviceEnvelope=override.serviceEnvelope
             if override.installationEnvelope!=undefined then element.installationEnvelope=override.installationEnvelope
         )
@@ -113,16 +115,16 @@ struct AT_DisciplineAdapterStruct (
         if override==undefined then return false
         local idx=findItem envelopeOverrides override
         if idx>0 do deleteItem envelopeOverrides idx
-        for e in lastInventory where e.elementId==elementId do (e.requiredClearance=undefined; e.serviceEnvelope=undefined; e.installationEnvelope=undefined)
+        for e in lastInventory where e.elementId==elementId do (e.requiredClearance=undefined; e.serviceClearance=undefined; e.installationClearance=undefined; e.serviceEnvelope=undefined; e.installationEnvelope=undefined)
         metadataRevision+=1
         true
     ),
-    fn setEnvelope elementId requiredClearance:undefined serviceEnvelope:undefined installationEnvelope:undefined = (
+    fn setEnvelope elementId requiredClearance:undefined serviceClearance:undefined installationClearance:undefined serviceEnvelope:undefined installationEnvelope:undefined = (
         local target=undefined
         for e in lastInventory where e.elementId==elementId do target=e
         if target==undefined then return false
-        if requiredClearance==undefined and serviceEnvelope==undefined and installationEnvelope==undefined then return false
-        if requiredClearance!=undefined and ((classOf requiredClearance!=Integer and classOf requiredClearance!=Float) or requiredClearance<0) then return false
+        if requiredClearance==undefined and serviceClearance==undefined and installationClearance==undefined and serviceEnvelope==undefined and installationEnvelope==undefined then return false
+        for value in #(requiredClearance,serviceClearance,installationClearance) where value!=undefined do if (classOf value!=Integer and classOf value!=Float) or value<0 then return false
         local override=findEnvelopeOverride elementId
         if override==undefined then (override=AT_DisciplineEnvelopeOverride elementId:elementId; append envelopeOverrides override)
         if requiredClearance!=undefined then (
