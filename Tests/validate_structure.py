@@ -59,7 +59,7 @@ checks = {
     'Modules/Coordination/AT_ClashManager.ms': ['fn load', 'fn counts', 'fn selectClash', 'fn setTracking', 'fn getTracking', 'fn scan', 'fn show', 'btnSave', 'UNDER_REVIEW', 'Detect Exact Mesh Clashes', 'AT_DisciplineAdapter.inspect'],
     'Modules/Coordination/AT_CoordinationGovernance.ms': ['fn approve', 'fn applyTranslation', 'fn rollback', 'FAILED_ROLLED_BACK', 'APPLY_BLOCKED_STALE_SCENE', 'ROLLBACK_BLOCKED_SCENE_CHANGED'],
     'Modules/Coordination/AT_CoordinationIntegrations.ms': ['fn register', 'fn exchange', 'SOURCE_REVISION_REQUIRED', 'CAPABILITY_NOT_SUPPORTED', 'REVISION_CONFLICT', 'expectedPreviousRevision'],
-    'Modules/Coordination/AT_CoordinationReports.ms': ['fn buildClashRows', 'fn buildProposalRows', 'fn exportCSV', 'csvEscape'],
+    'Modules/Coordination/AT_CoordinationReports.ms': ['fn buildClashRows', 'fn buildProposalRows', 'fn buildClearanceRows', 'fn buildDisciplineRows', 'fn buildTrackingRows', 'fn buildApprovalRows', 'fn buildRevisionRows', 'fn buildAuditRows', 'fn exportCSV', 'csvEscape'],
 }
 for rel, tokens in checks.items():
     source = (ROOT / rel).read_text(encoding='utf-8')
