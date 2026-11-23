@@ -19,6 +19,8 @@ required = [
     'Modules/Coordination/AT_CoordinationSolutionGenerator.ms',
     'Modules/Coordination/AT_ClashManager.ms',
     'Modules/Coordination/AT_CoordinationGovernance.ms',
+    'Modules/Coordination/AT_CoordinationIntegrations.ms',
+    'Modules/Coordination/AT_CoordinationReports.ms',
     'Documentation/Modules/MATERIAL_MANAGER.md',
     'Documentation/Modules/SCENE_MANAGER.md',
     'Documentation/Modules/ASSET_MANAGER.md',
@@ -51,6 +53,8 @@ checks = {
     'Modules/Coordination/AT_CoordinationSolutionGenerator.ms': ['fn generateTranslations', 'separationOffset', 'requiresEngineeringApproval=true'],
     'Modules/Coordination/AT_ClashManager.ms': ['fn load', 'fn counts', 'fn selectClash', 'fn setTracking'],
     'Modules/Coordination/AT_CoordinationGovernance.ms': ['fn approve', 'fn applyTranslation', 'fn rollback', 'FAILED_ROLLED_BACK'],
+    'Modules/Coordination/AT_CoordinationIntegrations.ms': ['fn register', 'fn exchange', 'SOURCE_REVISION_REQUIRED', 'CAPABILITY_NOT_SUPPORTED'],
+    'Modules/Coordination/AT_CoordinationReports.ms': ['fn buildClashRows', 'fn buildProposalRows', 'fn exportCSV', 'csvEscape'],
 }
 for rel, tokens in checks.items():
     source = (ROOT / rel).read_text(encoding='utf-8')
