@@ -214,6 +214,12 @@ struct AT_ClashManagerStruct (
     editText edtTransactionId "Transaction ID" text:"" width:300
     button btnApply "Apply Approved Action" width:180 height:26
    )
+   group "CSV reports" (
+    editText edtReportPath "CSV output path" text:"" width:580
+    button btnExportClashes "Export Clash Report" width:180 height:26
+    button btnExportMissing "Export Missing Rules" width:180 height:26
+    button btnExportTracking "Export Tracking and Audit" width:220 height:26
+   )
    group "Project data persistence" (
     editText edtStorePath "Project XML path" text:"" width:580
     button btnSaveProject "Save Project Data" width:180 height:26
@@ -225,6 +231,21 @@ struct AT_ClashManagerStruct (
     editText edtDue "Due date" text:"" width:300
     editText edtNote "Note" text:"" width:580
     button btnSave "Save clash tracking" width:180 height:26
+   )
+   on btnExportClashes pressed do (
+    local rows=AT_CoordinationReports.buildClashRows AT_ClashManager.clashes
+    local ok=AT_CoordinationReports.exportCSV rows edtReportPath.text
+    lblSummary.text=if ok then "Clash CSV exported" else "Clash CSV export failed"
+   )
+   on btnExportMissing pressed do (
+    local rows=AT_CoordinationReports.buildRuleMissingRows AT_ClashManager.lastRuleMissingPairs
+    local ok=AT_CoordinationReports.exportCSV rows edtReportPath.text
+    lblSummary.text=if ok then "Missing-rule CSV exported" else "Missing-rule CSV export failed"
+   )
+   on btnExportTracking pressed do (
+    local rows=AT_CoordinationReports.buildTrackingRows AT_ClashManager.tracking
+    local ok=AT_CoordinationReports.exportCSV rows edtReportPath.text
+    lblSummary.text=if ok then "Tracking CSV exported" else "Tracking CSV export failed"
    )
    on btnSaveProject pressed do (
     local ok=AT_CoordinationProjectStore.save edtStorePath.text
