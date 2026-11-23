@@ -12,6 +12,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Closed-mesh ray parity deduplication uses a tighter scale-aware hit tolerance; distinct nearby surface crossings must remain distinct.
 - Parallel, collinear segment pairs with overlapping projections must return zero distance; parallel separated segments must return the perpendicular gap.
 - Point-to-segment checks cover perpendicular projection, zero-length segments, and skew segment pairs with an interior closest point.
+- Triangle-to-triangle distance checks cover parallel offset surfaces and coplanar separated triangles with known exact squared distances.
 - Rotated, concave, hollow, open, edge-non-manifold, vertex-non-manifold and nested meshes.
 - Disconnected closed shells inside one mesh object must not be treated as one connected solid for containment; report containment as unverified.
 - Fully contained closed meshes with no surface intersection (must be detected or explicitly reported unsupported).
