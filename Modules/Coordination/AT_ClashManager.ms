@@ -123,12 +123,10 @@ struct AT_ClashManagerStruct (
  ),
  fn approveAlternative index approver reason approvalDate = (
   if index<1 or index>lastSimulations.count or index>lastSimulationCandidates.count then return false
-  if not validateCurrentScene jurisdiction:lastScanJurisdiction then return false
   AT_CoordinationGovernance.approve lastSimulationCandidates[index] lastSimulations[index] approver reason approvalDate
  ),
  fn applyAlternative index transactionId = (
   if index<1 or index>lastSimulationCandidates.count then return undefined
-  if not validateCurrentScene jurisdiction:lastScanJurisdiction then return undefined
   local candidate=lastSimulationCandidates[index]
   if candidate==undefined or candidate.affectedElementIds.count!=1 then return undefined
   local node=getNodeByHandle (candidate.affectedElementIds[1] as integer)
