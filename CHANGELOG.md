@@ -1,3 +1,9 @@
+# Coordination geometry SAT hardening — 2026-11-23
+- Normalized usable separating axes before projection, making the SAT epsilon a world-space distance instead of an axis-magnitude-dependent value.
+- Replaced the absolute near-zero-axis cutoff with per-axis thresholds relative to the originating edge/normal magnitudes, improving behavior for tiny, long-thin and non-uniformly scaled triangles.
+- Tightened closed-mesh ray-hit deduplication from 1e-6 to a scale-aware 1e-9 tolerance to reduce accidental merging of distinct nearby crossings.
+- Added in-host regression coverage for coplanar overlap/separation, vertex/edge touch, near-parallel separation, tiny triangles and high-aspect-ratio overlap. MAXScript runtime validation remains pending inside 3ds Max.
+
 # Coordination geometry regression coverage — 2026-11-23
 - Extended the segment-distance regression suite with point-to-segment perpendicular distance, zero-length segment handling, and skew segments whose closest points lie in both segment interiors.
 
