@@ -52,8 +52,12 @@ struct AT_DisciplineAdapterStruct (
     fn findMapping node = (
         local userDiscipline=""
         try (userDiscipline=getUserProp node "AT_DISCIPLINE") catch()
-        if classOf userDiscipline==String and userDiscipline!="" and validDiscipline userDiscipline do
-            for m in mappings where m.matchKind=="USER_PROPERTY" and m.matchValue==toUpper userDiscipline do return m
+        if classOf userDiscipline==String and userDiscipline!="" then (
+            if validDiscipline userDiscipline then (
+                for m in mappings where m.matchKind=="USER_PROPERTY" and m.matchValue==toUpper userDiscipline do return m
+                return (AT_DisciplineMapping matchKind:"USER_PROPERTY" matchValue:(toUpper userDiscipline) discipline:(toUpper userDiscipline) sourceLabel:"NODE_USER_PROPERTY")
+            ) else return undefined
+        )
         local layerName=""
         try (layerName=node.layer.name) catch()
         for m in mappings where m.matchKind=="LAYER" and m.matchValue==layerName do return m
@@ -71,7 +75,11 @@ struct AT_DisciplineAdapterStruct (
         if m!=undefined then (
             e.discipline=m.discipline; e.elementType=m.elementType
             e.source=m.sourceLabel; e.sourceRevision=m.revision
-        ) else append e.warnings "DISCIPLINE_MAPPING_MISSING"
+        ) else (
+            local userDiscipline=""
+            try (userDiscipline=getUserProp node "AT_DISCIPLINE") catch()
+            append e.warnings (if userDiscipline!="" then "INVALID_AT_DISCIPLINE_USER_PROPERTY" else "DISCIPLINE_MAPPING_MISSING")
+        )
         applyEnvelopeOverride e
         try (
             local b=nodeGetBoundingBox node node.objectTransform
