@@ -273,7 +273,7 @@ struct AT_ClashManagerStruct (
     button btnRollback "Rollback Applied Action" width:200 height:26
    )
    group "CSV reports" (
-    editText edtReportPath "CSV output path" text:"" width:580
+    editText edtReportPath "CSV / HTML output path" text:"" width:580
     button btnExportClashes "Export Clash Report" width:180 height:26
     button btnExportGeometryErrors "Export Geometry Errors" width:200 height:26
     button btnExportDisciplineErrors "Export Discipline Errors" width:220 height:26
@@ -282,6 +282,7 @@ struct AT_ClashManagerStruct (
     button btnExportAudit "Export Audit History" width:200 height:26
     button btnExportApprovals "Export Approved Solutions" width:210 height:26
     button btnExportProposals "Export Proposal Results" width:210 height:26
+    button btnExportHTML "Export Printable Full Report (HTML / PDF-ready)" width:300 height:28
    )
    group "Internal QA" (
     button btnSelfTests "Run Non-Destructive Internal Self-Tests" width:270 height:28
@@ -297,6 +298,10 @@ struct AT_ClashManagerStruct (
     editText edtDue "Due date" text:"" width:300
     editText edtNote "Note" text:"" width:580
     button btnSave "Save clash tracking" width:180 height:26
+   )
+   on btnExportHTML pressed do (
+    local ok=AT_CoordinationReports.exportFullHTML edtReportPath.text
+    lblSummary.text=if ok then "Printable HTML report exported; open it in a browser and Print to PDF" else "HTML report export failed; inspect CoordinationReports.lastErrors"
    )
    on btnExportClashes pressed do (
     local rows=AT_CoordinationReports.buildClashRows AT_ClashManager.clashes
