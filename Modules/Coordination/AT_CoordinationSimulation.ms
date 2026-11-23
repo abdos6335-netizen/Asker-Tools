@@ -3,7 +3,7 @@
 */
 global AT_CoordinationSimulation
 struct AT_CoordinationSimulationResult (
- simulationId="", movingElementId="", offset=[0,0,0], validated=false, status="NOT_RUN",
+ simulationId="", movingElementId="", offset=[0,0,0], targetClashIds=#(), validated=false, status="NOT_RUN",
  resolvedClashIds=#(), introducedClashIds=#(), remainingClashIds=#(),
  ruleMissingIds=#(), criticalViolationIds=#(), affectedElementIds=#(),
  beforeCount=0, afterCount=0, diagnostics=#()
@@ -28,10 +28,11 @@ struct AT_CoordinationSimulationStruct (
   )
   ids
  ),
- fn simulateTranslation records movingElementId offset requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
+ fn simulateTranslation records movingElementId offset targetClashId:"" requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
   local result=AT_CoordinationSimulationResult()
   result.simulationId=if simulationId=="" then ("SIM_"+movingElementId) else simulationId
   result.movingElementId=movingElementId; result.offset=offset
+  if targetClashId!="" do append result.targetClashIds targetClashId
   result.criticalViolationIds=criticalViolationIds
   for c in ruleChecks where c.status!="RULE_FOUND" do appendIfUnique result.ruleMissingIds (if c.ruleId=="" then c.reason else c.ruleId)
   if result.ruleMissingIds.count>0 then (result.status="BLOCKED_RULE_MISSING"; append result.diagnostics "One or more required rules are missing or unapproved"; append lastResults result; return result)
@@ -49,15 +50,18 @@ struct AT_CoordinationSimulationStruct (
   for id in after where (findItem before id)==0 do append result.introducedClashIds id
   for id in after do append result.remainingClashIds id
   result.affectedElementIds= #(movingElementId)
-  result.validated=true
-  result.status=if result.introducedClashIds.count==0 then "EXACT_GEOMETRY_SIMULATION_PASSED" else "NEW_CLASHES_INTRODUCED"
+  local targetResolved=(targetClashId!="" and (findItem after targetClashId)==0 and (findItem before targetClashId)>0)
+  if result.introducedClashIds.count>0 then result.status="NEW_CLASHES_INTRODUCED"
+  else if targetClashId=="" then result.status="TARGET_CLASH_ID_REQUIRED"
+  else if not targetResolved then result.status="TARGET_CLASH_REMAINS"
+  else (result.validated=true; result.status="EXACT_GEOMETRY_SIMULATION_PASSED")
   append lastResults result
   result
  ),
  fn toProposalCandidate simulation description:"Exact geometry simulation result" risk:0.0 = (
   local c=AT_CoordinationActionCandidate()
   c.actionId=simulation.simulationId; c.description=description
-  c.targetClashIds=simulation.resolvedClashIds+simulation.remainingClashIds
+  c.targetClashIds=simulation.targetClashIds
   c.resolvedClashIds=simulation.resolvedClashIds
   c.introducedClashIds=simulation.introducedClashIds
   c.criticalViolationIds=simulation.criticalViolationIds
