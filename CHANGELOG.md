@@ -1,3 +1,7 @@
+# Coordination geometry scale handling — 2026-11-23
+- Replaced fixed absolute face-area and segment-length degeneracy cutoffs with scale-relative tests, so small but well-shaped geometry is not silently discarded as degenerate.
+- Added tiny-segment point-distance and parallel-overlap regression cases.
+
 # Coordination geometry SAT hardening — 2026-11-23
 - Normalized usable separating axes before projection, making the SAT epsilon a world-space distance instead of an axis-magnitude-dependent value.
 - Replaced the absolute near-zero-axis cutoff with per-axis thresholds relative to the originating edge/normal magnitudes, improving behavior for tiny, long-thin and non-uniformly scaled triangles.
