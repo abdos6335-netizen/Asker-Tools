@@ -21,7 +21,7 @@ Rule records are explicit and versionable. The approved source hierarchy is:
 4. Project/contract specifications.
 5. Asker Tools defaults only when no higher approved rule exists.
 
-Only approved rules are eligible for selection. The engine first identifies the highest-priority matching source; if that source is unapproved, lower-priority rules cannot silently override it and the result is `RULE_MISSING`. A missing rule returns a reason; no fallback numeric value is fabricated. Selection uses the highest-priority approved source among matching discipline pairs and check type. Jurisdiction is filtered when supplied.
+Only approved rules are eligible for selection. The engine first identifies the highest-priority matching source; if that source is unapproved, lower-priority rules cannot silently override it and the result is `RULE_MISSING`. A missing rule returns a reason; no fallback numeric value is fabricated. Selection uses the highest-priority approved source among matching discipline pairs and check type. Jurisdiction-specific rules are excluded unless the caller supplies the matching jurisdiction. Within the same source tier, more specific discipline-pair and jurisdiction rules take precedence. Conflicting rules at equal priority return `CONFLICTING_SAME_PRIORITY_RULES`; the engine never chooses one arbitrarily.
 
 API: `registerRule`, `removeRule`, `evaluate`, `evaluateBatch`, `clearEvaluations`, `clearAll`.
 
