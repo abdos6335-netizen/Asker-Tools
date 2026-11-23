@@ -374,7 +374,7 @@ struct AT_ClashManagerStruct (
     )
    )
    on btnSetChecks pressed do (
-    local checkTypes=filterString edtRequiredChecks.text ";"
+    local checkTypes=filterString edtRequiredChecks.text "; "
     local ok=AT_RuleEngine.setRequiredCheckTypes checkTypes
     lblSummary.text=if ok then "Required project checks configured" else "Invalid required check type list"
    )
