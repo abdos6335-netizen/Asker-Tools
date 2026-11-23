@@ -52,12 +52,14 @@ struct AT_DisciplineAdapterStruct (
     fn findMapping node = (
         local userDiscipline=""
         try (userDiscipline=getUserProp node "AT_DISCIPLINE") catch()
-        if userDiscipline!=undefined and userDiscipline!="" then (
+        if userDiscipline!=undefined then (
             if classOf userDiscipline!=String then return undefined
-            if validDiscipline userDiscipline then (
-                for m in mappings where m.matchKind=="USER_PROPERTY" and m.matchValue==toUpper userDiscipline do return m
-                return (AT_DisciplineMapping matchKind:"USER_PROPERTY" matchValue:(toUpper userDiscipline) discipline:(toUpper userDiscipline) sourceLabel:"NODE_USER_PROPERTY")
-            ) else return undefined
+            if userDiscipline!="" then (
+                if validDiscipline userDiscipline then (
+                    for m in mappings where m.matchKind=="USER_PROPERTY" and m.matchValue==toUpper userDiscipline do return m
+                    return (AT_DisciplineMapping matchKind:"USER_PROPERTY" matchValue:(toUpper userDiscipline) discipline:(toUpper userDiscipline) sourceLabel:"NODE_USER_PROPERTY")
+                ) else return undefined
+            )
         )
         local layerName=""
         try (layerName=node.layer.name) catch()
@@ -79,7 +81,12 @@ struct AT_DisciplineAdapterStruct (
         ) else (
             local userDiscipline=""
             try (userDiscipline=getUserProp node "AT_DISCIPLINE") catch()
-            append e.warnings (if userDiscipline!=undefined and userDiscipline!="" then "INVALID_AT_DISCIPLINE_USER_PROPERTY" else "DISCIPLINE_MAPPING_MISSING")
+            local invalidUserProp=false
+            if userDiscipline!=undefined then (
+                if classOf userDiscipline!=String then invalidUserProp=true
+                else if userDiscipline!="" and not validDiscipline userDiscipline then invalidUserProp=true
+            )
+            append e.warnings (if invalidUserProp then "INVALID_AT_DISCIPLINE_USER_PROPERTY" else "DISCIPLINE_MAPPING_MISSING")
         )
         applyEnvelopeOverride e
         try (
