@@ -31,6 +31,12 @@ struct AT_DisciplineAdapterStruct (
         mappingRevision+=1
         true
     ),
+    fn removeMapping index = (
+        if index<1 or index>mappings.count then return false
+        deleteItem mappings index
+        mappingRevision+=1
+        true
+    ),
     fn clearMappings = (mappings=#(); mappingRevision+=1; true),
     fn findEnvelopeOverride elementId = (for item in envelopeOverrides where item.elementId==elementId do return item; undefined),
     fn applyEnvelopeOverride element = (
