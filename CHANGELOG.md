@@ -1,3 +1,7 @@
+# Coordination project integration-state validation — 2026-11-23
+- Project loading now rejects incomplete or duplicate persisted integration IDs before mutating live integration state, preventing ambiguous token restoration.
+- Added the rejection marker to static validation and the project persistence QA matrix.
+
 # Coordination project backup recovery — 2026-11-23
 - Added an explicit project backup recovery operation. It validates the backup XML root and schema before replacement, keeps the original backup intact, and moves the previous active project to a pre-restore file.
 - Recovery failures are reported and temporary files are cleaned up without intentionally overwriting the active project.
