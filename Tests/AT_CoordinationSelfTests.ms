@@ -35,6 +35,7 @@ struct AT_CoordinationSelfTestsStruct (
   local savedIntegrationRegistry=AT_CoordinationIntegrations.registry
   local savedIntegrationHistory=AT_CoordinationIntegrations.syncHistory
   local savedIntegrationErrors=AT_CoordinationIntegrations.lastErrors
+  local savedPendingIntegrationTokens=AT_CoordinationProjectStore.pendingIntegrationTokens
   lastErrors=#()
   try (
    local overlapA=box length:10 width:10 height:10 pos:[0,0,0]
@@ -173,6 +174,7 @@ struct AT_CoordinationSelfTestsStruct (
    AT_CoordinationIntegrations.registry=savedIntegrationRegistry
    AT_CoordinationIntegrations.syncHistory=savedIntegrationHistory
    AT_CoordinationIntegrations.lastErrors=savedIntegrationErrors
+   AT_CoordinationProjectStore.pendingIntegrationTokens=savedPendingIntegrationTokens
 
    local qaEnvelopeA=AT_DisciplineElement elementId:"QA_ENVELOPE_A" discipline:"HVAC"
    local qaEnvelopeB=AT_DisciplineElement elementId:"QA_ENVELOPE_B" discipline:"STRUCTURE"
@@ -269,6 +271,7 @@ struct AT_CoordinationSelfTestsStruct (
   AT_CoordinationIntegrations.registry=savedIntegrationRegistry
   AT_CoordinationIntegrations.syncHistory=savedIntegrationHistory
   AT_CoordinationIntegrations.lastErrors=savedIntegrationErrors
+  AT_CoordinationProjectStore.pendingIntegrationTokens=savedPendingIntegrationTokens
   lastResults=results
   results
  ),
