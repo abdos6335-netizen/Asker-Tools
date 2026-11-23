@@ -3,10 +3,14 @@
 ## 0.6.0 - Coordination Engine implementation milestone
 - Added explicit metadata-driven adapters for the eight coordination disciplines; unmapped elements remain UNKNOWN.
 - Added approved engineering rule lookup with mandatory-code, authority, manufacturer, project, and default source priority.
-- Added deterministic six-direction translation candidate generation and non-destructive triangle-mesh simulation.
+- Added deterministic six-direction translation and three-axis pivot-rotation candidate generation with non-destructive transformed-mesh simulation.
+- Added closed-manifold mesh containment detection, open/non-manifold containment warnings, and degenerate-face handling.
+- Added per-element and rule-derived pair clearances with explicit conversion to 3ds Max master units.
+- Added jurisdiction-required rule resolution, same-priority conflict detection, and rule-revision invalidation of stale scans/approvals.
+- Added a project Rule Manager UI, Clash Manager simulation/approval/apply workflow, XML project persistence, and an in-host self-test harness.
 - Added clash review/tracking, explicit approval gates, translation apply and rollback transaction records.
-- Added revision-aware integration contracts and clash/proposal CSV reporting.
-- Added source-level validation markers and module documentation; MAXScript runtime validation remains pending.
+- Added revision-aware integration contracts and expanded clash, clearance, discipline, tracking, approval, audit and critical-issue CSV report builders.
+- Added source-level validation markers and an in-host QA matrix; MAXScript runtime validation remains pending.
 - Updated core version to 0.6.0.
 
 ## 0.5.0 - Coordination Solution Engine foundation
