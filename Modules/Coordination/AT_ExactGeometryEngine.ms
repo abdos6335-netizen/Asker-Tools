@@ -130,7 +130,7 @@ struct AT_ExactGeometryEngineStruct (
  ),
  fn buildMeshRecord node = (
   local record=AT_ExactMeshRecord()
-  record.nodeRef=node; record.sourceTransform=node.transform; record.sourcePivot=node.pivot; record.elementId=idForNode node; record.nodeName=node.name
+  record.nodeRef=node; record.sourceTransform=node.objectTransform; record.sourcePivot=node.pivot; record.elementId=idForNode node; record.nodeName=node.name
   local meshValue=snapshotAsMesh node
   if meshValue==undefined then throw "MESH_SNAPSHOT_FAILED"
   local faceTotal=getNumFaces meshValue; record.faceCount=faceTotal
