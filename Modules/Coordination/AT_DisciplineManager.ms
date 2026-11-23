@@ -77,7 +77,7 @@ struct AT_DisciplineManagerStruct (
      local element=AT_DisciplineAdapter.lastInventory[index]
      ddlUnit.selection=1
      edtClearance.text=""; edtServiceClearance.text=""; edtInstallationClearance.text=""
-     lblEnvelopeUnits.text="Existing master units — General: "+AT_DisciplineManager.displayClearance element.requiredClearance+" | Service: "+AT_DisciplineManager.displayClearance element.serviceClearance+" | Installation: "+AT_DisciplineManager.displayClearance element.installationClearance
+     lblEnvelopeUnits.text="Existing master units — General: "+(AT_DisciplineManager.displayClearance element.requiredClearance)+" | Service: "+(AT_DisciplineManager.displayClearance element.serviceClearance)+" | Installation: "+(AT_DisciplineManager.displayClearance element.installationClearance)
      edtService.text=if element.serviceEnvelope==undefined then "" else (element.serviceEnvelope as string)
      edtInstallation.text=if element.installationEnvelope==undefined then "" else (element.installationEnvelope as string)
     )
