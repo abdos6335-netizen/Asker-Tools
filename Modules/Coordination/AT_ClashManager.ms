@@ -189,6 +189,7 @@ struct AT_ClashManagerStruct (
   rollout AT_ClashManagerRollout "Asker Tools | Clash Manager" width:760 height:900 (
    button btnScan "Detect Exact Mesh Clashes" width:190 height:28 align:#left
    button btnRules "Manage Project Rules" width:190 height:28 align:#left
+   button btnDisciplines "Manage Disciplines and Envelopes" width:230 height:28 align:#left
    label lblSummary "Ready" align:#left
    label lblCounts "CRITICAL 0 | HIGH 0 | MEDIUM 0 | LOW 0 | INFO 0" align:#left
    label lblRuleMissing "Missing rule checks: 0" align:#left
@@ -230,6 +231,7 @@ struct AT_ClashManagerStruct (
     if ok then (lbClashes.items=#(); lbSolutions.items=#(); lblCounts.text=AT_ClashManager.countsLabel(); lblRuleMissing.text="Missing rule checks: 0")
    )
    on btnRules pressed do AT_RuleManager.show()
+   on btnDisciplines pressed do AT_DisciplineManager.show()
    on btnScan pressed do (
     local found=AT_ClashManager.scan jurisdiction:edtJurisdiction.text
     lbClashes.items=for c in found collect (AT_ClashManager.clashLabel c)
