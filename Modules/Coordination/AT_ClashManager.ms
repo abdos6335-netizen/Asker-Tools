@@ -4,7 +4,7 @@
 global AT_ClashManager
 struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", note="", severity="INFORMATION")
 struct AT_ClashManagerStruct (
- version="0.2.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(),
+ version="0.2.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(),
  fn severityFor clash = (
   if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH"
   else if clash.status=="CLEARANCE_VIOLATION" then "MEDIUM"
@@ -59,12 +59,14 @@ struct AT_ClashManagerStruct (
  fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   if index<1 or index>clashes.count or AT_ExactGeometryEngine.lastMeshes.count==0 then return #()
+  if lastScanRuleRevision!=AT_RuleEngine.registryRevision then (lastError="RULES_CHANGED_RESCAN_REQUIRED"; return #())
   local required=amax clearance clashes[index].requiredClearance
   AT_CoordinationSolutionGenerator.generateAllAlternatives AT_ExactGeometryEngine.lastMeshes #(clashes[index]) clearance:required angles:angles
  ),
  fn simulateAlternative index jurisdiction:"" = (
   local actions=AT_CoordinationSolutionGenerator.lastCandidates+AT_CoordinationSolutionGenerator.lastRotationCandidates
   if index<1 or index>actions.count then return undefined
+  if lastScanRuleRevision!=AT_RuleEngine.registryRevision or jurisdiction!=lastScanJurisdiction or (AT_RuleEngine.requiredCheckTypes as string)!=(lastScanRequiredChecks as string) then (lastError="RULES_OR_JURISDICTION_CHANGED_RESCAN_REQUIRED"; return undefined)
   local action=actions[index]
   local clash=undefined
   for c in clashes where c.clashId==action.targetClashIds[1] do clash=c
@@ -79,6 +81,7 @@ struct AT_ClashManagerStruct (
  ),
  fn approveAlternative index approver reason approvalDate = (
   if index<1 or index>lastSimulations.count or index>lastSimulationCandidates.count then return false
+  if lastScanRuleRevision!=AT_RuleEngine.registryRevision then return false
   AT_CoordinationGovernance.approve lastSimulationCandidates[index] lastSimulations[index] approver reason approvalDate
  ),
  fn applyAlternative index transactionId = (
@@ -96,6 +99,9 @@ struct AT_ClashManagerStruct (
  fn scan requiredClearance:0.0 jurisdiction:"" = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   lastPairClearances=#(); lastRuleMissingPairs=#()
+  lastScanRuleRevision=AT_RuleEngine.registryRevision
+  lastScanJurisdiction=jurisdiction
+  lastScanRequiredChecks=AT_RuleEngine.requiredCheckTypes
   AT_DisciplineAdapter.inspect()
   AT_ExactGeometryEngine.inspect()
   for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do meshRecord.requiredClearance=element.requiredClearance
@@ -238,6 +244,6 @@ struct AT_ClashManagerStruct (
   )
   createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
  ),
- fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); true)
+ fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
