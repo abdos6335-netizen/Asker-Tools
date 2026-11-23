@@ -11,6 +11,11 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Multiple clash pairs and explicit non-zero clearance.
 - Large meshes and dense scenes: runtime and memory profiling.
 
+## Rotation alternatives
+- Candidate count and axis/angle metadata for both moving sides of a clash.
+- Rotation snapshot changes geometry bounds as expected while leaving the source node transform unchanged.
+- Rotation simulation target resolution, introduced clashes, and stale-pivot rejection.
+
 ## Discipline adapters
 - Verify all eight discipline labels.
 - User-property, exact layer, class and exact-name mapping precedence.
