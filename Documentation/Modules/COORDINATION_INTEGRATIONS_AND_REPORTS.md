@@ -7,7 +7,7 @@ Planned provider connections include Architectural Plan Builder, Ceiling Builder
 
 API: `register moduleName revision provider capabilities:<array>`, `unregister integrationId`, `get integrationId`, `exchange integrationId operation payload sourceRevision expectedPreviousRevision:<string>`.
 
-## Reporting (0.2.0)
+## Reporting (0.3.0)
 Creates structured clash and proposal report rows and exports CSV. Rows include measured geometric distance/clearance and current provisional severity; proposal rows preserve eligibility, score, rank, approval requirement, and reasons. A print-ready HTML report is also available. It can be opened in a browser and printed to PDF; this is not a native PDF or XLSX writer.
 
 APIs: `buildClashRows clashes`, `buildClearanceRows clashes`, `buildDisciplineRows clashes`, `buildProposalRows results`, `buildTrackingRows tracking`, `buildRuleMissingRows missingPairs`, `buildGeometryErrorRows errors`, `buildDisciplineErrorRows errors`, `buildApprovalRows approvals`, `buildRevisionRows syncHistory`, `buildAuditRows auditLog`, `exportCSV rows path`, `buildFullReportSections()`, `buildHTML sections title:<string>`, `exportHTML sections path title:<string>`, and `exportFullHTML path`. The full HTML report combines clash, clearance, discipline, missing-rule, geometry/discipline errors, tracking, approvals, proposals, audit and integration revision history. It is print-styled and suitable for browser Print-to-PDF. CSV remains the native tabular export and can be opened in Excel; native XLSX and direct PDF generation are not included.
