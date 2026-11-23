@@ -1,0 +1,85 @@
+/* Asker Tools - Coordination Engine In-Host Self Tests
+   Creates temporary test geometry, runs source-level engines, and deletes only its own nodes.
+   Run manually inside 3ds Max after all Coordination modules have loaded.
+*/
+global AT_CoordinationSelfTests
+struct AT_CoordinationSelfTestsStruct (
+ version="0.1.0", lastResults=#(), lastErrors=#(),
+ fn addResult results testName passed actual expected = (
+  append results #(testName,passed,actual,expected)
+ ),
+ fn run = (
+  local results=#()
+  local testNodes=#()
+  lastErrors=#()
+  try (
+   local overlapA=box length:10 width:10 height:10 pos:[0,0,0]
+   overlapA.name=uniqueName "AT_QA_Overlap_A_"; convertToMesh overlapA; append testNodes overlapA
+   local overlapB=box length:10 width:10 height:10 pos:[5,0,0]
+   overlapB.name=uniqueName "AT_QA_Overlap_B_"; convertToMesh overlapB; append testNodes overlapB
+   local records=AT_ExactGeometryEngine.inspect #(overlapA,overlapB)
+   local found=AT_ExactGeometryEngine.detectClashes records:records
+   addResult results "OVERLAPPING_BOXES" (found.count==1 and found[1].status=="EXACT_MESH_INTERFERENCE") (if found.count>0 then found[1].status else "NO_CLASH") "EXACT_MESH_INTERFERENCE"
+
+   local gapA=box length:10 width:10 height:10 pos:[0,30,0]
+   gapA.name=uniqueName "AT_QA_Clearance_A_"; convertToMesh gapA; append testNodes gapA
+   local gapB=box length:10 width:10 height:10 pos:[12,30,0]
+   gapB.name=uniqueName "AT_QA_Clearance_B_"; convertToMesh gapB; append testNodes gapB
+   records=AT_ExactGeometryEngine.inspect #(gapA,gapB)
+   found=AT_ExactGeometryEngine.detectClashes records:records requiredClearance:3.0
+   addResult results "CLEARANCE_VIOLATION" (found.count==1 and found[1].status=="CLEARANCE_VIOLATION" and found[1].minimumDistanceKnown) (if found.count>0 then found[1].status else "NO_CLASH") "CLEARANCE_VIOLATION"
+
+   local outer=box length:20 width:20 height:20 pos:[50,0,0]
+   outer.name=uniqueName "AT_QA_Containment_Outer_"; convertToMesh outer; append testNodes outer
+   local inner=box length:2 width:2 height:2 pos:[50,0,0]
+   inner.name=uniqueName "AT_QA_Containment_Inner_"; convertToMesh inner; append testNodes inner
+   records=AT_ExactGeometryEngine.inspect #(outer,inner)
+   found=AT_ExactGeometryEngine.detectClashes records:records
+   addResult results "CLOSED_SOLID_CONTAINMENT" (found.count==1 and found[1].status=="SOLID_CONTAINMENT_INTERFERENCE") (if found.count>0 then found[1].status else "NO_CLASH") "SOLID_CONTAINMENT_INTERFERENCE"
+
+   local openOuter=box length:20 width:20 height:20 pos:[80,0,0]
+   openOuter.name=uniqueName "AT_QA_Open_Outer_"; convertToMesh openOuter; append testNodes openOuter
+   local openInner=plane length:2 width:2 pos:[80,0,0]
+   openInner.name=uniqueName "AT_QA_Open_Inner_"; convertToMesh openInner; append testNodes openInner
+   records=AT_ExactGeometryEngine.inspect #(openOuter,openInner)
+   found=AT_ExactGeometryEngine.detectClashes records:records
+   addResult results "OPEN_MESH_CONTAINMENT_UNVERIFIED" (found.count==1 and found[1].status=="CONTAINMENT_UNVERIFIED") (if found.count>0 then found[1].status else "NO_CLASH") "CONTAINMENT_UNVERIFIED"
+
+   local farA=box length:10 width:10 height:10 pos:[110,0,0]
+   farA.name=uniqueName "AT_QA_Separated_A_"; convertToMesh farA; append testNodes farA
+   local farB=box length:10 width:10 height:10 pos:[130,0,0]
+   farB.name=uniqueName "AT_QA_Separated_B_"; convertToMesh farB; append testNodes farB
+   records=AT_ExactGeometryEngine.inspect #(farA,farB)
+   found=AT_ExactGeometryEngine.detectClashes records:records
+   addResult results "SEPARATED_BOXES" (found.count==0) found.count 0
+
+   AT_RuleEngine.clearAll()
+   local projectRule=AT_CoordinationRule ruleId:"QA_PROJECT_RULE" disciplineA:"*" disciplineB:"*" checkType:"CLEARANCE" value:10.0 unit:"mm" sourceType:"PROJECT_SPEC" sourceName:"QA Project" approved:true
+   local codeRule=AT_CoordinationRule ruleId:"QA_CODE_RULE" disciplineA:"*" disciplineB:"*" checkType:"CLEARANCE" value:15.0 unit:"mm" sourceType:"MANDATORY_CODE" sourceName:"QA Code" approved:false
+   AT_RuleEngine.registerRule projectRule; AT_RuleEngine.registerRule codeRule
+   local evaluation=AT_RuleEngine.evaluate "HVAC" "STRUCTURE" "CLEARANCE"
+   addResult results "UNAPPROVED_HIGHER_PRIORITY_BLOCKS_FALLBACK" (evaluation.reason=="HIGHEST_PRIORITY_RULE_NOT_APPROVED") evaluation.reason "HIGHEST_PRIORITY_RULE_NOT_APPROVED"
+
+   AT_RuleEngine.clearAll()
+   local conflictA=AT_CoordinationRule ruleId:"QA_CONFLICT_A" disciplineA:"HVAC" disciplineB:"STRUCTURE" checkType:"CLEARANCE" value:10.0 unit:"mm" sourceType:"AUTHORITY_APPROVAL" sourceName:"Authority A" approved:true
+   local conflictB=AT_CoordinationRule ruleId:"QA_CONFLICT_B" disciplineA:"HVAC" disciplineB:"STRUCTURE" checkType:"CLEARANCE" value:20.0 unit:"mm" sourceType:"AUTHORITY_APPROVAL" sourceName:"Authority B" approved:true
+   AT_RuleEngine.registerRule conflictA; AT_RuleEngine.registerRule conflictB
+   evaluation=AT_RuleEngine.evaluate "HVAC" "STRUCTURE" "CLEARANCE"
+   addResult results "SAME_PRIORITY_RULE_CONFLICT" (evaluation.reason=="CONFLICTING_SAME_PRIORITY_RULES") evaluation.reason "CONFLICTING_SAME_PRIORITY_RULES"
+  ) catch (
+   append lastErrors (getCurrentException())
+   addResult results "HARNESS_EXCEPTION" false (getCurrentException()) "NO_EXCEPTION"
+  )
+  for n in testNodes where isValidNode n do try (delete n) catch()
+  AT_ExactGeometryEngine.clear()
+  AT_RuleEngine.clearAll()
+  lastResults=results
+  results
+ ),
+ fn summary = (
+  local passed=0; local failed=0
+  for r in lastResults do if r[2] then passed+=1 else failed+=1
+  "Coordination Self Tests: "+passed as string+" passed, "+failed as string+" failed"
+ )
+)
+AT_CoordinationSelfTests=AT_CoordinationSelfTestsStruct()
