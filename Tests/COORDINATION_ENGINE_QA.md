@@ -66,6 +66,10 @@ This is the required in-host validation plan for the completed nine-part impleme
 
 ## Clash manager and governance
 - Stable clash selection, owner/status/due date persistence behavior.
+- Frame the selected clash in the active viewport.
+- Isolate the two clash elements, then restore the exact prior hidden/visible state; closing or clearing Clash Manager must also restore visibility.
+- Failed apply must verify whether the original transform/object transform/pivot were restored; distinguish a successful restoration from APPLY_FAILED_RESTORE_FAILED. Failed rollback must enter an explicit ROLLBACK_FAILED state and retain an audit event.
+- Current apply/approval transaction scope is one affected node per approved action. Multi-node atomic batch transactions remain unsupported and must not be represented as atomic.
 - Reject approval without exact validated simulation, approver, date, and reason.
 - Reject candidate/simulation identity mismatch and affected-element mismatch.
 - Apply translation, exception during apply, rollback, repeated rollback, deleted node.
