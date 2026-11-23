@@ -45,6 +45,10 @@ struct AT_CoordinationSelfTestsStruct (
    local records=AT_ExactGeometryEngine.inspect #(overlapA,overlapB)
    local found=AT_ExactGeometryEngine.detectClashes records:records
    addResult results "OVERLAPPING_BOXES" (found.count==1 and found[1].status=="EXACT_MESH_INTERFERENCE") (if found.count>0 then found[1].status else "NO_CLASH") "EXACT_MESH_INTERFERENCE"
+   local restoreSnapshotTx=AT_CoordinationTransaction nodeRef:overlapA beforeTransform:overlapA.transform beforeObjectTransform:overlapA.objectTransform beforePivot:overlapA.pivot
+   move overlapA [17,3,0]
+   local snapshotRestored=AT_CoordinationGovernance.restoreTransactionSnapshot restoreSnapshotTx
+   addResult results "GOVERNANCE_RESTORES_FAILED_ACTION_SNAPSHOT" (snapshotRestored and overlapA.transform==restoreSnapshotTx.beforeTransform and overlapA.objectTransform==restoreSnapshotTx.beforeObjectTransform and overlapA.pivot==restoreSnapshotTx.beforePivot) snapshotRestored true
    local translationCandidates=AT_CoordinationSolutionGenerator.generateTranslations records found
    addResult results "TRANSLATION_CANDIDATE_COUNT" (translationCandidates.count==12) translationCandidates.count 12
    local rotationCandidates=AT_CoordinationSolutionGenerator.generateRotations records found
