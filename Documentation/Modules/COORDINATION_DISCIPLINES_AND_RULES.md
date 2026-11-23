@@ -23,7 +23,7 @@ Rule records are explicit and versionable. The approved source hierarchy is:
 
 Only approved rules are eligible for selection. The engine first identifies the highest-priority matching source; if that source is unapproved, lower-priority rules cannot silently override it and the result is `RULE_MISSING`. A missing rule returns a reason; no fallback numeric value is fabricated. Selection uses the highest-priority approved source among matching discipline pairs and check type. Jurisdiction-specific rules are excluded unless the caller supplies the matching jurisdiction. Within the same source tier, more specific discipline-pair and jurisdiction rules take precedence. Conflicting rules at equal priority return `CONFLICTING_SAME_PRIORITY_RULES`; the engine never chooses one arbitrarily.
 
-API: `registerRule`, `removeRule`, `evaluate`, `evaluateBatch`, `clearEvaluations`, `clearAll`.
+API: `registerRule`, `removeRule`, `evaluate`, `evaluateClash`, `evaluateBatch`, `clearEvaluations`, `clearAll`. The Clash Manager scan joins exact-geometry clash records to the discipline inventory by stable node handle; unknown classifications explicitly block discipline-rule evaluation.
 
 Rule values are data supplied by an authoritative project source; this module does not provide code tables or claim compliance by itself. Mandatory code violations remain non-overridable in downstream eligibility gates. Rule registration and lookup are deterministic and do not modify scene geometry.
 
