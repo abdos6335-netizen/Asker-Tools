@@ -3,7 +3,7 @@
 */
 global AT_CoordinationSimulation
 struct AT_CoordinationSimulationResult (
- simulationId="", movingElementId="", actionType="TRANSLATE", sourceTransform=undefined, sourcePivot=[0,0,0], offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
+ simulationId="", movingElementId="", ruleRevision=0, actionType="TRANSLATE", sourceTransform=undefined, sourcePivot=[0,0,0], offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
  resolvedClashIds=#(), introducedClashIds=#(), remainingClashIds=#(),
  ruleMissingIds=#(), criticalViolationIds=#(), affectedElementIds=#(),
  beforeCount=0, afterCount=0, diagnostics=#()
@@ -63,7 +63,7 @@ struct AT_CoordinationSimulationStruct (
  fn simulateAction records movingElementId actionType:"TRANSLATE" offset:[0,0,0] rotationAxis:[0,0,1] angleDegrees:0.0 pivot:[0,0,0] targetClashId:"" requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
   local result=AT_CoordinationSimulationResult()
   result.simulationId=if simulationId=="" then ("SIM_"+movingElementId) else simulationId
-  result.movingElementId=movingElementId; result.actionType=actionType
+  result.movingElementId=movingElementId; result.ruleRevision=AT_RuleEngine.registryRevision; result.actionType=actionType
   result.offset=offset; result.rotationAxis=rotationAxis; result.angleDegrees=angleDegrees; result.pivot=pivot
   if actionType=="TRANSLATE" and classOf offset!=Point3 then (result.status="INVALID_OFFSET_VECTOR"; append lastResults result; return result)
   if actionType=="ROTATE" and (classOf rotationAxis!=Point3 or classOf pivot!=Point3 or (classOf angleDegrees!=Integer and classOf angleDegrees!=Float) or length rotationAxis<=1.0e-8) then (result.status="INVALID_ROTATION_PARAMETERS"; append lastResults result; return result)
