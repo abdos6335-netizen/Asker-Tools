@@ -23,6 +23,10 @@ struct AT_CoordinationSelfTestsStruct (
   local savedMoveCandidates=AT_CoordinationSolutionGenerator.lastCandidates
   local savedRotationCandidates=AT_CoordinationSolutionGenerator.lastRotationCandidates
   local savedGeneratorErrors=AT_CoordinationSolutionGenerator.lastErrors
+  local savedSolutionResults=AT_SolutionEngine.lastResults
+  local savedSolutionProposals=AT_SolutionEngine.lastProposals
+  local savedRejectedCandidates=AT_SolutionEngine.lastRejectedCandidates
+  local savedSolutionWeights=AT_SolutionEngine.weights
   lastErrors=#()
   try (
    local overlapA=box length:10 width:10 height:10 pos:[0,0,0]
@@ -107,6 +111,16 @@ struct AT_CoordinationSelfTestsStruct (
    evaluation=AT_RuleEngine.evaluate "HVAC" "STRUCTURE" "CLEARANCE"
    addResult results "SAME_PRIORITY_RULE_CONFLICT" (evaluation.reason=="CONFLICTING_SAME_PRIORITY_RULES") evaluation.reason "CONFLICTING_SAME_PRIORITY_RULES"
 
+   local riskCandidate=AT_CoordinationActionCandidate actionId:"QA_RISK_UNKNOWN" targetClashIds:#("QA_CLASH") resolvedClashIds:#("QA_CLASH") affectedElementIds:#("QA_NODE") simulationValidated:true risk:50.0 riskAssessed:false
+   local riskProposal=AT_SolutionEngine.buildProposal riskCandidate
+   local scoreWithoutRisk=AT_SolutionEngine.scoreProposal riskProposal
+   AT_SolutionEngine.setWeights 100.0 200.0 0.0 2.0
+   local scoreRiskWeightZero=AT_SolutionEngine.scoreProposal riskProposal
+   AT_SolutionEngine.setWeights 100.0 200.0 999.0 2.0
+   local scoreRiskWeightHigh=AT_SolutionEngine.scoreProposal riskProposal
+   local riskEvaluation=AT_SolutionEngine.evaluateProposal riskProposal
+   addResult results "RISK_NOT_ASSESSED_EXCLUDED_FROM_SCORE" (scoreRiskWeightZero==scoreRiskWeightHigh and riskEvaluation.riskAssessment=="NOT_ASSESSED" and (findItem riskEvaluation.reasons "RISK_NOT_ASSESSED")>0) #(scoreRiskWeightZero,scoreRiskWeightHigh,riskEvaluation.riskAssessment) "equal scores and NOT_ASSESSED"
+
    AT_RuleEngine.clearAll()
    local accessRule=AT_CoordinationRule ruleId:"QA_ACCESS_RULE" disciplineA:"HVAC" disciplineB:"STRUCTURE" checkType:"ACCESS" value:1.0 unit:"system" sourceType:"PROJECT_SPEC" sourceName:"QA Project" approved:true
    AT_RuleEngine.registerRule accessRule
@@ -130,6 +144,10 @@ struct AT_CoordinationSelfTestsStruct (
   AT_CoordinationSolutionGenerator.lastCandidates=savedMoveCandidates
   AT_CoordinationSolutionGenerator.lastRotationCandidates=savedRotationCandidates
   AT_CoordinationSolutionGenerator.lastErrors=savedGeneratorErrors
+  AT_SolutionEngine.lastResults=savedSolutionResults
+  AT_SolutionEngine.lastProposals=savedSolutionProposals
+  AT_SolutionEngine.lastRejectedCandidates=savedRejectedCandidates
+  AT_SolutionEngine.weights=savedSolutionWeights
   lastResults=results
   results
  ),
