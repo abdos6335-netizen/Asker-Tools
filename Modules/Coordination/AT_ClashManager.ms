@@ -4,7 +4,7 @@
 global AT_ClashManager
 struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", note="", severity="INFORMATION")
 struct AT_ClashManagerStruct (
- version="0.3.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastGeometryErrors=#(), lastDisciplineErrors=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(), lastDisciplineMappingRevision=-1, lastDisciplineMetadataRevision=-1, lastDisciplineInventory=#(), lastScanMeshes=#(),
+ version="0.3.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastGeometryErrors=#(), lastDisciplineErrors=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(), lastDisciplineMappingRevision=-1, lastDisciplineMetadataRevision=-1, lastDisciplineInventory=#(), lastScanMeshes=#(), visibleClashIndices=#(),
  fn severityFor clash = (
   local base="INFORMATION"
   if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" or clash.status=="CONTAINMENT_UNVERIFIED" then base="HIGH"
@@ -39,6 +39,30 @@ struct AT_ClashManagerStruct (
    for item in result where item[1]==s do item[2]+=1
   )
   result
+ ),
+ fn filteredClashIndices severityFilter:"ALL" disciplineFilter:"ALL" searchText:"" = (
+  local matches=#()
+  local query=toLower searchText
+  for i=1 to clashes.count do (
+   local clash=clashes[i]
+   local severity=severityFor clash
+   local severityMatch=(severityFilter=="ALL" or severity==severityFilter)
+   local disciplineMatch=(disciplineFilter=="ALL" or clash.disciplineA==disciplineFilter or clash.disciplineB==disciplineFilter)
+   local haystack=toLower (clash.nameA+" "+clash.nameB+" "+clash.elementA+" "+clash.elementB)
+   local textMatch=(query=="" or (findString haystack query)!=undefined)
+   if severityMatch and disciplineMatch and textMatch do append matches i
+  )
+  visibleClashIndices=matches
+  matches
+ ),
+ fn refreshClashList listControl severityFilter:"ALL" disciplineFilter:"ALL" searchText:"" = (
+  local indices=filteredClashIndices severityFilter:severityFilter disciplineFilter:disciplineFilter searchText:searchText
+  listControl.items=for i in indices collect (clashLabel clashes[i])
+  true
+ ),
+ fn selectVisibleClash visibleIndex = (
+  if visibleIndex<1 or visibleIndex>visibleClashIndices.count then return false
+  selectClash visibleClashIndices[visibleIndex]
  ),
  fn selectClash index = (
   if index<1 or index>clashes.count then return false
@@ -213,6 +237,10 @@ struct AT_ClashManagerStruct (
    label lblRuleMissing "Missing rule checks: 0" align:#left
    label lblGeometryErrors "Geometry inspection errors: 0" align:#left
    label lblDisciplineErrors "Discipline inspection errors: 0" align:#left
+   dropdownList ddlSeverityFilter "Severity filter" items:#("ALL","CRITICAL","HIGH","MEDIUM","LOW","INFORMATION") width:180
+   dropdownList ddlDisciplineFilter "Discipline filter" items:#("ALL","ARCHITECTURE","STRUCTURE","ELECTRICAL","HVAC","FIRE_FIGHTING","PLUMBING","LOW_CURRENT","INTERIOR_ELEMENTS") width:260
+   editText edtClashSearch "Search element / ID" text:"" width:300
+   button btnFilter "Apply Filters" width:140 height:26
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
    button btnGenerate "Generate Solution Alternatives" width:220 height:28 align:#left
@@ -305,7 +333,7 @@ struct AT_ClashManagerStruct (
    on btnDisciplines pressed do AT_DisciplineManager.show()
    on btnScan pressed do (
     local found=AT_ClashManager.scan jurisdiction:edtJurisdiction.text
-    lbClashes.items=for c in found collect (AT_ClashManager.clashLabel c)
+    AT_ClashManager.refreshClashList lbClashes severityFilter:"ALL" disciplineFilter:"ALL" searchText:""
     lblSummary.text=(found.count as string)+" clashes | exact mesh analysis"
     lblCounts.text=AT_ClashManager.countsLabel()
     lblRuleMissing.text="Missing rule checks: "+(AT_ClashManager.lastRuleMissingPairs.count as string)
@@ -313,8 +341,10 @@ struct AT_ClashManagerStruct (
     lblDisciplineErrors.text="Discipline inspection errors: "+(AT_ClashManager.lastDisciplineErrors.count as string)
     lbSolutions.items=#()
    )
+   on btnFilter pressed do AT_ClashManager.refreshClashList lbClashes severityFilter:(ddlSeverityFilter.items[amax 1 ddlSeverityFilter.selection]) disciplineFilter:(ddlDisciplineFilter.items[amax 1 ddlDisciplineFilter.selection]) searchText:edtClashSearch.text
    on btnGenerate pressed do (
-    local actions=AT_ClashManager.generateAlternatives lbClashes.selection
+    local actualClashIndex=if lbClashes.selection>0 and lbClashes.selection<=AT_ClashManager.visibleClashIndices.count then AT_ClashManager.visibleClashIndices[lbClashes.selection] else 0
+    local actions=AT_ClashManager.generateAlternatives actualClashIndex
     local ranked=AT_ClashManager.rankAlternatives()
     lbSolutions.items=for item in ranked collect (item.description+" | risk "+item.riskAssessment+" | "+(item.reasons as string))
     lblSummary.text=if actions.count>0 then ((actions.count as string)+" alternatives generated; simulation and approval required") else (if AT_ClashManager.lastError!="" then AT_ClashManager.lastError else "No alternatives generated")
@@ -342,10 +372,11 @@ struct AT_ClashManagerStruct (
     local tx=AT_ClashManager.applyAlternative lbSolutions.selection edtTransactionId.text
     lblSummary.text=if tx==undefined then "Apply blocked; verify approval, transaction ID and unchanged scene" else tx.state
    )
-   on btnSelect pressed do AT_ClashManager.selectClash lbClashes.selection
+   on btnSelect pressed do AT_ClashManager.selectVisibleClash lbClashes.selection
    on lbClashes selected index do (
-    if index>0 and index<=AT_ClashManager.clashes.count do (
-     local record=AT_ClashManager.getTracking AT_ClashManager.clashes[index].clashId
+    if index>0 and index<=AT_ClashManager.visibleClashIndices.count do (
+     local actualIndex=AT_ClashManager.visibleClashIndices[index]
+     local record=AT_ClashManager.getTracking AT_ClashManager.clashes[actualIndex].clashId
      edtOwner.text=record.owner
      edtDue.text=record.dueDate
      edtNote.text=record.note
@@ -354,8 +385,9 @@ struct AT_ClashManagerStruct (
     )
    )
    on btnSave pressed do (
-    if lbClashes.selection>0 and lbClashes.selection<=AT_ClashManager.clashes.count then (
-     local clashId=AT_ClashManager.clashes[lbClashes.selection].clashId
+    if lbClashes.selection>0 and lbClashes.selection<=AT_ClashManager.visibleClashIndices.count then (
+     local actualIndex=AT_ClashManager.visibleClashIndices[lbClashes.selection]
+     local clashId=AT_ClashManager.clashes[actualIndex].clashId
      local status=if ddlStatus.selection>0 then ddlStatus.items[ddlStatus.selection] else "OPEN"
      AT_ClashManager.setTracking clashId owner:edtOwner.text status:status dueDate:edtDue.text note:edtNote.text
      lblSummary.text="Tracking saved for "+clashId
@@ -364,6 +396,6 @@ struct AT_ClashManagerStruct (
   )
   createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
  ),
- fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastGeometryErrors=#(); lastDisciplineErrors=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); lastDisciplineMappingRevision=-1; lastDisciplineMetadataRevision=-1; lastDisciplineInventory=#(); lastScanMeshes=#(); true)
+ fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastGeometryErrors=#(); lastDisciplineErrors=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); lastDisciplineMappingRevision=-1; lastDisciplineMetadataRevision=-1; lastDisciplineInventory=#(); lastScanMeshes=#(); visibleClashIndices=#(); true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
