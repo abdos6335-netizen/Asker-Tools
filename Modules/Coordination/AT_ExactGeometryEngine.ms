@@ -320,6 +320,14 @@ struct AT_ExactGeometryEngineStruct (
   if recordB.requiredClearance!=undefined do value=amax value recordB.requiredClearance
   if a!=undefined and a.requiredClearance!=undefined do value=amax value a.requiredClearance
   if b!=undefined and b.requiredClearance!=undefined do value=amax value b.requiredClearance
+  if recordA.serviceClearance!=undefined do value=amax value recordA.serviceClearance
+  if recordB.serviceClearance!=undefined do value=amax value recordB.serviceClearance
+  if recordA.installationClearance!=undefined do value=amax value recordA.installationClearance
+  if recordB.installationClearance!=undefined do value=amax value recordB.installationClearance
+  if a!=undefined and a.serviceClearance!=undefined do value=amax value a.serviceClearance
+  if b!=undefined and b.serviceClearance!=undefined do value=amax value b.serviceClearance
+  if a!=undefined and a.installationClearance!=undefined do value=amax value a.installationClearance
+  if b!=undefined and b.installationClearance!=undefined do value=amax value b.installationClearance
   for item in pairOverrides where ((item.elementA==recordA.elementId and item.elementB==recordB.elementId) or (item.elementA==recordB.elementId and item.elementB==recordA.elementId)) do value=amax value item.requiredClearance
   value
  ),
