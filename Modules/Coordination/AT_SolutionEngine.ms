@@ -43,10 +43,12 @@ struct AT_SolutionEngineStruct (
     ),
 
     fn validateIdSet values allowEmpty:true = (
-        if classOf values!=Array or (not allowEmpty and values.count==0) then return false
+        if classOf values!=Array then return false
+        if not allowEmpty and values.count==0 then return false
         for value in values where classOf value!=String or value=="" do return false
         uniqueCount values==values.count
     ),
+    fn safeArrayCount values = (if classOf values==Array then values.count else -1),
 
     fn validateCandidate candidate = (
         local issues = #()
@@ -63,8 +65,10 @@ struct AT_SolutionEngineStruct (
             if candidate.actionType!="TRANSLATE" and candidate.actionType!="ROTATE" do append issues "UNSUPPORTED_ACTION_TYPE"
             if candidate.actionType=="TRANSLATE" and classOf candidate.offset!=Point3 do append issues "INVALID_TRANSLATION_VECTOR"
             if candidate.actionType=="ROTATE" and (classOf candidate.rotationAxis!=Point3 or classOf candidate.pivot!=Point3 or (classOf candidate.angleDegrees!=Integer and classOf candidate.angleDegrees!=Float) or length candidate.rotationAxis<=1.0e-8 or candidate.angleDegrees==0 or abs candidate.angleDegrees>180.0) do append issues "INVALID_ROTATION_PARAMETERS"
-            for resolvedID in candidate.resolvedClashIds where (findItem candidate.targetClashIds resolvedID) == 0 do
-                appendIfUnique issues "RESOLVED_CLASH_NOT_IN_TARGET_SET"
+            if classOf candidate.resolvedClashIds==Array and classOf candidate.targetClashIds==Array do (
+                for resolvedID in candidate.resolvedClashIds where (findItem candidate.targetClashIds resolvedID) == 0 do
+                    appendIfUnique issues "RESOLVED_CLASH_NOT_IN_TARGET_SET"
+            )
             if not validNonNegative candidate.risk do append issues "INVALID_RISK_VALUE"
         )
         issues
@@ -131,12 +135,12 @@ struct AT_SolutionEngineStruct (
             if not validateIdSet proposal.criticalViolationIds do append issues "INVALID_CRITICAL_VIOLATION_ID_SET"
             if not validateIdSet proposal.missingRuleIds do append issues "INVALID_MISSING_RULE_ID_SET"
             if not validateIdSet proposal.affectedElementIds allowEmpty:false do append issues "INVALID_AFFECTED_ELEMENT_ID_SET"
-            if not validNonNegative proposal.resolvedClashes or proposal.resolvedClashes!=proposal.resolvedClashIds.count do append issues "RESOLVED_CLASH_COUNT_MISMATCH"
-            if not validNonNegative proposal.newClashes or proposal.newClashes!=proposal.introducedClashIds.count do append issues "NEW_CLASH_COUNT_MISMATCH"
-            if not validNonNegative proposal.criticalViolations or proposal.criticalViolations!=proposal.criticalViolationIds.count do append issues "CRITICAL_VIOLATION_COUNT_MISMATCH"
-            if not validNonNegative proposal.missingRules or proposal.missingRules!=proposal.missingRuleIds.count do append issues "MISSING_RULE_COUNT_MISMATCH"
+            if not validNonNegative proposal.resolvedClashes or proposal.resolvedClashes!=safeArrayCount proposal.resolvedClashIds do append issues "RESOLVED_CLASH_COUNT_MISMATCH"
+            if not validNonNegative proposal.newClashes or proposal.newClashes!=safeArrayCount proposal.introducedClashIds do append issues "NEW_CLASH_COUNT_MISMATCH"
+            if not validNonNegative proposal.criticalViolations or proposal.criticalViolations!=safeArrayCount proposal.criticalViolationIds do append issues "CRITICAL_VIOLATION_COUNT_MISMATCH"
+            if not validNonNegative proposal.missingRules or proposal.missingRules!=safeArrayCount proposal.missingRuleIds do append issues "MISSING_RULE_COUNT_MISMATCH"
             if not validNonNegative proposal.risk do append issues "INVALID_RISK_VALUE"
-            if not validNonNegative proposal.affectedElements or proposal.affectedElements!=proposal.affectedElementIds.count do append issues "AFFECTED_ELEMENT_COUNT_MISMATCH"
+            if not validNonNegative proposal.affectedElements or proposal.affectedElements!=safeArrayCount proposal.affectedElementIds do append issues "AFFECTED_ELEMENT_COUNT_MISMATCH"
         )
         issues
     ),
