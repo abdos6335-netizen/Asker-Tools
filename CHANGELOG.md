@@ -1,3 +1,7 @@
+# Coordination integration revision safety — 2026-11-23
+- Provider re-registration with a changed revision no longer carries forward the previous provider revision's sync token. The revision change is recorded, and a matching persisted token for the new revision may still be restored explicitly.
+- Added an in-host regression case ensuring a token from provider revision r1 is not reused by revision r2; added static validation and QA coverage.
+
 # Coordination service and installation clearance integration — 2026-11-23
 - Fixed the discipline element record to carry service and installation clearance fields and corrected `setEnvelope` so both values are stored on the live inventory record and persistent override.
 - Fixed two Clash Manager integration paths that called a geometry-engine method that did not exist: the scan path now explicitly copies general, service and installation numeric clearances into each immutable mesh scan record, while stale-scene validation compares fresh mesh geometry without calling the missing metadata hook. Discipline inventory comparison now includes service and installation numeric clearances.
