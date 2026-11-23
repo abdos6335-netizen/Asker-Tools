@@ -24,8 +24,8 @@ struct AT_CoordinationSolutionGeneratorStruct (
     for axis=1 to 3 do for sign in #(-1,1) do (
      local offset=separationOffset moving fixed axis sign clearance
      local c=AT_CoordinationActionCandidate()
-     c.actionId="TX_"+moving.elementId+"_"+clash.clashId+"_"+axis as string+"_"+sign as string
-     c.description="Translate "+moving.nodeName+" along axis "+axis as string+" by "+offset as string
+     c.actionId="TX_"+moving.elementId+"_"+clash.clashId+"_"+(axis as string)+"_"+(sign as string)
+     c.description="Translate "+moving.nodeName+" along axis "+(axis as string)+" by "+(offset as string)
      c.targetClashIds=#(clash.clashId)
      c.affectedElementIds=#(moving.elementId)
      c.requiresEngineeringApproval=true
