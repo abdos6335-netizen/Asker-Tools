@@ -42,16 +42,27 @@ struct AT_SolutionEngineStruct (
         uniqueValues.count
     ),
 
+    fn validateIdSet values allowEmpty:true = (
+        if classOf values!=Array or (not allowEmpty and values.count==0) then return false
+        for value in values where classOf value!=String or value=="" do return false
+        uniqueCount values==values.count
+    ),
+
     fn validateCandidate candidate = (
         local issues = #()
         if classOf candidate != AT_CoordinationActionCandidate then
             append issues "INVALID_CANDIDATE_TYPE"
         else (
             if candidate.actionId == "" do append issues "MISSING_ACTION_ID"
-            if candidate.targetClashIds.count == 0 do append issues "NO_TARGET_CLASHES"
+            if not validateIdSet candidate.targetClashIds allowEmpty:false do append issues "INVALID_TARGET_CLASH_ID_SET"
+            if not validateIdSet candidate.resolvedClashIds do append issues "INVALID_RESOLVED_CLASH_ID_SET"
+            if not validateIdSet candidate.introducedClashIds do append issues "INVALID_INTRODUCED_CLASH_ID_SET"
+            if not validateIdSet candidate.criticalViolationIds do append issues "INVALID_CRITICAL_VIOLATION_ID_SET"
+            if not validateIdSet candidate.missingRuleIds do append issues "INVALID_MISSING_RULE_ID_SET"
+            if not validateIdSet candidate.affectedElementIds allowEmpty:false do append issues "INVALID_AFFECTED_ELEMENT_ID_SET"
             if candidate.actionType!="TRANSLATE" and candidate.actionType!="ROTATE" do append issues "UNSUPPORTED_ACTION_TYPE"
             if candidate.actionType=="TRANSLATE" and classOf candidate.offset!=Point3 do append issues "INVALID_TRANSLATION_VECTOR"
-            if candidate.actionType=="ROTATE" and (classOf candidate.rotationAxis!=Point3 or classOf candidate.pivot!=Point3 or (classOf candidate.angleDegrees!=Integer and classOf candidate.angleDegrees!=Float) or length candidate.rotationAxis<=1.0e-8 or candidate.angleDegrees==0) do append issues "INVALID_ROTATION_PARAMETERS"
+            if candidate.actionType=="ROTATE" and (classOf candidate.rotationAxis!=Point3 or classOf candidate.pivot!=Point3 or (classOf candidate.angleDegrees!=Integer and classOf candidate.angleDegrees!=Float) or length candidate.rotationAxis<=1.0e-8 or candidate.angleDegrees==0 or abs candidate.angleDegrees>180.0) do append issues "INVALID_ROTATION_PARAMETERS"
             for resolvedID in candidate.resolvedClashIds where (findItem candidate.targetClashIds resolvedID) == 0 do
                 appendIfUnique issues "RESOLVED_CLASH_NOT_IN_TARGET_SET"
             if not validNonNegative candidate.risk do append issues "INVALID_RISK_VALUE"
@@ -112,12 +123,20 @@ struct AT_SolutionEngineStruct (
         if classOf proposal != AT_CoordinationProposal then append issues "INVALID_PROPOSAL_TYPE"
         else (
             if proposal.id == "" do append issues "MISSING_PROPOSAL_ID"
-            if not validNonNegative proposal.resolvedClashes do append issues "INVALID_RESOLVED_CLASH_COUNT"
-            if not validNonNegative proposal.newClashes do append issues "INVALID_NEW_CLASH_COUNT"
-            if not validNonNegative proposal.criticalViolations do append issues "INVALID_CRITICAL_VIOLATION_COUNT"
-            if not validNonNegative proposal.missingRules do append issues "INVALID_MISSING_RULE_COUNT"
+            if proposal.actionType!="TRANSLATE" and proposal.actionType!="ROTATE" do append issues "UNSUPPORTED_ACTION_TYPE"
+            if proposal.actionType=="TRANSLATE" and classOf proposal.offset!=Point3 do append issues "INVALID_TRANSLATION_VECTOR"
+            if proposal.actionType=="ROTATE" and (classOf proposal.rotationAxis!=Point3 or classOf proposal.pivot!=Point3 or (classOf proposal.angleDegrees!=Integer and classOf proposal.angleDegrees!=Float) or length proposal.rotationAxis<=1.0e-8 or proposal.angleDegrees==0 or abs proposal.angleDegrees>180.0) do append issues "INVALID_ROTATION_PARAMETERS"
+            if not validateIdSet proposal.resolvedClashIds do append issues "INVALID_RESOLVED_CLASH_ID_SET"
+            if not validateIdSet proposal.introducedClashIds do append issues "INVALID_INTRODUCED_CLASH_ID_SET"
+            if not validateIdSet proposal.criticalViolationIds do append issues "INVALID_CRITICAL_VIOLATION_ID_SET"
+            if not validateIdSet proposal.missingRuleIds do append issues "INVALID_MISSING_RULE_ID_SET"
+            if not validateIdSet proposal.affectedElementIds allowEmpty:false do append issues "INVALID_AFFECTED_ELEMENT_ID_SET"
+            if not validNonNegative proposal.resolvedClashes or proposal.resolvedClashes!=proposal.resolvedClashIds.count do append issues "RESOLVED_CLASH_COUNT_MISMATCH"
+            if not validNonNegative proposal.newClashes or proposal.newClashes!=proposal.introducedClashIds.count do append issues "NEW_CLASH_COUNT_MISMATCH"
+            if not validNonNegative proposal.criticalViolations or proposal.criticalViolations!=proposal.criticalViolationIds.count do append issues "CRITICAL_VIOLATION_COUNT_MISMATCH"
+            if not validNonNegative proposal.missingRules or proposal.missingRules!=proposal.missingRuleIds.count do append issues "MISSING_RULE_COUNT_MISMATCH"
             if not validNonNegative proposal.risk do append issues "INVALID_RISK_VALUE"
-            if not validNonNegative proposal.affectedElements do append issues "INVALID_AFFECTED_ELEMENT_COUNT"
+            if not validNonNegative proposal.affectedElements or proposal.affectedElements!=proposal.affectedElementIds.count do append issues "AFFECTED_ELEMENT_COUNT_MISMATCH"
         )
         issues
     ),
