@@ -91,12 +91,12 @@ This is a broad-phase bounding-box engine, not an exact mesh/solid intersection 
 `clearance` is a geometric offset input, not a code value. The adapter does not invent one.
 
 
-## Part 1 — triangle-mesh interference and clearance engine (0.1.0)
+## Part 1 — triangle-mesh interference and clearance engine (0.3.0)
 
 AT_ExactGeometryEngine adds a read-only narrow-phase mesh check after a world-AABB broad-phase filter.
 
 - inspect snapshots valid scene nodes to triangle meshes and stores transformed world-space triangles, face indices, and bounds.
-- detectClashes checks candidate node pairs and then triangle pairs. Triangle intersection uses a separating-axis test, including coplanar in-plane axes.
+- detectClashes checks candidate node pairs and then triangle pairs. Triangle intersection uses a separating-axis test, including coplanar in-plane axes. Usable axes are normalized before projection so the numeric epsilon is interpreted as a world-space distance; near-zero axis rejection is relative to the source edge/normal magnitudes. Face degeneracy and short-segment checks are scale-relative rather than fixed world-unit cutoffs.
 - For non-intersecting triangle pairs within the requested distance, minimum surface distance is computed from point-to-triangle and edge-to-edge distances.
 - Results distinguish EXACT_MESH_INTERFERENCE, CLEARANCE_VIOLATION, and SEPARATED, and include minimum distance, shortfall, face indices, and tested triangle-pair count.
 - Clearance is an explicit numeric input. The engine does not invent project, code, manufacturer, or discipline values.
@@ -112,7 +112,7 @@ This is triangle-surface intersection for the mesh snapshot supplied by 3ds Max,
 
 
 ## Closed-mesh containment extension (0.2.0)
-The geometry snapshot now records undirected edge incidence and connected cyclic vertex links to distinguish closed two-manifold meshes from open or non-manifold surfaces. When two mesh AABBs are nested and their triangle surfaces do not intersect, a three-direction ray-parity check tests whether a representative inner-mesh vertex lies inside the outer closed mesh. Confirmed containment is reported as `SOLID_CONTAINMENT_INTERFERENCE`; nested AABBs involving open/non-manifold meshes are reported as `CONTAINMENT_UNVERIFIED`. The simulation blocks when an unverified-containment condition is present before or after a proposed move. This remains a triangle-mesh method, not a certified B-rep solid kernel; nested shells, self-intersections, inconsistent topology, and pathological tessellation still require in-host test scenes.
+The geometry snapshot records undirected edge incidence, connected cyclic vertex links, and global face connectivity to distinguish a single connected closed two-manifold shell from open, non-manifold, or disconnected shells. Disconnected closed components are conservatively reported as containment unverified rather than being treated as one solid. When two mesh AABBs are nested and their triangle surfaces do not intersect, a three-direction ray-parity check tests whether a representative inner-mesh vertex lies inside the outer closed mesh. Shared-edge and shared-vertex ray hits are inclusive and coincident hit distances are deduplicated with a tighter scale-aware tolerance; this reduces triangulation-boundary parity errors but is not a watertight-predicate guarantee. Confirmed containment is reported as `SOLID_CONTAINMENT_INTERFERENCE`; nested AABBs involving open/non-manifold meshes are reported as `CONTAINMENT_UNVERIFIED`. The simulation blocks when an unverified-containment condition is present before or after a proposed move. This remains a triangle-mesh method, not a certified B-rep solid kernel; nested shells, self-intersections, inconsistent topology, and pathological tessellation still require in-host test scenes.
 
 
 Degenerate zero-area triangles are excluded from distance/intersection calculations and counted. A mesh with no valid triangles is rejected from the geometry inventory; any mesh with skipped faces is not considered closed/manifold for containment validation. Cameras, lights and helper nodes are excluded; supported geometry and shape nodes are scanned consistently, with non-renderable shapes reported as inspection errors.
