@@ -18,6 +18,7 @@ struct AT_CoordinationGovernanceStruct (
  fn approve candidate simulation approver reason approvalDate = (
   if candidate==undefined or simulation==undefined or approver=="" or reason=="" or approvalDate=="" then return false
   if not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
+  if not AT_ClashManager.validateCurrentScene jurisdiction:AT_ClashManager.lastScanJurisdiction then return false
   local proposal=AT_SolutionEngine.buildProposal candidate
   if proposal==undefined then return false
   local evaluation=AT_SolutionEngine.evaluateProposal proposal
@@ -39,6 +40,7 @@ struct AT_CoordinationGovernanceStruct (
  fn applyAction proposalId nodeRef transactionId = (
   local a=findApproval proposalId
   if a==undefined or not a.approved or not isValidNode nodeRef or transactionId=="" then return undefined
+  if not AT_ClashManager.validateCurrentScene jurisdiction:AT_ClashManager.lastScanJurisdiction then (append auditLog #("APPLY_BLOCKED_STALE_SCENE",proposalId); return undefined)
   local expectedId=try ((getHandleByAnim nodeRef) as string) catch ("")
   if (findItem a.candidate.affectedElementIds expectedId)==0 or expectedId!=a.candidate.affectedElementIds[1] then return undefined
   if a.ruleRevision!=AT_RuleEngine.registryRevision then (append auditLog #("APPLY_BLOCKED_RULES_CHANGED",proposalId); return undefined)
