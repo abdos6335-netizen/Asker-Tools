@@ -39,9 +39,11 @@ struct AT_CoordinationSolutionGeneratorStruct (
  ),
  fn generateRotations records clashes angles:#(15.0,-15.0,30.0,-30.0) = (
   local result=#(); lastErrors=#(); lastCandidates=#(); lastRotationCandidates=#()
+  local validAngles=#()
   for angle in angles do (
    if classOf angle!=Integer and classOf angle!=Float then append lastErrors #("", "INVALID_ROTATION_ANGLE")
    else if angle==0 or abs angle>180.0 then append lastErrors #("", "ROTATION_ANGLE_OUT_OF_RANGE")
+   else append validAngles angle
   )
   for clash in clashes do (
    local a=findRecord records clash.elementA
