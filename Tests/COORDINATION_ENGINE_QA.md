@@ -59,6 +59,10 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Apply translation, exception during apply, rollback, repeated rollback, deleted node.
 - Confirm audit sequence and transaction state transitions.
 
+## Approval identity integrity
+- Candidate target, resolved, introduced, critical, missing-rule and affected-element ID sets must exactly match the validated simulation; order is irrelevant but duplicates are rejected.
+- Tampering with any simulation-derived ID set after simulation must block engineering approval and add an audit event.
+
 ## Project persistence
 - Save and reload rules, required check types, discipline mappings, element clearance/envelope metadata, clash tracking, integration revision tokens/history and audit history.
 - Reject unsupported schema versions, invalid/duplicate tracking IDs and malformed rule records without replacing the prior in-memory project state.
