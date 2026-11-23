@@ -18,8 +18,8 @@ struct AT_ClashManagerStruct (
  fn load clashes = (this.clashes=clashes; selectedIndex=if clashes.count>0 then 1 else 0; true),
  fn trackingFor clashId = (for t in tracking where t.clashId==clashId do return t; local t=AT_ClashTrackingRecord clashId:clashId; append tracking t; t),
  fn setTracking clashId owner:"" status:"OPEN" dueDate:"" note:"" = (
-  local t=trackingFor clashId
   if (findItem #("OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") status)==0 then return false
+  local t=trackingFor clashId
   t.owner=owner; t.status=status; t.dueDate=dueDate; t.note=note; true
  ),
  fn getTracking clashId = (trackingFor clashId),
@@ -76,7 +76,7 @@ struct AT_ClashManagerStruct (
  fn applyAlternative index transactionId = (
   if index<1 or index>lastSimulationCandidates.count then return undefined
   local candidate=lastSimulationCandidates[index]
-  if candidate.affectedElementIds.count!=1 then return undefined
+  if candidate==undefined or candidate.affectedElementIds.count!=1 then return undefined
   local node=getNodeByHandle (candidate.affectedElementIds[1] as integer)
   if not isValidNode node then return undefined
   AT_CoordinationGovernance.applyAction candidate.actionId node transactionId
