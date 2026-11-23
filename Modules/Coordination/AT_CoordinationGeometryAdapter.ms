@@ -42,11 +42,12 @@ struct AT_CoordinationGeometryAdapterStruct (
         (aMin.z < bMax.z and aMax.z > bMin.z)
     ),
 
+    fn isSupportedNode node = ((superClassOf node)==GeometryClass or (superClassOf node)==Shape),
     fn inspect nodes:undefined includeHidden:false = (
         local sourceNodes = if nodes == undefined then objects as array else nodes
         local records = #()
         lastErrors = #()
-        for node in sourceNodes where isValidNode node do if includeHidden or not node.isHidden do (
+        for node in sourceNodes where isValidNode node do if isSupportedNode node and (includeHidden or not node.isHidden) do (
             if (includeHidden or not node.isHidden) do (
                 try (
                     local bounds = getBounds node
