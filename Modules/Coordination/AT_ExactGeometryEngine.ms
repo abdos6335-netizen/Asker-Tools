@@ -199,8 +199,9 @@ struct AT_ExactGeometryEngineStruct (
      if inner.triangles.count>0 and pointInsideClosedMesh inner.triangles[1].a outer then result.status="SOLID_CONTAINMENT_INTERFERENCE"
     )
    )
-   result.clearanceShortfall=amax 0.0 (requiredClearance-result.minimumDistance)
-   if result.status=="SEPARATED" and result.clearanceShortfall>epsilon then result.status="CLEARANCE_VIOLATION"
+   if result.minimumDistanceKnown then result.clearanceShortfall=amax 0.0 (requiredClearance-result.minimumDistance)
+   else result.clearanceShortfall=0.0
+   if result.status=="SEPARATED" and result.minimumDistanceKnown and result.clearanceShortfall>epsilon then result.status="CLEARANCE_VIOLATION"
   )
   result
  ),
