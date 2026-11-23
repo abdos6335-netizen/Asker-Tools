@@ -84,6 +84,16 @@ struct AT_RuleEngineStruct (
         append lastEvaluations result
         result
     ),
+    fn evaluateClash clash checkTypes jurisdiction:"" = (
+        if clash.disciplineA=="UNKNOWN" or clash.disciplineB=="UNKNOWN" then (
+            local missing=AT_RuleEvaluation reason:"DISCIPLINE_CLASSIFICATION_REQUIRED"
+            append lastEvaluations missing
+            return #(missing)
+        )
+        local results=#()
+        for checkType in checkTypes do append results (evaluate clash.disciplineA clash.disciplineB checkType jurisdiction:jurisdiction)
+        results
+    ),
     fn evaluateBatch checks = (
         local results=#()
         for c in checks do append results (evaluate c[1] c[2] c[3] jurisdiction:(if c.count>=4 then c[4] else ""))
