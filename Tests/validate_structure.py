@@ -17,6 +17,8 @@ required = [
     'Modules/Coordination/AT_RuleEngine.ms',
     'Modules/Coordination/AT_CoordinationSimulation.ms',
     'Modules/Coordination/AT_CoordinationSolutionGenerator.ms',
+    'Modules/Coordination/AT_ClashManager.ms',
+    'Modules/Coordination/AT_CoordinationGovernance.ms',
     'Documentation/Modules/MATERIAL_MANAGER.md',
     'Documentation/Modules/SCENE_MANAGER.md',
     'Documentation/Modules/ASSET_MANAGER.md',
@@ -47,6 +49,8 @@ checks = {
     'Modules/Coordination/AT_RuleEngine.ms': ['MANDATORY_CODE', 'AUTHORITY_APPROVAL', 'MANUFACTURER_SPEC', 'PROJECT_SPEC', 'ASKER_DEFAULT', 'ONLY_UNAPPROVED_RULES_AVAILABLE', 'fn evaluateBatch'],
     'Modules/Coordination/AT_CoordinationSimulation.ms': ['fn cloneTranslatedMesh', 'fn simulateTranslation', 'EXACT_GEOMETRY_SIMULATION_PASSED', 'NEW_CLASHES_INTRODUCED', 'BLOCKED_RULE_MISSING'],
     'Modules/Coordination/AT_CoordinationSolutionGenerator.ms': ['fn generateTranslations', 'separationOffset', 'requiresEngineeringApproval=true'],
+    'Modules/Coordination/AT_ClashManager.ms': ['fn load', 'fn counts', 'fn selectClash', 'fn setTracking'],
+    'Modules/Coordination/AT_CoordinationGovernance.ms': ['fn approve', 'fn applyTranslation', 'fn rollback', 'FAILED_ROLLED_BACK'],
 }
 for rel, tokens in checks.items():
     source = (ROOT / rel).read_text(encoding='utf-8')
