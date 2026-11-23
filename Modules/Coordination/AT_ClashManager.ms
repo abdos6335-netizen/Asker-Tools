@@ -118,6 +118,7 @@ struct AT_ClashManagerStruct (
   if AT_DisciplineAdapter.lastErrors.count>0 then (lastError="DISCIPLINE_INSPECTION_ERRORS_PRESENT"; return false)
   local savedMeshes=lastScanMeshes
   AT_ExactGeometryEngine.inspect()
+  AT_ExactGeometryEngine.applyDisciplineMetadata AT_ExactGeometryEngine.lastMeshes AT_DisciplineAdapter.lastInventory
   if not meshInventoryMatches savedMeshes AT_ExactGeometryEngine.lastMeshes then (lastError="SCENE_GEOMETRY_CHANGED_RESCAN_REQUIRED"; return false)
   if AT_ExactGeometryEngine.lastErrors.count>0 then (lastError="GEOMETRY_INSPECTION_ERRORS_PRESENT"; return false)
   lastError=""
@@ -194,6 +195,7 @@ struct AT_ClashManagerStruct (
   lastDisciplineInventory=AT_DisciplineAdapter.lastInventory
   AT_ExactGeometryEngine.inspect()
   lastScanMeshes=AT_ExactGeometryEngine.lastMeshes
+  AT_ExactGeometryEngine.applyDisciplineMetadata lastScanMeshes lastDisciplineInventory
   lastGeometryErrors=AT_ExactGeometryEngine.lastErrors
   lastDisciplineErrors=AT_DisciplineAdapter.lastErrors
   for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do meshRecord.requiredClearance=element.requiredClearance
