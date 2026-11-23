@@ -1,3 +1,6 @@
+# Triangle surface-distance regression coverage — 2026-11-23
+- Added direct triangle-to-triangle minimum-distance regression cases for parallel offset surfaces and coplanar separated triangles with known expected distances.
+
 # Coordination containment topology — 2026-11-23
 - Added global face-connectivity validation for closed mesh records. Disconnected closed shells are conservatively excluded from single-solid containment classification and reported as unverified.
 - Preserved connectivity metadata through translated and rotated simulation snapshots; added connected/disconnected face-graph regression cases.
