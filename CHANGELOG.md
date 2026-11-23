@@ -1,6 +1,9 @@
 # Changelog
 
 ## 0.5.0 - Coordination Solution Engine foundation
+- Added structured candidate-to-proposal generation from discipline adapter simulation results.
+- Added target/resolved clash identity validation and duplicate candidate rejection reporting.
+- Kept unvalidated proposals visible but ineligible until simulation is confirmed.
 - Added deterministic evaluation and ranking of structured coordination proposals.
 - Blocked ineligible proposals with critical violations, missing required rules, or newly introduced clashes.
 - Added configurable scoring weights and stable tie-breaking by proposal ID.
