@@ -72,7 +72,7 @@ struct AT_CoordinationReportsStruct (
    local ch=substring s i 1
    if ch=="\"" then escaped+="\"\"" else escaped+=ch
   )
-  if (findString s ",")!=undefined or (findString s "\"")!=undefined or (findString s "\n")!=undefined or (findString s "\r")!=undefined or (findString s "\r")!=undefined then "\"" + escaped + "\"" else escaped
+  if (findString s ",")!=undefined or (findString s "\"")!=undefined or (findString s "\n")!=undefined or (findString s "\r")!=undefined then "\"" + escaped + "\"" else escaped
  ),
  fn exportCSV rows path = (
   if rows.count==0 or path=="" then return false
