@@ -16,13 +16,18 @@ struct AT_RuleEvaluation (
 struct AT_RuleEngineStruct (
     version="0.2.0", rules=#(), requiredCheckTypes=#(), lastEvaluations=#(), lastErrors=#(),
     sourcePriority=#("MANDATORY_CODE","AUTHORITY_APPROVAL","MANUFACTURER_SPEC","PROJECT_SPEC","ASKER_DEFAULT"),
+    supportedDisciplines=#("ARCHITECTURE","STRUCTURE","ELECTRICAL","HVAC","FIRE_FIGHTING","PLUMBING","LOW_CURRENT","INTERIOR_ELEMENTS"),
+    validSeverities=#("CRITICAL","HIGH","MEDIUM","LOW","INFORMATION"),
+    fn validDiscipline value = (value=="*" or findItem supportedDisciplines (toUpper value)>0),
+    fn validSeverity value = (findItem validSeverities (toUpper value)>0),
     fn validSource source = (findItem sourcePriority (toUpper source)>0),
     fn priority source = (findItem sourcePriority (toUpper source)),
     fn registerRule rule = (
         if classOf rule!=AT_CoordinationRule then return false
-        if rule.ruleId=="" or rule.checkType=="" or not validSource rule.sourceType then return false
+        if rule.ruleId=="" or rule.checkType=="" or rule.sourceName=="" or not validSource rule.sourceType then return false
+        if not validDiscipline rule.disciplineA or not validDiscipline rule.disciplineB or not validSeverity rule.severity then return false
         if classOf rule.value!=Integer and classOf rule.value!=Float and rule.value!=undefined then return false
-        if rule.value!=undefined and rule.value<0 then return false
+        if rule.value!=undefined and (rule.value<0 or rule.unit=="") then return false
         for i=rules.count to 1 by -1 where rules[i].ruleId==rule.ruleId do deleteItem rules i
         append rules rule
         true
