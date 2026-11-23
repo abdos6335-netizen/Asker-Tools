@@ -4,7 +4,7 @@ A modular MAXScript toolkit for Autodesk 3ds Max, designed around practical inte
 
 ## Release status
 
-**0.5.0 — Coordination Solution Engine foundation.** Adds a deterministic, read-only evaluator that validates and ranks proposed clash resolutions. It blocks proposals with critical rule violations, missing required rules, or newly introduced clashes, and records explicit engineering-approval requirements. This is an evaluation foundation, not a geometry clash detector or automatic model editor. The v0.4.0 material manager and earlier scene tools remain included.
+**0.5.0 — Coordination Solution Engine foundation.** Adds a deterministic, read-only candidate-to-proposal pipeline and evaluator. It validates candidate clash identities, retains unvalidated proposals for review, and ranks only simulated proposals that pass critical-rule, required-rule, and new-clash gates. This is not yet a 3D geometry clash detector or automatic model editor. The v0.4.0 material manager and earlier scene tools remain included.
 
 Target versions: 3ds Max 2022–2026. 3ds Max 2027 is pending validation. Corona and V-Ray are not yet certified; renderer integrations will be feature-specific and version-checked.
 
