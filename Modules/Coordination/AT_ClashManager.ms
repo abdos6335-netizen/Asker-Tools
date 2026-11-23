@@ -27,6 +27,7 @@ struct AT_ClashManagerStruct (
  fn selectClash index = (
   if index<1 or index>clashes.count then return false
   selectedIndex=index
+  select #()
   local c=clashes[index]
   for id in #(c.elementA,c.elementB) do (
    local handle=try (id as integer) catch (0)
@@ -37,7 +38,6 @@ struct AT_ClashManagerStruct (
   )
   true
  ),
- fn clearSelection = (clearSelection(); true),
  fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
