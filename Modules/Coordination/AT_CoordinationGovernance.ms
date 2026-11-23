@@ -9,7 +9,7 @@ struct AT_CoordinationApproval (
 )
 struct AT_CoordinationTransaction (
  transactionId="", proposalId="", elementId="", actionType="TRANSLATE", nodeRef=undefined,
- beforeTransform=undefined, afterTransform=undefined, beforePivot=[0,0,0], afterPivot=[0,0,0], state="PREPARED",
+ beforeTransform=undefined, afterTransform=undefined, beforeObjectTransform=undefined, afterObjectTransform=undefined, beforePivot=[0,0,0], afterPivot=[0,0,0], state="PREPARED",
  appliedAt="", rollbackReason=""
 )
 struct AT_CoordinationGovernanceStruct (
@@ -35,9 +35,9 @@ struct AT_CoordinationGovernanceStruct (
   if a==undefined or not a.approved or not isValidNode nodeRef or transactionId=="" then return undefined
   local expectedId=try ((getHandleByAnim nodeRef) as string) catch ("")
   if (findItem a.candidate.affectedElementIds expectedId)==0 or expectedId!=a.candidate.affectedElementIds[1] then return undefined
-  if nodeRef.transform!=a.sourceTransform or nodeRef.pivot!=a.sourcePivot then (append auditLog #("APPLY_BLOCKED_STALE_SCENE",proposalId,expectedId); return undefined)
+  if nodeRef.objectTransform!=a.sourceTransform or nodeRef.pivot!=a.sourcePivot then (append auditLog #("APPLY_BLOCKED_STALE_SCENE",proposalId,expectedId); return undefined)
   for existing in transactions where existing.transactionId==transactionId do return undefined
-  local tx=AT_CoordinationTransaction transactionId:transactionId proposalId:proposalId elementId:expectedId actionType:a.actionType nodeRef:nodeRef beforeTransform:nodeRef.transform beforePivot:nodeRef.pivot state:"PREPARED"
+  local tx=AT_CoordinationTransaction transactionId:transactionId proposalId:proposalId elementId:expectedId actionType:a.actionType nodeRef:nodeRef beforeTransform:nodeRef.transform beforeObjectTransform:nodeRef.objectTransform beforePivot:nodeRef.pivot state:"PREPARED"
   append transactions tx
   try (
    undo ("Asker Tools Coordination Apply "+proposalId) on (
@@ -45,7 +45,7 @@ struct AT_CoordinationGovernanceStruct (
     else if a.actionType=="ROTATE" then (in coordsys world (rotate nodeRef (angleAxis a.angleDegrees a.rotationAxis)))
     else throw "UNSUPPORTED_APPROVED_ACTION"
    )
-   tx.afterTransform=nodeRef.transform; tx.afterPivot=nodeRef.pivot
+   tx.afterTransform=nodeRef.transform; tx.afterObjectTransform=nodeRef.objectTransform; tx.afterPivot=nodeRef.pivot
    tx.state="APPLIED"
    append auditLog #("APPLIED",proposalId,expectedId,transactionId,a.actionType)
    tx
@@ -70,7 +70,7 @@ struct AT_CoordinationGovernanceStruct (
   local tx=undefined
   for t in transactions where t.transactionId==transactionId do tx=t
   if tx==undefined or tx.state!="APPLIED" or reason=="" or not isValidNode tx.nodeRef then return false
-  if tx.nodeRef.transform!=tx.afterTransform or tx.nodeRef.pivot!=tx.afterPivot then (tx.state="ROLLBACK_BLOCKED_SCENE_CHANGED"; append auditLog #("ROLLBACK_BLOCKED_SCENE_CHANGED",transactionId); return false)
+  if tx.nodeRef.transform!=tx.afterTransform or tx.nodeRef.objectTransform!=tx.afterObjectTransform or tx.nodeRef.pivot!=tx.afterPivot then (tx.state="ROLLBACK_BLOCKED_SCENE_CHANGED"; append auditLog #("ROLLBACK_BLOCKED_SCENE_CHANGED",transactionId); return false)
   try (
    undo ("Asker Tools Coordination Rollback "+transactionId) on (tx.nodeRef.transform=tx.beforeTransform; tx.nodeRef.pivot=tx.beforePivot)
    tx.state="ROLLED_BACK"; tx.rollbackReason=reason
