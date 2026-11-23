@@ -14,7 +14,12 @@ struct AT_CoordinationIntegrationsStruct (
   local rec=AT_CoordinationIntegrationRecord integrationId:id moduleName:moduleName revision:revision provider:provider capabilities:capabilities enabled:true
   local existing=undefined
   for r in registry where r.integrationId==id do existing=r
-  if existing!=undefined then (local idx=findItem registry existing; deleteItem registry idx)
+  if existing!=undefined then (
+   rec.lastSyncToken=existing.lastSyncToken
+   if existing.revision!=revision do append syncHistory #("PROVIDER_REVISION_CHANGED",id,existing.revision,revision,rec.lastSyncToken)
+   local idx=findItem registry existing
+   deleteItem registry idx
+  )
   append registry rec
   append syncHistory #("REGISTERED",id,revision)
   true
