@@ -32,6 +32,9 @@ struct AT_CoordinationSelfTestsStruct (
   local savedDisciplineErrors=AT_DisciplineAdapter.lastErrors
   local savedEnvelopeOverrides=AT_DisciplineAdapter.envelopeOverrides
   local savedDisciplineMetadataRevision=AT_DisciplineAdapter.metadataRevision
+  local savedIntegrationRegistry=AT_CoordinationIntegrations.registry
+  local savedIntegrationHistory=AT_CoordinationIntegrations.syncHistory
+  local savedIntegrationErrors=AT_CoordinationIntegrations.lastErrors
   lastErrors=#()
   try (
    local overlapA=box length:10 width:10 height:10 pos:[0,0,0]
@@ -159,6 +162,18 @@ struct AT_CoordinationSelfTestsStruct (
    addResult results "TINY_SEGMENT_POINT_DISTANCE_SCALE" (abs(tinyPointDistance-1.0e-12)<=1.0e-18) tinyPointDistance 1.0e-12
    addResult results "TINY_PARALLEL_SEGMENT_OVERLAP_ZERO" (tinyParallelOverlap<=1.0e-24) tinyParallelOverlap 0.0
 
+   AT_CoordinationIntegrations.registry=#()
+   AT_CoordinationIntegrations.syncHistory=#()
+   local integrationV1=AT_CoordinationIntegrations.register "QA_REVISION_PROVIDER" "r1" "QA_PROVIDER" capabilities:#(#"read")
+   local integrationRecord=AT_CoordinationIntegrations.get "AT_INT_QA_REVISION_PROVIDER"
+   if integrationRecord!=undefined do integrationRecord.lastSyncToken="token-r1"
+   local integrationV2=AT_CoordinationIntegrations.register "QA_REVISION_PROVIDER" "r2" "QA_PROVIDER" capabilities:#(#"read")
+   local revisedIntegration=AT_CoordinationIntegrations.get "AT_INT_QA_REVISION_PROVIDER"
+   addResult results "INTEGRATION_REVISION_INVALIDATES_OLD_TOKEN" (integrationV1 and integrationV2 and revisedIntegration!=undefined and revisedIntegration.lastSyncToken=="") (if revisedIntegration==undefined then "MISSING" else revisedIntegration.lastSyncToken) ""
+   AT_CoordinationIntegrations.registry=savedIntegrationRegistry
+   AT_CoordinationIntegrations.syncHistory=savedIntegrationHistory
+   AT_CoordinationIntegrations.lastErrors=savedIntegrationErrors
+
    local qaEnvelopeA=AT_DisciplineElement elementId:"QA_ENVELOPE_A" discipline:"HVAC"
    local qaEnvelopeB=AT_DisciplineElement elementId:"QA_ENVELOPE_B" discipline:"STRUCTURE"
    AT_DisciplineAdapter.lastInventory=#(qaEnvelopeA,qaEnvelopeB)
@@ -251,6 +266,9 @@ struct AT_CoordinationSelfTestsStruct (
   AT_DisciplineAdapter.lastErrors=savedDisciplineErrors
   AT_DisciplineAdapter.envelopeOverrides=savedEnvelopeOverrides
   AT_DisciplineAdapter.metadataRevision=savedDisciplineMetadataRevision
+  AT_CoordinationIntegrations.registry=savedIntegrationRegistry
+  AT_CoordinationIntegrations.syncHistory=savedIntegrationHistory
+  AT_CoordinationIntegrations.lastErrors=savedIntegrationErrors
   lastResults=results
   results
  ),
