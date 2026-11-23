@@ -359,6 +359,7 @@ struct AT_ClashManagerStruct (
    on btnDisciplines pressed do AT_DisciplineManager.show()
    on btnScan pressed do (
     local found=AT_ClashManager.scan jurisdiction:edtJurisdiction.text
+    ddlSeverityFilter.selection=1; ddlDisciplineFilter.selection=1; ddlStatusFilter.selection=1; edtClashSearch.text=""
     AT_ClashManager.refreshClashList lbClashes severityFilter:"ALL" disciplineFilter:"ALL" statusFilter:"ALL" searchText:""
     lblSummary.text=(found.count as string)+" clashes | exact mesh analysis"
     lblCounts.text=AT_ClashManager.countsLabel()
