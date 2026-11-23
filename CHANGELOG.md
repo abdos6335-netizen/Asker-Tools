@@ -1,3 +1,6 @@
+# Coordination geometry input validation — 2026-11-23
+- Added explicit rejection of negative and nonnumeric geometry tolerances in both clash-detection entry points, with a dedicated `INVALID_GEOMETRY_TOLERANCE` error and in-host regression coverage.
+
 # Coordination geometry scale handling — 2026-11-23
 - Replaced fixed absolute face-area and segment-length degeneracy cutoffs with scale-relative tests, so small but well-shaped geometry is not silently discarded as degenerate.
 - Added tiny-segment point-distance and parallel-overlap regression cases.
