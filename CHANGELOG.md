@@ -6,6 +6,10 @@
 - Project loading now rejects incomplete or duplicate persisted integration IDs before mutating live integration state, preventing ambiguous token restoration.
 - Added the rejection marker to static validation and the project persistence QA matrix.
 
+# Coordination integration contract validation — 2026-11-23
+- Provider registration now rejects duplicate, empty and non-string capability declarations; exchange rejects an empty operation before invoking a provider.
+- Added in-host regression cases and static validation markers for both input guards.
+
 # Coordination Clash Manager and transaction safety — 2026-11-23
 - Added viewport framing and reversible isolation controls for a selected clash. The manager snapshots prior node visibility and restores it when requested, when the rollout closes, or when the manager resets.
 - Governance now verifies that a failed apply actually restored the original transform, object transform and pivot; failures that cannot be restored are explicitly marked APPLY_FAILED_RESTORE_FAILED. Failed rollback is marked ROLLBACK_FAILED and logged.
