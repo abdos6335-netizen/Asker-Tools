@@ -29,3 +29,7 @@ Rule values are data supplied by an authoritative project source; this module do
 
 ## Validation boundary
 These modules have been added as source-level implementation. MAXScript runtime behavior, actual user-property access, node layer behavior, and integration with real project metadata must be validated inside each supported 3ds Max version. No 3ds Max execution is claimed.
+
+
+## Project rule manager UI (0.1.0)
+The Rule Manager rollout provides explicit entry/edit-by-rule-ID, removal, authority/source metadata, jurisdiction, approval flag, mandatory flag, severity, numeric value/unit, and project-required check-type configuration. It ships no assumed building-code values. Rule entries should be transcribed from approved project/authority/manufacturer documents and retain their source name, revision, and jurisdiction. Unapproved higher-priority entries continue to block lower-priority fallback.
