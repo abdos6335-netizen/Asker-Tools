@@ -16,6 +16,13 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Rotation snapshot changes geometry bounds as expected while leaving the source node transform unchanged.
 - Rotation simulation target resolution, introduced clashes, and stale-pivot rejection.
 
+## Discipline mappings and envelopes
+- Map each supported discipline through explicit user-property, layer, class or node-name keys; unknown remains UNKNOWN.
+- Remove/change a mapping and confirm the scan revision invalidates prior alternatives.
+- Apply numeric clearance with mm/cm/m/in/ft/system units and confirm master-unit conversion.
+- Save/load mapping and envelope overrides in the project XML store.
+- Service and installation envelope references remain metadata until geometric expansion is implemented.
+
 ## Discipline adapters
 - Verify all eight discipline labels.
 - User-property, exact layer, class and exact-name mapping precedence.
