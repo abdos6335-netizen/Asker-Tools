@@ -4,6 +4,7 @@
 global AT_ExactGeometryEngine
 struct AT_ExactTriangle (a=[0,0,0], b=[0,0,0], c=[0,0,0], minimum=[0,0,0], maximum=[0,0,0], faceIndex=0)
 struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, sourcePivot=[0,0,0], elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0, validFaceCount=0, invalidFaceCount=0, requiredClearance=undefined, isClosed=false, isManifold=false, topologyChecked=false)
+struct AT_ExactPairClearanceRecord (elementA="", elementB="", requiredClearance=0.0, ruleIds=#())
 struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", status="SEPARATED", minimumDistance=undefined, minimumDistanceKnown=false, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
 struct AT_ExactGeometryEngineStruct (
  version="0.1.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
@@ -206,7 +207,7 @@ struct AT_ExactGeometryEngineStruct (
   result
  ),
  fn findDisciplineRecord inventory elementId = (for item in inventory where item.elementId==elementId do return item; undefined),
- fn pairClearance recordA recordB inventory defaultClearance = (
+ fn pairClearance recordA recordB inventory defaultClearance pairOverrides:#() = (
   local a=findDisciplineRecord inventory recordA.elementId
   local b=findDisciplineRecord inventory recordB.elementId
   local value=defaultClearance
@@ -214,9 +215,10 @@ struct AT_ExactGeometryEngineStruct (
   if recordB.requiredClearance!=undefined do value=amax value recordB.requiredClearance
   if a!=undefined and a.requiredClearance!=undefined do value=amax value a.requiredClearance
   if b!=undefined and b.requiredClearance!=undefined do value=amax value b.requiredClearance
+  for item in pairOverrides where ((item.elementA==recordA.elementId and item.elementB==recordB.elementId) or (item.elementA==recordB.elementId and item.elementB==recordA.elementId)) do value=amax value item.requiredClearance
   value
  ),
- fn detectClashesWithClearances inventory defaultClearance:0.0 epsilon:1.0e-6 = (
+ fn detectClashesWithClearances inventory defaultClearance:0.0 pairOverrides:#() epsilon:1.0e-6 = (
   local source=lastMeshes
   local results=#(); lastErrors=#()
   if (classOf defaultClearance!=Integer and classOf defaultClearance!=Float) or defaultClearance<0 then (
@@ -224,7 +226,7 @@ struct AT_ExactGeometryEngineStruct (
   )
   for i=1 to source.count do for j=i+1 to source.count do (
    local a=source[i]; local b=source[j]
-   local clearance=pairClearance a b inventory defaultClearance
+   local clearance=pairClearance a b inventory defaultClearance pairOverrides:pairOverrides
    if boxesOverlap a.minimum a.maximum b.minimum b.maximum tolerance:clearance do (
     local result=inspectPair a b requiredClearance:clearance epsilon:epsilon
     if result.status!="SEPARATED" do append results result
