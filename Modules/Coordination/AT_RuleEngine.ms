@@ -9,7 +9,7 @@ struct AT_CoordinationRule (
     approved=false, mandatory=false, effectiveDate="", notes=""
 )
 struct AT_RuleEvaluation (
-    status="RULE_MISSING", ruleId="", value=undefined, unit="",
+    status="RULE_MISSING", ruleId="", checkType="", value=undefined, unit="", valueInSystemUnits=undefined, unitConversionValid=false,
     severity="INFORMATION", sourceType="", sourceName="",
     reason="NO_APPROVED_RULE", blocking=true
 )
@@ -89,7 +89,16 @@ struct AT_RuleEngineStruct (
         )
         local selected=bestRules[1]
         for r in bestRules where r.ruleId < selected.ruleId do selected=r
-        local result=AT_RuleEvaluation status:"RULE_FOUND" ruleId:selected.ruleId value:selected.value unit:selected.unit severity:selected.severity sourceType:selected.sourceType sourceName:selected.sourceName reason:"APPROVED_RULE_SELECTED" blocking:false
+        local result=AT_RuleEvaluation status:"RULE_FOUND" ruleId:selected.ruleId checkType:selected.checkType value:selected.value unit:selected.unit severity:selected.severity sourceType:selected.sourceType sourceName:selected.sourceName reason:"APPROVED_RULE_SELECTED" blocking:false
+        if (findItem #("CLEARANCE","MIN_CLEARANCE","SERVICE_CLEARANCE","INSTALLATION_CLEARANCE") (toUpper selected.checkType))>0 then (
+            if selected.value==undefined then (
+                result.status="RULE_MISSING"; result.reason="CLEARANCE_VALUE_REQUIRED"; result.blocking=true
+            ) else (
+                local conversion=AT_UnitConversionEngine.toSystemUnits selected.value selected.unit
+                if conversion.valid then (result.valueInSystemUnits=conversion.systemValue; result.unitConversionValid=true)
+                else (result.status="RULE_MISSING"; result.reason=conversion.reason; result.blocking=true)
+            )
+        )
         append lastEvaluations result
         result
     ),
