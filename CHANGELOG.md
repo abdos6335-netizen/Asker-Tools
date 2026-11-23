@@ -6,6 +6,11 @@
 - Project loading now rejects incomplete or duplicate persisted integration IDs before mutating live integration state, preventing ambiguous token restoration.
 - Added the rejection marker to static validation and the project persistence QA matrix.
 
+# Coordination Clash Manager and transaction safety — 2026-11-23
+- Added viewport framing and reversible isolation controls for a selected clash. The manager snapshots prior node visibility and restores it when requested, when the rollout closes, or when the manager resets.
+- Governance now verifies that a failed apply actually restored the original transform, object transform and pivot; failures that cannot be restored are explicitly marked APPLY_FAILED_RESTORE_FAILED. Failed rollback is marked ROLLBACK_FAILED and logged.
+- Added an in-host snapshot restoration regression case and static validator coverage. Multi-node atomic transactions remain explicitly unsupported; each approved apply is limited to one affected node.
+
 # Coordination project backup recovery — 2026-11-23
 - Added an explicit project backup recovery operation. It validates the backup XML root and schema before replacement, keeps the original backup intact, and moves the previous active project to a pre-restore file.
 - Recovery failures are reported and temporary files are cleaned up without intentionally overwriting the active project.
