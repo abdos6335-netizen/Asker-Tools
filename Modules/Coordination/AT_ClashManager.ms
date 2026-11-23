@@ -4,7 +4,7 @@
 global AT_ClashManager
 struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", note="", severity="INFORMATION")
 struct AT_ClashManagerStruct (
- version="0.3.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(),
+ version="0.3.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(), lastDisciplineMappingRevision=-1, lastDisciplineMetadataRevision=-1, lastDisciplineInventory=#(), lastScanMeshes=#(),
  fn severityFor clash = (
   local base="INFORMATION"
   if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" or clash.status=="CONTAINMENT_UNVERIFIED" then base="HIGH"
@@ -58,6 +58,30 @@ struct AT_ClashManagerStruct (
   local values=counts()
   "CRITICAL "+(values[1][2] as string)+" | HIGH "+(values[2][2] as string)+" | MEDIUM "+(values[3][2] as string)+" | LOW "+(values[4][2] as string)+" | INFO "+(values[5][2] as string)
  ),
+ fn disciplineInventoryMatches oldInventory newInventory = (
+  if oldInventory.count!=newInventory.count then return false
+  for old in oldInventory do (
+   local current=undefined
+   for item in newInventory where item.elementId==old.elementId do current=item
+   if current==undefined then return false
+   if old.nodeName!=current.nodeName or old.discipline!=current.discipline or old.elementType!=current.elementType or old.source!=current.source or old.sourceRevision!=current.sourceRevision or old.requiredClearance!=current.requiredClearance or (old.serviceEnvelope as string)!=(current.serviceEnvelope as string) or (old.installationEnvelope as string)!=(current.installationEnvelope as string) or old.boundsMin!=current.boundsMin or old.boundsMax!=current.boundsMax then return false
+  )
+  true
+ ),
+ fn meshInventoryMatches oldRecords newRecords = (
+  if oldRecords.count!=newRecords.count then return false
+  for old in oldRecords do (
+   local current=undefined
+   for item in newRecords where item.elementId==old.elementId do current=item
+   if current==undefined or not isValidNode current.nodeRef then return false
+   if old.sourceTransform!=current.sourceTransform or old.sourcePivot!=current.sourcePivot or old.triangles.count!=current.triangles.count or old.invalidFaceCount!=current.invalidFaceCount then return false
+   for i=1 to old.triangles.count do (
+    local a=old.triangles[i]; local b=current.triangles[i]
+    if a.a!=b.a or a.b!=b.b or a.c!=b.c or a.faceIndex!=b.faceIndex then return false
+   )
+  )
+  true
+ ),
  fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   if index<1 or index>clashes.count or AT_ExactGeometryEngine.lastMeshes.count==0 then return #()
@@ -73,6 +97,13 @@ struct AT_ClashManagerStruct (
   local actions=AT_CoordinationSolutionGenerator.lastCandidates+AT_CoordinationSolutionGenerator.lastRotationCandidates
   if index<1 or index>actions.count then return undefined
   if lastScanRuleRevision!=AT_RuleEngine.registryRevision or jurisdiction!=lastScanJurisdiction or (AT_RuleEngine.requiredCheckTypes as string)!=(lastScanRequiredChecks as string) then (lastError="RULES_OR_JURISDICTION_CHANGED_RESCAN_REQUIRED"; return undefined)
+  if lastDisciplineMappingRevision!=AT_DisciplineAdapter.mappingRevision or lastDisciplineMetadataRevision!=AT_DisciplineAdapter.metadataRevision then (lastError="DISCIPLINE_METADATA_CHANGED_RESCAN_REQUIRED"; return undefined)
+  local savedInventory=lastDisciplineInventory
+  AT_DisciplineAdapter.inspect()
+  if not disciplineInventoryMatches savedInventory AT_DisciplineAdapter.lastInventory then (lastError="DISCIPLINE_INVENTORY_CHANGED_RESCAN_REQUIRED"; return undefined)
+  local savedMeshes=lastScanMeshes
+  AT_ExactGeometryEngine.inspect()
+  if not meshInventoryMatches savedMeshes AT_ExactGeometryEngine.lastMeshes then (lastError="SCENE_GEOMETRY_CHANGED_RESCAN_REQUIRED"; return undefined)
   local action=actions[index]
   local clash=undefined
   for c in clashes where c.clashId==action.targetClashIds[1] do clash=c
@@ -110,7 +141,11 @@ struct AT_ClashManagerStruct (
   lastScanJurisdiction=jurisdiction
   lastScanRequiredChecks=AT_RuleEngine.requiredCheckTypes
   AT_DisciplineAdapter.inspect()
+  lastDisciplineMappingRevision=AT_DisciplineAdapter.mappingRevision
+  lastDisciplineMetadataRevision=AT_DisciplineAdapter.metadataRevision
+  lastDisciplineInventory=AT_DisciplineAdapter.lastInventory
   AT_ExactGeometryEngine.inspect()
+  lastScanMeshes=AT_ExactGeometryEngine.lastMeshes
   for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do meshRecord.requiredClearance=element.requiredClearance
   for i=1 to AT_ExactGeometryEngine.lastMeshes.count do for j=i+1 to AT_ExactGeometryEngine.lastMeshes.count do (
    local meshA=AT_ExactGeometryEngine.lastMeshes[i]
@@ -253,6 +288,6 @@ struct AT_ClashManagerStruct (
   )
   createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
  ),
- fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); true)
+ fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); lastDisciplineMappingRevision=-1; lastDisciplineMetadataRevision=-1; lastDisciplineInventory=#(); lastScanMeshes=#(); true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
