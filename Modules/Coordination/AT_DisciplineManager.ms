@@ -37,6 +37,7 @@ struct AT_DisciplineManagerStruct (
     editText edtService "Service envelope reference (optional)" text:"" width:650
     editText edtInstallation "Installation envelope reference (optional)" text:"" width:650
     button btnApplyEnvelope "Apply Envelope to Selected Element" width:260 height:28
+    button btnClearEnvelope "Clear Selected Element Override" width:230 height:28
    )
    label lblStatus "Unknown elements remain unclassified; no discipline is inferred." align:#left
    on AT_DisciplineManagerRollout open do AT_DisciplineManager.refreshMappings lbMappings
@@ -55,6 +56,14 @@ struct AT_DisciplineManagerStruct (
    on btnRefresh pressed do (
     AT_DisciplineManager.refreshInventory lbInventory
     lblStatus.text=(AT_DisciplineAdapter.lastUnclassified.count as string)+" elements remain UNKNOWN"
+   )
+   on btnClearEnvelope pressed do (
+    if lbInventory.selection<1 or lbInventory.selection>AT_DisciplineAdapter.lastInventory.count then lblStatus.text="Select an element first"
+    else (
+     local elementId=AT_DisciplineAdapter.lastInventory[lbInventory.selection].elementId
+     local ok=AT_DisciplineAdapter.clearEnvelope elementId
+     lblStatus.text=if ok then "Envelope override cleared; rescan clashes" else "No override exists for this element"
+    )
    )
    on btnApplyEnvelope pressed do (
     if lbInventory.selection<1 or lbInventory.selection>AT_DisciplineAdapter.lastInventory.count then lblStatus.text="Select an element first"
