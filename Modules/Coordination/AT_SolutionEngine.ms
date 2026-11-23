@@ -3,7 +3,8 @@
 */
 global AT_SolutionEngine
 struct AT_CoordinationProposal (
-    id = "", description = "",
+    id = "", description = "", actionType = "TRANSLATE",
+    offset = [0,0,0], rotationAxis = [0,0,1], angleDegrees = 0.0, pivot = [0,0,0],
     resolvedClashes = 0, newClashes = 0,
     criticalViolations = 0, missingRules = 0,
     risk = 0.0, affectedElements = 0,
@@ -48,6 +49,9 @@ struct AT_SolutionEngineStruct (
         else (
             if candidate.actionId == "" do append issues "MISSING_ACTION_ID"
             if candidate.targetClashIds.count == 0 do append issues "NO_TARGET_CLASHES"
+            if candidate.actionType!="TRANSLATE" and candidate.actionType!="ROTATE" do append issues "UNSUPPORTED_ACTION_TYPE"
+            if candidate.actionType=="TRANSLATE" and classOf candidate.offset!=Point3 do append issues "INVALID_TRANSLATION_VECTOR"
+            if candidate.actionType=="ROTATE" and (classOf candidate.rotationAxis!=Point3 or classOf candidate.pivot!=Point3 or (classOf candidate.angleDegrees!=Integer and classOf candidate.angleDegrees!=Float) or length candidate.rotationAxis<=1.0e-8 or candidate.angleDegrees==0) do append issues "INVALID_ROTATION_PARAMETERS"
             for resolvedID in candidate.resolvedClashIds where (findItem candidate.targetClashIds resolvedID) == 0 do
                 appendIfUnique issues "RESOLVED_CLASH_NOT_IN_TARGET_SET"
             if not validNonNegative candidate.risk do append issues "INVALID_RISK_VALUE"
@@ -61,6 +65,11 @@ struct AT_SolutionEngineStruct (
         if issues.count > 0 then return undefined
         proposal.id = candidate.actionId
         proposal.description = candidate.description
+        proposal.actionType = candidate.actionType
+        proposal.offset = candidate.offset
+        proposal.rotationAxis = candidate.rotationAxis
+        proposal.angleDegrees = candidate.angleDegrees
+        proposal.pivot = candidate.pivot
         proposal.resolvedClashIds = candidate.resolvedClashIds
         proposal.introducedClashIds = candidate.introducedClashIds
         proposal.affectedElementIds = candidate.affectedElementIds
