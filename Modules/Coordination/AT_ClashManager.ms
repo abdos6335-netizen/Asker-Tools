@@ -38,6 +38,28 @@ struct AT_ClashManagerStruct (
   )
   true
  ),
+ fn scan requiredClearance:0.0 = (
+  AT_ExactGeometryEngine.inspect()
+  local found=AT_ExactGeometryEngine.detectClashes requiredClearance:requiredClearance
+  load found
+  found
+ ),
+ fn show = (
+  try (destroyDialog AT_ClashManagerRollout) catch()
+  rollout AT_ClashManagerRollout "Asker Tools | Clash Manager" width:650 height:430 (
+   button btnScan "Detect Exact Mesh Clashes" width:190 height:28 align:#left
+   label lblSummary "Ready" align:#left
+   listbox lbClashes "Detected clashes" items:#() width:620 height:18
+   button btnSelect "Select Clash Elements" width:160 height:28 align:#left
+   on btnScan pressed do (
+    local found=AT_ClashManager.scan()
+    lbClashes.items=for c in found collect (c.status+" | "+c.elementA+" <> "+c.elementB+" | d="+(formattedPrint c.minimumDistance format:".4f"))
+    lblSummary.text=found.count as string+" clashes | exact mesh surface analysis"
+   )
+   on btnSelect pressed do AT_ClashManager.selectClash lbClashes.selection
+  )
+  createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
+ ),
  fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
