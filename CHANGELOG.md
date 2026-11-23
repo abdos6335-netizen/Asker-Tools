@@ -1,3 +1,7 @@
+# Coordination containment topology — 2026-11-23
+- Added global face-connectivity validation for closed mesh records. Disconnected closed shells are conservatively excluded from single-solid containment classification and reported as unverified.
+- Preserved connectivity metadata through translated and rotated simulation snapshots; added connected/disconnected face-graph regression cases.
+
 # Coordination geometry input validation — 2026-11-23
 - Added explicit rejection of negative and nonnumeric geometry tolerances in both clash-detection entry points, with a dedicated `INVALID_GEOMETRY_TOLERANCE` error and in-host regression coverage.
 
