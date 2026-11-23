@@ -78,7 +78,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 ## Project persistence
 - Save and reload rules, required check types, discipline mappings, element clearance/envelope metadata, clash tracking, integration revision tokens/history and audit history.
 - Reject unsupported schema versions, invalid/duplicate tracking IDs and malformed rule records without replacing the prior in-memory project state.
-- Verify backup creation and recovery when destination replacement fails.
+- Verify backup creation and recovery when destination replacement fails. Recovery must validate the backup XML root/schema before replacing the active project, retain the source backup, and preserve the previous active file as a pre-restore copy.
 - Confirm active approvals and scene transactions are cleared on project load and must be re-approved.
 - Confirm a single approval cannot be applied twice; rollback does not re-arm it.
 
