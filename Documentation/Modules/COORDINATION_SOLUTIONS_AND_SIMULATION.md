@@ -15,3 +15,6 @@ APIs:
 
 ## Validation boundary
 MAXScript execution and numeric correctness must be verified in supported 3ds Max installations. Runtime testing has not been performed in this environment.
+
+
+Risk is explicitly marked `NOT_ASSESSED` until a dedicated engineering risk model is implemented. Unassessed risk is omitted from the ranking penalty rather than being represented as zero risk; the result remains visible for engineering review and requires named approval.
