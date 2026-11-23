@@ -3,7 +3,7 @@
 */
 global AT_CoordinationSimulation
 struct AT_CoordinationSimulationResult (
- simulationId="", movingElementId="", sourceTransform=undefined, offset=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
+ simulationId="", movingElementId="", actionType="TRANSLATE", sourceTransform=undefined, offset=[0,0,0], rotationAxis=[0,0,1], angleDegrees=0.0, pivot=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
  resolvedClashIds=#(), introducedClashIds=#(), remainingClashIds=#(),
  ruleMissingIds=#(), criticalViolationIds=#(), affectedElementIds=#(),
  beforeCount=0, afterCount=0, diagnostics=#()
@@ -18,6 +18,32 @@ struct AT_CoordinationSimulationStruct (
   copy.minimum=source.minimum+offset; copy.maximum=source.maximum+offset
   for t in source.triangles do append copy.triangles (AT_ExactTriangle a:(translatedPoint t.a offset) b:(translatedPoint t.b offset) c:(translatedPoint t.c offset) minimum:(t.minimum+offset) maximum:(t.maximum+offset) faceIndex:t.faceIndex)
   copy
+ ),
+ fn rotatePointAround point pivot axis angleDegrees = (
+  local rotation=quatToMatrix (angleAxis angleDegrees (normalize axis))
+  ((point-pivot)*rotation)+pivot
+ ),
+ fn cloneRotatedMesh source axis angleDegrees pivot = (
+  local copy=AT_ExactMeshRecord()
+  copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.elementId=source.elementId; copy.nodeName=source.nodeName
+  copy.faceCount=source.faceCount; copy.validFaceCount=source.validFaceCount; copy.invalidFaceCount=source.invalidFaceCount
+  copy.requiredClearance=source.requiredClearance; copy.isClosed=source.isClosed; copy.isManifold=source.isManifold; copy.topologyChecked=source.topologyChecked
+  local minPoint=[1.0e30,1.0e30,1.0e30]; local maxPoint=[-1.0e30,-1.0e30,-1.0e30]
+  for tri in source.triangles do (
+   local a=rotatePointAround tri.a pivot axis angleDegrees
+   local b=rotatePointAround tri.b pivot axis angleDegrees
+   local c=rotatePointAround tri.c pivot axis angleDegrees
+   append copy.triangles (AT_ExactGeometryEngine.makeTriangle a b c tri.faceIndex)
+   minPoint.x=amin minPoint.x (amin a.x (amin b.x c.x)); minPoint.y=amin minPoint.y (amin a.y (amin b.y c.y)); minPoint.z=amin minPoint.z (amin a.z (amin b.z c.z))
+   maxPoint.x=amax maxPoint.x (amax a.x (amax b.x c.x)); maxPoint.y=amax maxPoint.y (amax a.y (amax b.y c.y)); maxPoint.z=amax maxPoint.z (amax a.z (amax b.z c.z))
+  )
+  copy.minimum=minPoint; copy.maximum=maxPoint
+  copy
+ ),
+ fn cloneActionMesh source actionType offset rotationAxis angleDegrees pivot = (
+  if actionType=="TRANSLATE" then cloneTranslatedMesh source offset
+  else if actionType=="ROTATE" then cloneRotatedMesh source rotationAxis angleDegrees pivot
+  else undefined
  ),
  fn clashKey a b = (if a<b then "MESH_"+a+"_"+b else "MESH_"+b+"_"+a),
  fn collectClashRecords records clearance epsilon = (
@@ -34,11 +60,14 @@ struct AT_CoordinationSimulationStruct (
   for r in (collectClashRecords records clearance epsilon) do append ids r.clashId
   ids
  ),
- fn simulateTranslation records movingElementId offset targetClashId:"" requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
+ fn simulateAction records movingElementId actionType:"TRANSLATE" offset:[0,0,0] rotationAxis:[0,0,1] angleDegrees:0.0 pivot:[0,0,0] targetClashId:"" requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
   local result=AT_CoordinationSimulationResult()
   result.simulationId=if simulationId=="" then ("SIM_"+movingElementId) else simulationId
-  result.movingElementId=movingElementId; result.offset=offset
-  if classOf offset!=Point3 then (result.status="INVALID_OFFSET_VECTOR"; append lastResults result; return result)
+  result.movingElementId=movingElementId; result.actionType=actionType
+  result.offset=offset; result.rotationAxis=rotationAxis; result.angleDegrees=angleDegrees; result.pivot=pivot
+  if actionType=="TRANSLATE" and classOf offset!=Point3 then (result.status="INVALID_OFFSET_VECTOR"; append lastResults result; return result)
+  if actionType=="ROTATE" and (classOf rotationAxis!=Point3 or classOf pivot!=Point3 or (classOf angleDegrees!=Integer and classOf angleDegrees!=Float) or length rotationAxis<=1.0e-8) then (result.status="INVALID_ROTATION_PARAMETERS"; append lastResults result; return result)
+  if actionType!="TRANSLATE" and actionType!="ROTATE" then (result.status="UNSUPPORTED_ACTION_TYPE"; append lastResults result; return result)
   if targetClashId!="" do append result.targetClashIds targetClashId
   result.criticalViolationIds=criticalViolationIds
   for c in ruleChecks where c.status!="RULE_FOUND" do appendIfUnique result.ruleMissingIds (if c.ruleId=="" then c.reason else c.ruleId)
@@ -61,7 +90,7 @@ struct AT_CoordinationSimulationStruct (
   for clash in beforeRecords do append before clash.clashId
   local simulated=#(); local found=false
   for source in records do (
-   if source.elementId==movingElementId then (result.sourceTransform=source.sourceTransform; append simulated (cloneTranslatedMesh source offset); found=true)
+   if source.elementId==movingElementId then (result.sourceTransform=source.sourceTransform; append simulated (cloneActionMesh source actionType offset rotationAxis angleDegrees pivot); found=true)
    else append simulated source
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
@@ -87,9 +116,17 @@ struct AT_CoordinationSimulationStruct (
   append lastResults result
   result
  ),
+ fn simulateTranslation records movingElementId offset targetClashId:"" requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
+  simulateAction records movingElementId actionType:"TRANSLATE" offset:offset targetClashId:targetClashId requiredClearance:requiredClearance ruleChecks:ruleChecks criticalViolationIds:criticalViolationIds simulationId:simulationId
+ ),
+ fn simulateRotation records movingElementId axis angleDegrees pivot targetClashId:"" requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
+  simulateAction records movingElementId actionType:"ROTATE" rotationAxis:axis angleDegrees:angleDegrees pivot:pivot targetClashId:targetClashId requiredClearance:requiredClearance ruleChecks:ruleChecks criticalViolationIds:criticalViolationIds simulationId:simulationId
+ ),
  fn toProposalCandidate simulation description:"Exact geometry simulation result" risk:0.0 = (
   local c=AT_CoordinationActionCandidate()
   c.actionId=simulation.simulationId; c.description=description
+  c.actionType=simulation.actionType; c.offset=simulation.offset
+  c.rotationAxis=simulation.rotationAxis; c.angleDegrees=simulation.angleDegrees; c.pivot=simulation.pivot
   c.targetClashIds=simulation.baselineClashIds
   c.resolvedClashIds=simulation.resolvedClashIds
   c.introducedClashIds=simulation.introducedClashIds
