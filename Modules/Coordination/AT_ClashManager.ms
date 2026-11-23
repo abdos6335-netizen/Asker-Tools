@@ -428,6 +428,7 @@ struct AT_ClashManagerStruct (
      local clashId=AT_ClashManager.clashes[actualIndex].clashId
      local status=if ddlStatus.selection>0 then ddlStatus.items[ddlStatus.selection] else "OPEN"
      AT_ClashManager.setTracking clashId owner:edtOwner.text status:status dueDate:edtDue.text note:edtNote.text
+     AT_ClashManager.refreshClashList lbClashes severityFilter:(ddlSeverityFilter.items[amax 1 ddlSeverityFilter.selection]) disciplineFilter:(ddlDisciplineFilter.items[amax 1 ddlDisciplineFilter.selection]) statusFilter:(ddlStatusFilter.items[amax 1 ddlStatusFilter.selection]) searchText:edtClashSearch.text
      lblSummary.text="Tracking saved for "+clashId
     )
    )
