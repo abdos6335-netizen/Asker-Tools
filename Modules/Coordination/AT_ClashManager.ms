@@ -170,7 +170,8 @@ struct AT_ClashManagerStruct (
   AT_SolutionEngine.generateAndRank candidates
  ),
  fn scan requiredClearance:0.0 jurisdiction:"" = (
-  if (classOf requiredClearance!=Integer and classOf requiredClearance!=Float) or requiredClearance<0 then (lastError="INVALID_REQUIRED_CLEARANCE"; return #())
+  if (classOf requiredClearance!=Integer and classOf requiredClearance!=Float) or requiredClearance<0 then (lastError="INVALID_REQUIRED_CLEARANCE"; load #(); return #())
+  load #()
   lastError=""
   AT_UnitConversionEngine.clearErrors()
   lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
