@@ -14,7 +14,7 @@ struct AT_CoordinationSimulationStruct (
  fn cloneTranslatedMesh source offset = (
   local copy=AT_ExactMeshRecord()
   copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.elementId=source.elementId; copy.nodeName=source.nodeName
-  copy.faceCount=source.faceCount
+  copy.faceCount=source.faceCount; copy.requiredClearance=source.requiredClearance
   copy.minimum=source.minimum+offset; copy.maximum=source.maximum+offset
   for t in source.triangles do append copy.triangles (AT_ExactTriangle a:(translatedPoint t.a offset) b:(translatedPoint t.b offset) c:(translatedPoint t.c offset) minimum:(t.minimum+offset) maximum:(t.maximum+offset) faceIndex:t.faceIndex)
   copy
@@ -23,7 +23,8 @@ struct AT_CoordinationSimulationStruct (
  fn collectClashRecords records clearance epsilon = (
   local found=#()
   for i=1 to records.count do for j=i+1 to records.count do (
-   local r=AT_ExactGeometryEngine.inspectPair records[i] records[j] requiredClearance:clearance epsilon:epsilon
+   local pairRequired=AT_ExactGeometryEngine.pairClearance records[i] records[j] AT_DisciplineAdapter.lastInventory clearance
+   local r=AT_ExactGeometryEngine.inspectPair records[i] records[j] requiredClearance:pairRequired epsilon:epsilon
    if r.status!="SEPARATED" do append found r
   )
   found
@@ -50,7 +51,7 @@ struct AT_CoordinationSimulationStruct (
    return result
   )
   local beforeRecords=collectClashRecords records requiredClearance 1.0e-6
-  for clash in beforeRecords where clash.status=="CONTAINMENT_UNVERIFIED" do (
+  for clash in beforeRecords where clash.status=="CONTAINMENT_UNVERIFIED" and (clash.elementA==movingElementId or clash.elementB==movingElementId or clash.clashId==targetClashId) do (
    result.status="BLOCKED_UNVERIFIED_GEOMETRY"
    append result.diagnostics ("Containment could not be verified for "+clash.clashId)
    append lastResults result
@@ -64,7 +65,7 @@ struct AT_CoordinationSimulationStruct (
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
   local afterRecords=collectClashRecords simulated requiredClearance 1.0e-6
-  for clash in afterRecords where clash.status=="CONTAINMENT_UNVERIFIED" do (
+  for clash in afterRecords where clash.status=="CONTAINMENT_UNVERIFIED" and (clash.elementA==movingElementId or clash.elementB==movingElementId) do (
    result.status="BLOCKED_UNVERIFIED_GEOMETRY"
    append result.diagnostics ("Containment could not be verified for "+clash.clashId)
    append lastResults result
