@@ -44,13 +44,13 @@ struct AT_RuleEngineStruct (
         ((rule.disciplineA=="*" or rule.disciplineA==dA) and (rule.disciplineB=="*" or rule.disciplineB==dB)) or
         ((rule.disciplineA=="*" or rule.disciplineA==dB) and (rule.disciplineB=="*" or rule.disciplineB==dA))
     ),
-    fn evaluate dA dB checkType jurisdiction:"" = (
+    fn evaluate dA dB checkType jurisdiction:"" recordResult:true = (
         local candidates=#()
         for r in rules where r.checkType==checkType and pairMatches r dA dB and
             (r.jurisdiction=="" or (jurisdiction!="" and r.jurisdiction==jurisdiction)) do append candidates r
         if candidates.count==0 then (
             local missing=AT_RuleEvaluation checkType:checkType reason:"NO_RULE_REGISTERED"
-            append lastEvaluations missing
+            if recordResult do append lastEvaluations missing
             return missing
         )
         local highestPriority=999
@@ -69,7 +69,7 @@ struct AT_RuleEngineStruct (
             missing.sourceType=unapprovedBest[1].sourceType
             missing.sourceName=unapprovedBest[1].sourceName
             missing.ruleId=unapprovedBest[1].ruleId
-            append lastEvaluations missing
+            if recordResult do append lastEvaluations missing
             return missing
         )
         local approvedHighest=#()
@@ -85,7 +85,7 @@ struct AT_RuleEngineStruct (
                 ambiguous.sourceType=first.sourceType
                 ambiguous.sourceName=first.sourceName
                 ambiguous.ruleId=first.ruleId
-                append lastEvaluations ambiguous
+                if recordResult do append lastEvaluations ambiguous
                 return ambiguous
             )
         )
@@ -105,7 +105,7 @@ struct AT_RuleEngineStruct (
             result.reason="CHECK_TYPE_VALIDATOR_NOT_IMPLEMENTED"
             result.blocking=true
         )
-        append lastEvaluations result
+        if recordResult do append lastEvaluations result
         result
     ),
     fn setRequiredCheckTypes checkTypes = (
@@ -118,20 +118,20 @@ struct AT_RuleEngineStruct (
         requiredCheckTypes=validated
         true
     ),
-    fn evaluateClash clash checkTypes:undefined jurisdiction:"" = (
+    fn evaluateClash clash checkTypes:undefined jurisdiction:"" recordResults:true = (
         local requestedChecks=if checkTypes==undefined then requiredCheckTypes else checkTypes
         if requestedChecks.count==0 then (
             local missing=AT_RuleEvaluation reason:"REQUIRED_CHECK_TYPES_NOT_CONFIGURED"
-            append lastEvaluations missing
+            if recordResults do append lastEvaluations missing
             return #(missing)
         )
         if clash.disciplineA=="UNKNOWN" or clash.disciplineB=="UNKNOWN" then (
             local missing=AT_RuleEvaluation checkType:requestedChecks[1] reason:"DISCIPLINE_CLASSIFICATION_REQUIRED"
-            append lastEvaluations missing
+            if recordResult do append lastEvaluations missing
             return #(missing)
         )
         local results=#()
-        for checkType in requestedChecks do append results (evaluate clash.disciplineA clash.disciplineB checkType jurisdiction:jurisdiction)
+        for checkType in requestedChecks do append results (evaluate clash.disciplineA clash.disciplineB checkType jurisdiction:jurisdiction recordResult:recordResults)
         results
     ),
     fn evaluateBatch checks = (
