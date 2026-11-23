@@ -14,3 +14,7 @@ APIs: `buildClashRows clashes`, `buildClearanceRows clashes`, `buildDisciplineRo
 
 ## Remaining production gates
 Persistent project database, linked-file revision diff/merge, two-way DWG synchronization, actual integrations to the other modules, PDF/XLSX formatting, as-built history, and user-authenticated approvals remain future implementation work. Integration contracts do not imply that the upstream tools are already connected.
+
+
+## Project persistence (0.1.0)
+The project store writes an XML document using .NET XML APIs and a temporary-file replacement with a `.bak` backup. It persists registered rule data, required check-type identifiers, clash tracking, integration history and governance audit events. Loading validates rules before replacing the active registry and restores previous in-memory state if loading fails. Active approvals and scene transactions are intentionally not reauthorized after reload; an approval must be repeated against the current scene snapshot. The store's .NET API behavior still requires runtime validation in supported 3ds Max versions.
