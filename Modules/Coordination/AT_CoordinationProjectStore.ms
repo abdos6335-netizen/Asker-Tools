@@ -173,6 +173,9 @@ struct AT_CoordinationProjectStoreStruct (
    local mappingNodes=xml.SelectNodes "/AskerToolsCoordinationProject/DisciplineMappings/Mapping"
    for node in mappingNodes do (
     local mapping=AT_DisciplineMapping matchKind:(getAttribute node "matchKind") matchValue:(getAttribute node "matchValue") discipline:(getAttribute node "discipline") elementType:(getAttribute node "elementType") sourceLabel:(getAttribute node "sourceLabel") revision:(getAttribute node "revision")
+    mapping.matchKind=toUpper mapping.matchKind
+    mapping.discipline=toUpper mapping.discipline
+    if mapping.matchKind=="USER_PROPERTY" then mapping.matchValue=toUpper mapping.matchValue
     if (findItem #("USER_PROPERTY","LAYER","CLASS","NODE_NAME") mapping.matchKind)==0 or mapping.matchValue=="" or not AT_DisciplineAdapter.validDiscipline mapping.discipline then throw "INVALID_STORED_DISCIPLINE_MAPPING"
     for existing in loadedMappings where existing.matchKind==mapping.matchKind and existing.matchValue==mapping.matchValue do throw "DUPLICATE_STORED_DISCIPLINE_MAPPING"
     append loadedMappings mapping
