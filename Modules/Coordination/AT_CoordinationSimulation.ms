@@ -1,5 +1,5 @@
 /* Asker Tools - Non-destructive exact coordination simulation
-   Evaluates translated mesh snapshots only; never edits source scene nodes.
+   Evaluates translated and pivot-rotated mesh snapshots only; never edits source scene nodes.
 */
 global AT_CoordinationSimulation
 struct AT_CoordinationSimulationResult (
@@ -9,7 +9,7 @@ struct AT_CoordinationSimulationResult (
  beforeCount=0, afterCount=0, diagnostics=#()
 )
 struct AT_CoordinationSimulationStruct (
- version="0.1.0", lastResults=#(), lastErrors=#(),
+ version="0.2.0", lastResults=#(), lastErrors=#(),
  fn translatedPoint p offset = (p+offset),
  fn cloneTranslatedMesh source offset = (
   local copy=AT_ExactMeshRecord()
