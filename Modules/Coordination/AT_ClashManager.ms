@@ -4,7 +4,7 @@
 global AT_ClashManager
 struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", note="", severity="INFORMATION")
 struct AT_ClashManagerStruct (
- version="0.1.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="",
+ version="0.2.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(),
  fn severityFor clash = (
   if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH"
   else if clash.status=="CLEARANCE_VIOLATION" then "MEDIUM"
@@ -49,8 +49,35 @@ struct AT_ClashManagerStruct (
   "HIGH "+(values[1][2] as string)+" | MEDIUM "+(values[2][2] as string)+" | LOW "+(values[3][2] as string)+" | INFO "+(values[4][2] as string)
  ),
  fn generateAlternatives index clearance:0.0 angles:#(15.0,-15.0,30.0,-30.0) = (
+  lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   if index<1 or index>clashes.count or AT_ExactGeometryEngine.lastMeshes.count==0 then return #()
   AT_CoordinationSolutionGenerator.generateAllAlternatives AT_ExactGeometryEngine.lastMeshes #(clashes[index]) clearance:clearance angles:angles
+ ),
+ fn simulateAlternative index jurisdiction:"" = (
+  local actions=AT_CoordinationSolutionGenerator.lastCandidates+AT_CoordinationSolutionGenerator.lastRotationCandidates
+  if index<1 or index>actions.count then return undefined
+  local action=actions[index]
+  local clash=undefined
+  for c in clashes where c.clashId==action.targetClashIds[1] do clash=c
+  if clash==undefined then return undefined
+  local checks=AT_RuleEngine.evaluateClash clash jurisdiction:jurisdiction
+  local simulation=AT_CoordinationSimulation.simulateAction AT_ExactGeometryEngine.lastMeshes action.affectedElementIds[1] actionType:action.actionType offset:action.offset rotationAxis:action.rotationAxis angleDegrees:action.angleDegrees pivot:action.pivot targetClashId:clash.clashId ruleChecks:checks simulationId:action.actionId
+  local candidate=AT_CoordinationSimulation.toProposalCandidate simulation action.description
+  local ranked=AT_SolutionEngine.generateAndRank #(candidate)
+  append lastSimulations simulation; append lastSimulationCandidates candidate; append lastSimulationResults ranked
+  #(simulation,candidate,ranked)
+ ),
+ fn approveAlternative index approver reason approvalDate = (
+  if index<1 or index>lastSimulations.count or index>lastSimulationCandidates.count then return false
+  AT_CoordinationGovernance.approve lastSimulationCandidates[index] lastSimulations[index] approver reason approvalDate
+ ),
+ fn applyAlternative index transactionId = (
+  if index<1 or index>lastSimulationCandidates.count then return undefined
+  local candidate=lastSimulationCandidates[index]
+  if candidate.affectedElementIds.count!=1 then return undefined
+  local node=getNodeByHandle (candidate.affectedElementIds[1] as integer)
+  if not isValidNode node then return undefined
+  AT_CoordinationGovernance.applyAction candidate.actionId node transactionId
  ),
  fn rankAlternatives = (
   local candidates=AT_CoordinationSolutionGenerator.toProposalCandidates()
@@ -79,7 +106,16 @@ struct AT_ClashManagerStruct (
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
    button btnGenerate "Generate Solution Alternatives" width:220 height:28 align:#left
-   listbox lbSolutions "Generated alternatives (simulation required)" items:#() width:620 height:8
+   listbox lbSolutions "Generated alternatives" items:#() width:620 height:8
+   button btnSimulate "Simulate Selected Alternative" width:220 height:28 align:#left
+   group "Engineering approval and application" (
+    editText edtApprover "Approver" text:"" width:300
+    editText edtApprovalDate "Approval date" text:"" width:300
+    editText edtApprovalReason "Approval reason" text:"" width:580
+    button btnApprove "Approve Selected Simulation" width:220 height:26
+    editText edtTransactionId "Transaction ID" text:"" width:300
+    button btnApply "Apply Approved Action" width:180 height:26
+   )
    group "Assignment and status" (
     editText edtOwner "Owner" text:"" width:300
     dropdownList ddlStatus "Status" items:#("OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") width:300
@@ -99,6 +135,23 @@ struct AT_ClashManagerStruct (
     local ranked=AT_ClashManager.rankAlternatives()
     lbSolutions.items=for item in ranked collect (item.description+" | "+(item.reasons as string))
     lblSummary.text=actions.count as string+" alternatives generated; all await exact simulation and engineering approval"
+   )
+   on btnSimulate pressed do (
+    local result=AT_ClashManager.simulateAlternative lbSolutions.selection
+    if result==undefined then lblSummary.text="Simulation could not start; configure required rule checks and select an alternative"
+    else (
+     local simulation=result[1]
+     lblSummary.text=simulation.status+" | resolved "+simulation.resolvedClashIds.count as string+" | new "+simulation.introducedClashIds.count as string
+     if lbSolutions.selection<=lbSolutions.items.count do lbSolutions.items[lbSolutions.selection]=simulation.status+" | "+result[3][1].reasons as string
+    )
+   )
+   on btnApprove pressed do (
+    local ok=AT_ClashManager.approveAlternative lbSolutions.selection edtApprover.text edtApprovalReason.text edtApprovalDate.text
+    lblSummary.text=if ok then "Engineering approval recorded" else "Approval rejected; simulation and approval details must be valid"
+   )
+   on btnApply pressed do (
+    local tx=AT_ClashManager.applyAlternative lbSolutions.selection edtTransactionId.text
+    lblSummary.text=if tx==undefined then "Apply blocked; verify approval, transaction ID and unchanged scene" else tx.state
    )
    on btnSelect pressed do AT_ClashManager.selectClash lbClashes.selection
    on lbClashes selected index do (
@@ -122,6 +175,6 @@ struct AT_ClashManagerStruct (
   )
   createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
  ),
- fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; true)
+ fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
