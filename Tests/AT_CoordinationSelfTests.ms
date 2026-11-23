@@ -175,6 +175,10 @@ struct AT_CoordinationSelfTestsStruct (
    local integrationV2=AT_CoordinationIntegrations.register "QA_REVISION_PROVIDER" "r2" "QA_PROVIDER" capabilities:#(#"read")
    local revisedIntegration=AT_CoordinationIntegrations.get "AT_INT_QA_REVISION_PROVIDER"
    addResult results "INTEGRATION_REVISION_INVALIDATES_OLD_TOKEN" (integrationV1 and integrationV2 and revisedIntegration!=undefined and revisedIntegration.lastSyncToken=="") (if revisedIntegration==undefined then "MISSING" else revisedIntegration.lastSyncToken) ""
+   local duplicateCapabilitiesRejected=not AT_CoordinationIntegrations.register "QA_DUPLICATE_CAPABILITIES" "r1" "QA_PROVIDER" capabilities:#(#"read",#"read")
+   addResult results "INTEGRATION_DUPLICATE_CAPABILITIES_REJECTED" duplicateCapabilitiesRejected duplicateCapabilitiesRejected true
+   local emptyOperationResult=AT_CoordinationIntegrations.exchange "AT_INT_QA_REVISION_PROVIDER" "" #() "r3"
+   addResult results "INTEGRATION_EMPTY_OPERATION_REJECTED" (emptyOperationResult[1]==#"OPERATION_REQUIRED") emptyOperationResult[1] #"OPERATION_REQUIRED"
    AT_CoordinationIntegrations.registry=savedIntegrationRegistry
    AT_CoordinationIntegrations.syncHistory=savedIntegrationHistory
    AT_CoordinationIntegrations.lastErrors=savedIntegrationErrors
