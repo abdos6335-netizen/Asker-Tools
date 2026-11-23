@@ -88,7 +88,7 @@ struct AT_CoordinationProjectStoreStruct (
    true
   ) catch (
    append lastErrors #(path,getCurrentException())
-   try (local fileClass=dotNetClass "System.IO.File"; if fileClass.Exists tempPath do fileClass.Delete tempPath) catch()
+   try (local cleanupFileClass=dotNetClass "System.IO.File"; if cleanupFileClass.Exists tempPath do cleanupFileClass.Delete tempPath) catch()
    false
   )
  ),
@@ -128,6 +128,15 @@ struct AT_CoordinationProjectStoreStruct (
    AT_ClashManager.tracking=loadedTracking
    AT_CoordinationIntegrations.syncHistory=loadedSyncHistory
    AT_CoordinationGovernance.auditLog=loadedAudit
+   AT_CoordinationGovernance.approvals=#()
+   AT_CoordinationGovernance.transactions=#()
+   AT_ClashManager.clashes=#()
+   AT_ClashManager.lastSimulations=#()
+   AT_ClashManager.lastSimulationCandidates=#()
+   AT_ClashManager.lastSimulationResults=#()
+   AT_CoordinationSolutionGenerator.clear()
+   AT_SolutionEngine.clearResults()
+   AT_CoordinationSimulation.clear()
    lastPath=path; lastErrors=#()
    true
   ) catch (
