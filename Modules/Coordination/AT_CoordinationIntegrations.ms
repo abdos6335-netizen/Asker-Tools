@@ -25,15 +25,19 @@ struct AT_CoordinationIntegrationsStruct (
   true
  ),
  fn get integrationId = (for r in registry where r.integrationId==integrationId do return r; undefined),
- fn exchange integrationId operation payload sourceRevision = (
+ fn exchange integrationId operation payload sourceRevision expectedPreviousRevision:"" = (
   local rec=get integrationId
   if rec==undefined or not rec.enabled then return #(#"INTEGRATION_UNAVAILABLE",undefined)
   if sourceRevision=="" then return #(#"SOURCE_REVISION_REQUIRED",undefined)
   if (findItem rec.capabilities operation)==0 then return #(#"CAPABILITY_NOT_SUPPORTED",undefined)
+  if rec.lastSyncToken!=expectedPreviousRevision then (
+   append syncHistory #("REVISION_CONFLICT",integrationId,operation,expectedPreviousRevision,rec.lastSyncToken,sourceRevision)
+   return #(#"REVISION_CONFLICT",rec.lastSyncToken)
+  )
   try (
-   local response=rec.provider operation payload sourceRevision
+   local response=rec.provider operation payload sourceRevision expectedPreviousRevision
    rec.lastSyncToken=sourceRevision; rec.lastError=""
-   append syncHistory #("EXCHANGE_OK",integrationId,operation,sourceRevision)
+   append syncHistory #("EXCHANGE_OK",integrationId,operation,expectedPreviousRevision,sourceRevision)
    #(#"OK",response)
   ) catch (
    rec.lastError=getCurrentException()
