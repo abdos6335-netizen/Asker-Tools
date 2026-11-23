@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0 - Coordination Engine implementation milestone
+- Added explicit metadata-driven adapters for the eight coordination disciplines; unmapped elements remain UNKNOWN.
+- Added approved engineering rule lookup with mandatory-code, authority, manufacturer, project, and default source priority.
+- Added deterministic six-direction translation candidate generation and non-destructive triangle-mesh simulation.
+- Added clash review/tracking, explicit approval gates, translation apply and rollback transaction records.
+- Added revision-aware integration contracts and clash/proposal CSV reporting.
+- Added source-level validation markers and module documentation; MAXScript runtime validation remains pending.
+- Updated core version to 0.6.0.
+
 ## 0.5.0 - Coordination Solution Engine foundation
 - Added structured candidate-to-proposal generation from discipline adapter simulation results.
 - Added target/resolved clash identity validation and duplicate candidate rejection reporting.
@@ -40,7 +49,7 @@
 - Added bootstrap, logging, persistent settings, compatibility reporting, and environment diagnostics.
 
 
-## Unreleased — Coordination Engine Part 1
+## Historical note — Coordination Engine Part 1
 - Added a read-only triangle-mesh geometry engine for exact surface-intersection checks using separating-axis tests, including coplanar axes.
 - Added minimum triangle-surface distance evaluation and explicit required-clearance shortfall reporting.
 - Added result classification and face-level diagnostics; no scene edits or automatic approvals are performed.
