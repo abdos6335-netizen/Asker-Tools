@@ -4,7 +4,7 @@
 global AT_ExactGeometryEngine
 struct AT_ExactTriangle (a=[0,0,0], b=[0,0,0], c=[0,0,0], minimum=[0,0,0], maximum=[0,0,0], faceIndex=0)
 struct AT_ExactMeshRecord (nodeRef, sourceTransform=undefined, elementId="", nodeName="", triangles=#(), minimum=[0,0,0], maximum=[0,0,0], faceCount=0)
-struct AT_ExactClashRecord (clashId="", elementA="", elementB="", status="SEPARATED", minimumDistance=1.0e9, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
+struct AT_ExactClashRecord (clashId="", elementA="", elementB="", nameA="", nameB="", disciplineA="UNKNOWN", disciplineB="UNKNOWN", status="SEPARATED", minimumDistance=1.0e9, requiredClearance=0.0, clearanceShortfall=0.0, intersectingFaceA=0, intersectingFaceB=0, testedTrianglePairs=0)
 struct AT_ExactGeometryEngineStruct (
  version="0.1.0", lastMeshes=#(), lastResults=#(), lastErrors=#(),
  fn idForNode n = (try ((getHandleByAnim n) as string) catch ("")),
