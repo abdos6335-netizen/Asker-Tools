@@ -326,8 +326,14 @@ struct AT_ClashManagerStruct (
     lblSummary.text=if ok then "Audit CSV exported" else "Audit CSV export failed"
    )
    on btnSelfTests pressed do (
-    AT_CoordinationSelfTests.run()
-    lblSummary.text=AT_CoordinationSelfTests.summary()
+    local testPath=AT_Core.root+"\\Tests\\AT_CoordinationSelfTests.ms"
+    if doesFileExist testPath then (
+     try (
+      fileIn testPath
+      AT_CoordinationSelfTests.run()
+      lblSummary.text=AT_CoordinationSelfTests.summary()
+     ) catch (lblSummary.text="Internal self-test failed to load/run: "+getCurrentException())
+    ) else lblSummary.text="Self-test file not found: "+testPath
    )
    on btnSaveProject pressed do (
     local ok=AT_CoordinationProjectStore.save edtStorePath.text
