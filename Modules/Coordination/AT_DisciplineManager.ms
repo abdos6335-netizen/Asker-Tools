@@ -110,7 +110,7 @@ struct AT_DisciplineManagerStruct (
       local ok=AT_DisciplineAdapter.setEnvelope elementId requiredClearance:generalResult[2] serviceClearance:serviceResult[2] installationClearance:installResult[2] serviceEnvelope:service installationEnvelope:install
       if ok then (
        local updated=AT_DisciplineAdapter.lastInventory[lbInventory.selection]
-       lblEnvelopeUnits.text="Existing master units — General: "+AT_DisciplineManager.displayClearance updated.requiredClearance+" | Service: "+AT_DisciplineManager.displayClearance updated.serviceClearance+" | Installation: "+AT_DisciplineManager.displayClearance updated.installationClearance
+       lblEnvelopeUnits.text="Existing master units — General: "+(AT_DisciplineManager.displayClearance updated.requiredClearance)+" | Service: "+(AT_DisciplineManager.displayClearance updated.serviceClearance)+" | Installation: "+(AT_DisciplineManager.displayClearance updated.installationClearance)
        edtClearance.text=""; edtServiceClearance.text=""; edtInstallationClearance.text=""
       )
       lblStatus.text=if ok then "Clearance/envelope overrides saved; rescan clashes before simulation" else "Envelope update failed"
