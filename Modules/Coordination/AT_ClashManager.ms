@@ -107,7 +107,8 @@ struct AT_ClashManagerStruct (
  fn simulateAlternative index jurisdiction:"" = (
   local actions=AT_CoordinationSolutionGenerator.lastCandidates+AT_CoordinationSolutionGenerator.lastRotationCandidates
   if index<1 or index>actions.count then return undefined
-  if not validateCurrentScene jurisdiction:jurisdiction then return undefined
+  if lastScanRuleRevision!=AT_RuleEngine.registryRevision or jurisdiction!=lastScanJurisdiction or (AT_RuleEngine.requiredCheckTypes as string)!=(lastScanRequiredChecks as string) then (lastError="RULES_OR_JURISDICTION_CHANGED_RESCAN_REQUIRED"; return undefined)
+  if lastDisciplineMappingRevision!=AT_DisciplineAdapter.mappingRevision or lastDisciplineMetadataRevision!=AT_DisciplineAdapter.metadataRevision then (lastError="DISCIPLINE_METADATA_CHANGED_RESCAN_REQUIRED"; return undefined)
   local action=actions[index]
   local clash=undefined
   for c in clashes where c.clashId==action.targetClashIds[1] do clash=c
