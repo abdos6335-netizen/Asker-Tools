@@ -4,7 +4,9 @@ This is the required in-host validation plan for the completed nine-part impleme
 
 ## Geometry
 - Axis-aligned box overlap, clear separation, face/edge/vertex contact.
-- Coplanar triangles, near-parallel triangles, tiny triangles, degenerate faces.
+- Coplanar overlap/separation and edge/vertex contact; near-parallel separation, tiny triangles and high-aspect-ratio triangles.
+- SAT axes are normalized before projection so the configured epsilon is a world-space distance; near-zero axes are rejected using thresholds relative to the source edge/normal magnitudes.
+- Closed-mesh ray parity deduplication uses a tighter scale-aware hit tolerance; distinct nearby surface crossings must remain distinct.
 - Parallel, collinear segment pairs with overlapping projections must return zero distance; parallel separated segments must return the perpendicular gap.
 - Point-to-segment checks cover perpendicular projection, zero-length segments, and skew segment pairs with an interior closest point.
 - Rotated, concave, hollow, open, edge-non-manifold, vertex-non-manifold and nested meshes.
