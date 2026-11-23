@@ -20,12 +20,17 @@ struct AT_CoordinationSimulationStruct (
   copy
  ),
  fn clashKey a b = (if a<b then "MESH_"+a+"_"+b else "MESH_"+b+"_"+a),
- fn collectClashes records clearance epsilon = (
-  local ids=#()
+ fn collectClashRecords records clearance epsilon = (
+  local found=#()
   for i=1 to records.count do for j=i+1 to records.count do (
    local r=AT_ExactGeometryEngine.inspectPair records[i] records[j] requiredClearance:clearance epsilon:epsilon
-   if r.status!="SEPARATED" do appendIfUnique ids r.clashId
+   if r.status!="SEPARATED" do append found r
   )
+  found
+ ),
+ fn collectClashes records clearance epsilon = (
+  local ids=#()
+  for r in (collectClashRecords records clearance epsilon) do append ids r.clashId
   ids
  ),
  fn simulateTranslation records movingElementId offset targetClashId:"" requiredClearance:0.0 ruleChecks:#() criticalViolationIds:#() simulationId:"" = (
@@ -44,14 +49,28 @@ struct AT_CoordinationSimulationStruct (
    append lastResults result
    return result
   )
-  local before=collectClashes records requiredClearance 1.0e-6
+  local beforeRecords=collectClashRecords records requiredClearance 1.0e-6
+  for clash in beforeRecords where clash.status=="CONTAINMENT_UNVERIFIED" do (
+   result.status="BLOCKED_UNVERIFIED_GEOMETRY"
+   append result.diagnostics ("Containment could not be verified for "+clash.clashId)
+   append lastResults result
+   return result
+  )
+  local before=for clash in beforeRecords collect clash.clashId
   local simulated=#(); local found=false
   for source in records do (
    if source.elementId==movingElementId then (result.sourceTransform=source.sourceTransform; append simulated (cloneTranslatedMesh source offset); found=true)
    else append simulated source
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
-  local after=collectClashes simulated requiredClearance 1.0e-6
+  local afterRecords=collectClashRecords simulated requiredClearance 1.0e-6
+  for clash in afterRecords where clash.status=="CONTAINMENT_UNVERIFIED" do (
+   result.status="BLOCKED_UNVERIFIED_GEOMETRY"
+   append result.diagnostics ("Containment could not be verified for "+clash.clashId)
+   append lastResults result
+   return result
+  )
+  local after=for clash in afterRecords collect clash.clashId
   result.beforeCount=before.count; result.afterCount=after.count; result.baselineClashIds=before
   for id in before where (findItem after id)==0 do append result.resolvedClashIds id
   for id in after where (findItem before id)==0 do append result.introducedClashIds id
