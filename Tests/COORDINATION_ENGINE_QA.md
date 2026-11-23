@@ -88,6 +88,7 @@ This is the required in-host validation plan for the completed nine-part impleme
 - Re-register a provider at a new revision and confirm its prior revision's lastSyncToken is invalidated; only a separately persisted token matching the new revision may be restored.
 - UTF-8 CSV escaping for commas, quotes, Unicode, CR/LF and file permission errors.
 - Verify clash/proposal report counts and values against source records.
+- Full reports must include registered rule provenance: source type/name, revision, jurisdiction, approval/mandatory state, effective date, value, unit and severity.
 
 ## Version matrix
 Run the full matrix on 3ds Max 2022, 2023, 2024, 2025 and 2026. Treat 2027 as pending until separately tested. Record exact build number, OS, test scene, pass/fail, logs and known deviations. Corona and V-Ray must be tested separately only where renderer-specific scene objects or materials are involved.
