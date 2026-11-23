@@ -321,8 +321,9 @@ struct AT_ClashManagerStruct (
    )
    on btnSimulate pressed do (
     local result=AT_ClashManager.simulateAlternative lbSolutions.selection jurisdiction:edtJurisdiction.text
-    if result==undefined then lblSummary.text=if AT_ClashManager.lastError!="" then AT_ClashManager.lastError else "Simulation could not start; configure required rule checks and select an alternative"
-    else (
+    if result==undefined then (
+     lblSummary.text=if AT_ClashManager.lastError!="" then AT_ClashManager.lastError else "Simulation could not start; configure required rule checks and select an alternative"
+    ) else (
      local simulation=result[1]
      lblSummary.text=simulation.status+" | resolved "+(simulation.resolvedClashIds.count as string)+" | new "+(simulation.introducedClashIds.count as string)
      if lbSolutions.selection<=lbSolutions.items.count do lbSolutions.items[lbSolutions.selection]=simulation.status+" | "+(result[3][1].reasons as string)
