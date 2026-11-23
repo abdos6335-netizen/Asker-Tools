@@ -157,6 +157,10 @@ struct AT_ClashManagerStruct (
   if index<1 or index>lastSimulations.count or index>lastSimulationCandidates.count then return false
   AT_CoordinationGovernance.approve lastSimulationCandidates[index] lastSimulations[index] approver reason approvalDate
  ),
+ fn rollbackTransaction transactionId reason = (
+  if transactionId=="" or reason=="" then return false
+  AT_CoordinationGovernance.rollback transactionId reason
+ ),
  fn applyAlternative index transactionId = (
   if index<1 or index>lastSimulationCandidates.count then return undefined
   local candidate=lastSimulationCandidates[index]
@@ -258,6 +262,9 @@ struct AT_ClashManagerStruct (
     button btnApprove "Approve Selected Simulation" width:220 height:26
     editText edtTransactionId "Transaction ID" text:"" width:300
     button btnApply "Apply Approved Action" width:180 height:26
+    editText edtRollbackTransactionId "Transaction ID to rollback" text:"" width:300
+    editText edtRollbackReason "Rollback reason" text:"" width:300
+    button btnRollback "Rollback Applied Action" width:200 height:26
    )
    group "CSV reports" (
     editText edtReportPath "CSV output path" text:"" width:580
@@ -406,6 +413,10 @@ struct AT_ClashManagerStruct (
      local statusIndex=findItem ddlStatus.items record.status
      ddlStatus.selection=if statusIndex>0 then statusIndex else 1
     )
+   )
+   on btnRollback pressed do (
+    local ok=AT_ClashManager.rollbackTransaction edtRollbackTransactionId.text edtRollbackReason.text
+    lblSummary.text=if ok then "Transaction rolled back" else "Rollback blocked; verify transaction ID, target state and reason"
    )
    on btnSave pressed do (
     if lbClashes.selection>0 and lbClashes.selection<=AT_ClashManager.visibleClashIndices.count then (
