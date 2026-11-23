@@ -5,7 +5,7 @@
 global AT_CoordinationSolutionGenerator
 struct AT_CoordinationSolutionGeneratorStruct (
  version="0.2.0", lastCandidates=#(), lastRotationCandidates=#(), lastErrors=#(),
- fn findRecord records elementId = (for r in records where r.elementId==elementId do return r; undefined),
+ fn findRecord records elementId = (for r in records where r.elementId==elementId and isValidNode r.nodeRef do return r; undefined),
  fn separationOffset moving fixed axis sign clearance = (
   local delta=[0,0,0]
   if axis==1 then delta.x=if sign>0 then fixed.maximum.x-moving.minimum.x+clearance else fixed.minimum.x-moving.maximum.x-clearance
