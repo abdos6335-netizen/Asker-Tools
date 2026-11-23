@@ -15,6 +15,28 @@ struct AT_CoordinationTransaction (
 struct AT_CoordinationGovernanceStruct (
  version="0.2.0", approvals=#(), transactions=#(), auditLog=#(),
  fn findApproval proposalId = (for a in approvals where a.proposalId==proposalId do return a; undefined),
+ fn sameStringSet a b = (
+  if classOf a!=Array or classOf b!=Array or a.count!=b.count then return false
+  local uniqueA=#(); local uniqueB=#()
+  for value in a do appendIfUnique uniqueA value
+  for value in b do appendIfUnique uniqueB value
+  if uniqueA.count!=a.count or uniqueB.count!=b.count then return false
+  for value in a where (findItem b value)==0 do return false
+  true
+ ),
+ fn candidateMatchesSimulation candidate simulation = (
+  if classOf candidate!=AT_CoordinationActionCandidate or classOf simulation!=AT_CoordinationSimulationResult then return false
+  if not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
+  if candidate.actionId!=simulation.simulationId or candidate.actionType!=simulation.actionType then return false
+  if candidate.offset!=simulation.offset or candidate.rotationAxis!=simulation.rotationAxis or candidate.angleDegrees!=simulation.angleDegrees or candidate.pivot!=simulation.pivot then return false
+  if not sameStringSet candidate.targetClashIds simulation.baselineClashIds then return false
+  if not sameStringSet candidate.resolvedClashIds simulation.resolvedClashIds then return false
+  if not sameStringSet candidate.introducedClashIds simulation.introducedClashIds then return false
+  if not sameStringSet candidate.criticalViolationIds simulation.criticalViolationIds then return false
+  if not sameStringSet candidate.missingRuleIds simulation.ruleMissingIds then return false
+  if not sameStringSet candidate.affectedElementIds simulation.affectedElementIds then return false
+  true
+ ),
  fn approve candidate simulation approver reason approvalDate = (
   if candidate==undefined or simulation==undefined or approver=="" or reason=="" or approvalDate=="" then return false
   if not candidate.requiresEngineeringApproval or not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
@@ -23,7 +45,8 @@ struct AT_CoordinationGovernanceStruct (
   if proposal==undefined then return false
   local evaluation=AT_SolutionEngine.evaluateProposal proposal
   if not evaluation.eligible then return false
-  if candidate.actionId!=simulation.simulationId or candidate.actionType!=simulation.actionType or simulation.ruleRevision!=AT_RuleEngine.registryRevision then return false
+  if simulation.ruleRevision!=AT_RuleEngine.registryRevision then return false
+  if not candidateMatchesSimulation candidate simulation then (append auditLog #("APPROVAL_BLOCKED_SIMULATION_IDENTITY_MISMATCH",candidate.actionId,simulation.simulationId); return false)
   if candidate.affectedElementIds.count!=1 or candidate.affectedElementIds[1]!=simulation.movingElementId then return false
   local approvedNode=getNodeByHandle (simulation.movingElementId as integer)
   if not isValidNode approvedNode or approvedNode.objectTransform!=simulation.sourceTransform or approvedNode.pivot!=simulation.sourcePivot then return false
