@@ -1,3 +1,7 @@
+# Coordination report rule provenance — 2026-11-23
+- Added a Registered Project Rules section to full HTML reports, including discipline pair, check type, value/unit, severity, source identity, revision, jurisdiction, approval/mandatory flags, effective date and notes.
+- Extended static validator and report QA requirements so rule provenance can be reviewed alongside clash and missing-rule findings.
+
 # Coordination project integration-state validation — 2026-11-23
 - Project loading now rejects incomplete or duplicate persisted integration IDs before mutating live integration state, preventing ambiguous token restoration.
 - Added the rejection marker to static validation and the project persistence QA matrix.
