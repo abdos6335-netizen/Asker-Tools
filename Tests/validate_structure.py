@@ -67,7 +67,7 @@ checks = {
     'Modules/Coordination/AT_CoordinationGovernance.ms': ['fn approve', 'fn applyAction', 'fn applyTranslation', 'fn applyRotation', 'fn rollback', 'FAILED_ROLLED_BACK', 'APPLY_BLOCKED_STALE_SCENE', 'APPLY_BLOCKED_RULES_CHANGED', 'ROLLBACK_BLOCKED_SCENE_CHANGED', 'objectTransform!=a.sourceTransform', 'afterObjectTransform'],
     'Modules/Coordination/AT_CoordinationIntegrations.ms': ['fn register', 'fn exchange', 'SOURCE_REVISION_REQUIRED', 'CAPABILITY_NOT_SUPPORTED', 'REVISION_CONFLICT', 'expectedPreviousRevision'],
     'Tests/AT_CoordinationSelfTests.ms': ['fn run', 'OVERLAPPING_BOXES', 'CLEARANCE_VIOLATION', 'CLOSED_SOLID_CONTAINMENT', 'OPEN_MESH_CONTAINMENT_UNVERIFIED', 'ROTATION_CANDIDATE_COUNT', 'ROTATION_CANDIDATE_METADATA', 'ROTATION_SNAPSHOT_NON_DESTRUCTIVE', 'UNAPPROVED_HIGHER_PRIORITY_BLOCKS_FALLBACK', 'SAME_PRIORITY_RULE_CONFLICT', 'savedRuleRevision'],
-    'Modules/Coordination/AT_CoordinationReports.ms': ['fn buildClashRows', 'fn buildProposalRows', 'fn buildClearanceRows', 'fn buildDisciplineRows', 'fn buildTrackingRows', 'fn buildApprovalRows', 'fn buildRevisionRows', 'fn buildAuditRows', 'fn buildCriticalRows', 'fn exportCSV', 'csvEscape'],
+    'Modules/Coordination/AT_CoordinationReports.ms': ['fn buildClashRows', 'fn buildProposalRows', 'fn buildClearanceRows', 'fn buildDisciplineRows', 'AT_ClashManager.severityFor c', 'fn buildTrackingRows', 'fn buildApprovalRows', 'fn buildRevisionRows', 'fn buildAuditRows', 'fn buildCriticalRows', 'fn exportCSV', 'csvEscape'],
 }
 for rel, tokens in checks.items():
     source = (ROOT / rel).read_text(encoding='utf-8')
