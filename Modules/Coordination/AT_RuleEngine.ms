@@ -14,7 +14,7 @@ struct AT_RuleEvaluation (
     reason="NO_APPROVED_RULE", blocking=true
 )
 struct AT_RuleEngineStruct (
-    version="0.1.0", rules=#(), lastEvaluations=#(), lastErrors=#(),
+    version="0.2.0", rules=#(), requiredCheckTypes=#(), lastEvaluations=#(), lastErrors=#(),
     sourcePriority=#("MANDATORY_CODE","AUTHORITY_APPROVAL","MANUFACTURER_SPEC","PROJECT_SPEC","ASKER_DEFAULT"),
     fn validSource source = (findItem sourcePriority (toUpper source)>0),
     fn priority source = (findItem sourcePriority (toUpper source)),
@@ -88,14 +88,29 @@ struct AT_RuleEngineStruct (
         append lastEvaluations result
         result
     ),
-    fn evaluateClash clash checkTypes jurisdiction:"" = (
+    fn setRequiredCheckTypes checkTypes = (
+        local validated=#()
+        for checkType in checkTypes do (
+            if classOf checkType!=String or checkType=="" then return false
+            appendIfUnique validated checkType
+        )
+        requiredCheckTypes=validated
+        true
+    ),
+    fn evaluateClash clash checkTypes:undefined jurisdiction:"" = (
+        local requestedChecks=if checkTypes==undefined then requiredCheckTypes else checkTypes
+        if requestedChecks.count==0 then (
+            local missing=AT_RuleEvaluation reason:"REQUIRED_CHECK_TYPES_NOT_CONFIGURED"
+            append lastEvaluations missing
+            return #(missing)
+        )
         if clash.disciplineA=="UNKNOWN" or clash.disciplineB=="UNKNOWN" then (
             local missing=AT_RuleEvaluation reason:"DISCIPLINE_CLASSIFICATION_REQUIRED"
             append lastEvaluations missing
             return #(missing)
         )
         local results=#()
-        for checkType in checkTypes do append results (evaluate clash.disciplineA clash.disciplineB checkType jurisdiction:jurisdiction)
+        for checkType in requestedChecks do append results (evaluate clash.disciplineA clash.disciplineB checkType jurisdiction:jurisdiction)
         results
     ),
     fn evaluateBatch checks = (
@@ -104,6 +119,6 @@ struct AT_RuleEngineStruct (
         results
     ),
     fn clearEvaluations = (lastEvaluations=#(); lastErrors=#(); true),
-    fn clearAll = (rules=#(); clearEvaluations(); true)
+    fn clearAll = (rules=#(); requiredCheckTypes=#(); clearEvaluations(); true)
 )
 AT_RuleEngine=AT_RuleEngineStruct()
