@@ -75,8 +75,10 @@ struct AT_ClashManagerStruct (
    )
   )
   if targets.count==0 then return false
-  if isolationSnapshot.count==0 then (
-   for node in objects do if isValidNode node do append isolationSnapshot #(node,node.isHidden)
+  for node in objects do if isValidNode node do (
+   local alreadyCaptured=false
+   for state in isolationSnapshot where state[1]==node do alreadyCaptured=true
+   if not alreadyCaptured do append isolationSnapshot #(node,node.isHidden)
   )
   for node in objects do if isValidNode node and (findItem targets node)==0 do hide node
   for node in targets do if isValidNode node do unhide node
