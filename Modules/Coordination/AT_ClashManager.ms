@@ -4,7 +4,7 @@
 global AT_ClashManager
 struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", note="", severity="INFORMATION")
 struct AT_ClashManagerStruct (
- version="0.3.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastGeometryErrors=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(), lastDisciplineMappingRevision=-1, lastDisciplineMetadataRevision=-1, lastDisciplineInventory=#(), lastScanMeshes=#(),
+ version="0.3.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastGeometryErrors=#(), lastDisciplineErrors=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(), lastDisciplineMappingRevision=-1, lastDisciplineMetadataRevision=-1, lastDisciplineInventory=#(), lastScanMeshes=#(),
  fn severityFor clash = (
   local base="INFORMATION"
   if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" or clash.status=="CONTAINMENT_UNVERIFIED" then base="HIGH"
@@ -88,9 +88,11 @@ struct AT_ClashManagerStruct (
   local savedInventory=lastDisciplineInventory
   AT_DisciplineAdapter.inspect()
   if not disciplineInventoryMatches savedInventory AT_DisciplineAdapter.lastInventory then (lastError="DISCIPLINE_INVENTORY_CHANGED_RESCAN_REQUIRED"; return false)
+  if AT_DisciplineAdapter.lastErrors.count>0 then (lastError="DISCIPLINE_INSPECTION_ERRORS_PRESENT"; return false)
   local savedMeshes=lastScanMeshes
   AT_ExactGeometryEngine.inspect()
   if not meshInventoryMatches savedMeshes AT_ExactGeometryEngine.lastMeshes then (lastError="SCENE_GEOMETRY_CHANGED_RESCAN_REQUIRED"; return false)
+  if AT_ExactGeometryEngine.lastErrors.count>0 then (lastError="GEOMETRY_INSPECTION_ERRORS_PRESENT"; return false)
   lastError=""
   true
  ),
@@ -151,6 +153,7 @@ struct AT_ClashManagerStruct (
   AT_ExactGeometryEngine.inspect()
   lastScanMeshes=AT_ExactGeometryEngine.lastMeshes
   lastGeometryErrors=AT_ExactGeometryEngine.lastErrors
+  lastDisciplineErrors=AT_DisciplineAdapter.lastErrors
   for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do meshRecord.requiredClearance=element.requiredClearance
   for i=1 to AT_ExactGeometryEngine.lastMeshes.count do for j=i+1 to AT_ExactGeometryEngine.lastMeshes.count do (
    local meshA=AT_ExactGeometryEngine.lastMeshes[i]
@@ -199,6 +202,7 @@ struct AT_ClashManagerStruct (
    label lblCounts "CRITICAL 0 | HIGH 0 | MEDIUM 0 | LOW 0 | INFO 0" align:#left
    label lblRuleMissing "Missing rule checks: 0" align:#left
    label lblGeometryErrors "Geometry inspection errors: 0" align:#left
+   label lblDisciplineErrors "Discipline inspection errors: 0" align:#left
    listbox lbClashes "Detected clashes" items:#() width:620 height:18
    button btnSelect "Select Clash Elements" width:160 height:28 align:#left
    button btnGenerate "Generate Solution Alternatives" width:220 height:28 align:#left
@@ -290,6 +294,7 @@ struct AT_ClashManagerStruct (
     lblCounts.text=AT_ClashManager.countsLabel()
     lblRuleMissing.text="Missing rule checks: "+(AT_ClashManager.lastRuleMissingPairs.count as string)
     lblGeometryErrors.text="Geometry inspection errors: "+(AT_ClashManager.lastGeometryErrors.count as string)
+    lblDisciplineErrors.text="Discipline inspection errors: "+(AT_ClashManager.lastDisciplineErrors.count as string)
     lbSolutions.items=#()
    )
    on btnGenerate pressed do (
@@ -342,6 +347,6 @@ struct AT_ClashManagerStruct (
   )
   createDialog AT_ClashManagerRollout style:#(#style_titlebar,#style_sysmenu,#style_resizing)
  ),
- fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastGeometryErrors=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); lastDisciplineMappingRevision=-1; lastDisciplineMetadataRevision=-1; lastDisciplineInventory=#(); lastScanMeshes=#(); true)
+ fn clear = (clashes=#(); tracking=#(); selectedIndex=0; lastError=""; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); lastPairClearances=#(); lastRuleMissingPairs=#(); lastGeometryErrors=#(); lastDisciplineErrors=#(); lastScanRuleRevision=-1; lastScanJurisdiction=""; lastScanRequiredChecks=#(); lastDisciplineMappingRevision=-1; lastDisciplineMetadataRevision=-1; lastDisciplineInventory=#(); lastScanMeshes=#(); true)
 )
 AT_ClashManager=AT_ClashManagerStruct()
