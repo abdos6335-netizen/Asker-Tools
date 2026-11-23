@@ -37,3 +37,7 @@ The Rule Manager rollout provides explicit entry/edit-by-rule-ID, removal, autho
 
 ## Rule measurement units
 Length-based check types (`CLEARANCE`, `MIN_CLEARANCE`, `SERVICE_CLEARANCE`, `INSTALLATION_CLEARANCE`) require an explicit numeric value and supported unit. The unit adapter converts tagged mm/cm/m/km/in/ft values through 3ds Max `units.decodeValue` into internal master units; `system`/ `master` explicitly means the caller already supplied master units. Unknown units or missing values produce `RULE_MISSING` and block simulation. Other check types currently return `CHECK_TYPE_VALIDATOR_NOT_IMPLEMENTED` and block simulation; a registered rule value alone is not treated as proof that access, fire-rating, structural, maintenance or installation checks passed.
+
+
+## Discipline Manager UI (0.1.0)
+The Discipline Manager provides exact mapping by user property, layer, class or node name; mapping source/revision; and per-element required clearance with explicit unit conversion. Service/installation envelope fields are currently stored as references/metadata only and are not yet expanded into 3D collision geometry. Mapping and envelope changes invalidate the previous clash scan and require a rescan before simulation.
