@@ -14,7 +14,7 @@ struct AT_RuleEvaluation (
     reason="NO_APPROVED_RULE", blocking=true
 )
 struct AT_RuleEngineStruct (
-    version="0.2.0", rules=#(), requiredCheckTypes=#(), lastEvaluations=#(), lastErrors=#(),
+    version="0.3.0", registryRevision=0, rules=#(), requiredCheckTypes=#(), lastEvaluations=#(), lastErrors=#(),
     sourcePriority=#("MANDATORY_CODE","AUTHORITY_APPROVAL","MANUFACTURER_SPEC","PROJECT_SPEC","ASKER_DEFAULT"),
     supportedDisciplines=#("ARCHITECTURE","STRUCTURE","ELECTRICAL","HVAC","FIRE_FIGHTING","PLUMBING","LOW_CURRENT","INTERIOR_ELEMENTS"),
     validSeverities=#("CRITICAL","HIGH","MEDIUM","LOW","INFORMATION"),
@@ -30,11 +30,13 @@ struct AT_RuleEngineStruct (
         if rule.value!=undefined and (rule.value<0 or rule.unit=="") then return false
         for i=rules.count to 1 by -1 where rules[i].ruleId==rule.ruleId do deleteItem rules i
         append rules rule
+        registryRevision+=1
         true
     ),
     fn removeRule ruleId = (
         local removed=false
         for i=rules.count to 1 by -1 where rules[i].ruleId==ruleId do (deleteItem rules i; removed=true)
+        if removed do registryRevision+=1
         removed
     ),
     fn specificity rule jurisdiction = ((if rule.disciplineA=="*" then 0 else 1)+(if rule.disciplineB=="*" then 0 else 1))*2+(if rule.jurisdiction!="" and rule.jurisdiction==jurisdiction then 1 else 0),
@@ -108,6 +110,7 @@ struct AT_RuleEngineStruct (
             if classOf checkType!=String or checkType=="" then return false
             appendIfUnique validated checkType
         )
+        if (validated as string)!=(requiredCheckTypes as string) do registryRevision+=1
         requiredCheckTypes=validated
         true
     ),
@@ -133,6 +136,6 @@ struct AT_RuleEngineStruct (
         results
     ),
     fn clearEvaluations = (lastEvaluations=#(); lastErrors=#(); true),
-    fn clearAll = (rules=#(); requiredCheckTypes=#(); clearEvaluations(); true)
+    fn clearAll = (rules=#(); requiredCheckTypes=#(); registryRevision+=1; clearEvaluations(); true)
 )
 AT_RuleEngine=AT_RuleEngineStruct()
