@@ -4,7 +4,7 @@
 global AT_CoordinationGovernance
 struct AT_CoordinationApproval (
  proposalId="", approved=false, approver="", approvalDate="", reason="",
- simulationId="", candidate=undefined
+ simulationId="", offset=[0,0,0], candidate=undefined
 )
 struct AT_CoordinationTransaction (
  transactionId="", proposalId="", elementId="", nodeRef=undefined,
@@ -19,7 +19,7 @@ struct AT_CoordinationGovernanceStruct (
   if not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
   if candidate.actionId!=simulation.simulationId or candidate.affectedElementIds.count!=1 or candidate.affectedElementIds[1]!=simulation.movingElementId then return false
   if simulation.introducedClashIds.count>0 or simulation.ruleMissingIds.count>0 or simulation.criticalViolationIds.count>0 then return false
-  local a=AT_CoordinationApproval proposalId:candidate.actionId approved:true approver:approver approvalDate:approvalDate reason:reason simulationId:simulation.simulationId candidate:candidate
+  local a=AT_CoordinationApproval proposalId:candidate.actionId approved:true approver:approver approvalDate:approvalDate reason:reason simulationId:simulation.simulationId offset:simulation.offset candidate:candidate
   local old=findApproval candidate.actionId
   if old!=undefined then (local idx=findItem approvals old; deleteItem approvals idx)
   append approvals a
@@ -31,6 +31,7 @@ struct AT_CoordinationGovernanceStruct (
   if a==undefined or not a.approved or not isValidNode nodeRef then return undefined
   local expectedId=try ((getHandleByAnim nodeRef) as string) catch ("")
   if (findItem a.candidate.affectedElementIds expectedId)==0 or expectedId!=a.candidate.affectedElementIds[1] then return undefined
+  if offset!=a.offset then return undefined
   local tx=AT_CoordinationTransaction transactionId:transactionId proposalId:proposalId elementId:expectedId nodeRef:nodeRef beforeTransform:nodeRef.transform state:"PREPARED"
   append transactions tx
   try (
