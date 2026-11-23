@@ -17,6 +17,7 @@ struct AT_CoordinationGovernanceStruct (
  fn approve candidate simulation approver reason approvalDate = (
   if candidate==undefined or simulation==undefined or approver=="" or reason=="" then return false
   if not candidate.simulationValidated or not simulation.validated or simulation.status!="EXACT_GEOMETRY_SIMULATION_PASSED" then return false
+  if candidate.actionId!=simulation.simulationId or candidate.affectedElementIds.count!=1 or candidate.affectedElementIds[1]!=simulation.movingElementId then return false
   if simulation.introducedClashIds.count>0 or simulation.ruleMissingIds.count>0 or simulation.criticalViolationIds.count>0 then return false
   local a=AT_CoordinationApproval proposalId:candidate.actionId approved:true approver:approver approvalDate:approvalDate reason:reason simulationId:simulation.simulationId candidate:candidate
   local old=findApproval candidate.actionId
@@ -29,7 +30,7 @@ struct AT_CoordinationGovernanceStruct (
   local a=findApproval proposalId
   if a==undefined or not a.approved or not isValidNode nodeRef then return undefined
   local expectedId=try ((getHandleByAnim nodeRef) as string) catch ("")
-  if (findItem a.candidate.affectedElementIds expectedId)==0 then return undefined
+  if (findItem a.candidate.affectedElementIds expectedId)==0 or expectedId!=a.candidate.affectedElementIds[1] then return undefined
   local tx=AT_CoordinationTransaction transactionId:transactionId proposalId:proposalId elementId:expectedId nodeRef:nodeRef beforeTransform:nodeRef.transform state:"PREPARED"
   append transactions tx
   try (
