@@ -24,6 +24,8 @@ struct AT_CoordinationGovernanceStruct (
   if not evaluation.eligible then return false
   if candidate.actionId!=simulation.simulationId or candidate.actionType!=simulation.actionType or simulation.ruleRevision!=AT_RuleEngine.registryRevision then return false
   if candidate.affectedElementIds.count!=1 or candidate.affectedElementIds[1]!=simulation.movingElementId then return false
+  local approvedNode=getNodeByHandle (simulation.movingElementId as integer)
+  if not isValidNode approvedNode or approvedNode.objectTransform!=simulation.sourceTransform or approvedNode.pivot!=simulation.sourcePivot then return false
   if candidate.offset!=simulation.offset or candidate.rotationAxis!=simulation.rotationAxis or candidate.angleDegrees!=simulation.angleDegrees or candidate.pivot!=simulation.pivot then return false
   if simulation.introducedClashIds.count>0 or simulation.ruleMissingIds.count>0 or simulation.criticalViolationIds.count>0 or simulation.sourceTransform==undefined then return false
   if simulation.actionType=="ROTATE" and simulation.pivot!=simulation.sourcePivot then return false
