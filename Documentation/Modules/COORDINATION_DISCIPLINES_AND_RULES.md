@@ -41,3 +41,6 @@ Length-based check types (`CLEARANCE`, `MIN_CLEARANCE`, `SERVICE_CLEARANCE`, `IN
 
 ## Discipline Manager UI (0.1.0)
 The Discipline Manager provides exact mapping by user property, layer, class or node name. A valid `AT_DISCIPLINE` node user property is accepted directly when no explicit mapping exists; an invalid non-empty value blocks fallback classification. mapping source/revision; and per-element required clearance with explicit unit conversion. Service/installation envelope fields are currently stored as references/metadata only and are not yet expanded into 3D collision geometry. Mapping and envelope changes invalidate the previous clash scan and require a rescan before simulation.
+
+
+Per-element envelope overrides can store three independent numeric master-unit clearances: general required clearance, service clearance, and installation clearance. Service/installation envelope references may also be stored as metadata; those references are not yet converted into volumetric geometry. The numeric clearances participate conservatively in exact surface-distance checks.
