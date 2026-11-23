@@ -76,3 +76,5 @@
 - Added minimum triangle-surface distance evaluation and explicit required-clearance shortfall reporting.
 - Added result classification and face-level diagnostics; no scene edits or automatic approvals are performed.
 - MAXScript runtime and 3ds Max version validation remain pending.
+
+- 2026-11-23: Improved closed-mesh ray parity boundary handling: inclusive shared-edge/shared-vertex ray hits, scale-relative determinant rejection, normalized voting directions, and coincident-hit deduplication. Added in-host shared-edge and shared-vertex regression cases; runtime execution remains pending in 3ds Max.
