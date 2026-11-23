@@ -6,14 +6,12 @@ struct AT_ClashTrackingRecord (clashId="", owner="", status="OPEN", dueDate="", 
 struct AT_ClashManagerStruct (
  version="0.2.0", clashes=#(), tracking=#(), selectedIndex=0, lastError="", lastSimulations=#(), lastSimulationCandidates=#(), lastSimulationResults=#(), lastPairClearances=#(), lastRuleMissingPairs=#(), lastScanRuleRevision=-1, lastScanJurisdiction="", lastScanRequiredChecks=#(),
  fn severityFor clash = (
-  if clash.ruleSeverity=="CRITICAL" then "CRITICAL"
-  else if clash.ruleSeverity=="HIGH" then "HIGH"
-  else if clash.ruleSeverity=="MEDIUM" then "MEDIUM"
-  else if clash.ruleSeverity=="LOW" then "LOW"
-  else if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH"
-  else if clash.status=="CLEARANCE_VIOLATION" then "MEDIUM"
-  else if clash.status=="CONTAINMENT_UNVERIFIED" then "HIGH"
-  else "INFORMATION"
+  local base="INFORMATION"
+  if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" or clash.status=="CONTAINMENT_UNVERIFIED" then base="HIGH"
+  else if clash.status=="CLEARANCE_VIOLATION" then base="MEDIUM"
+  local baseRank=findItem #("INFORMATION","LOW","MEDIUM","HIGH","CRITICAL") base
+  local ruleRank=findItem #("INFORMATION","LOW","MEDIUM","HIGH","CRITICAL") clash.ruleSeverity
+  if ruleRank!=undefined and ruleRank>baseRank then clash.ruleSeverity else base
  ),
  fn clashLabel clash = (
   local distanceText=if clash.minimumDistanceKnown then (formattedPrint clash.minimumDistance format:".4f") else "not measured"
