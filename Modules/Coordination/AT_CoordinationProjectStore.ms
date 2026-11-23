@@ -113,9 +113,9 @@ struct AT_CoordinationProjectStoreStruct (
     setAttribute node "revision" record.revision
     setAttribute node "lastSyncToken" record.lastSyncToken
     setAttribute node "enabled" record.enabled
-    append savedIntegrationIds record.integrationId
+    append savedIntegrationIds #(record.integrationId,record.revision)
    )
-   for token in pendingIntegrationTokens where (findItem savedIntegrationIds token[1])==0 do (
+   for token in pendingIntegrationTokens where (findItem savedIntegrationIds #(token[1],token[3]))==0 do (
     local node=addChild xml integrationStatesNode "Integration"
     setAttribute node "integrationId" token[1]
     setAttribute node "moduleName" token[2]
