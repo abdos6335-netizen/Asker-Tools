@@ -46,7 +46,7 @@ struct AT_CoordinationSolutionGeneratorStruct (
    if a==undefined or b==undefined then append lastErrors #(clash.clashId,"CLASH_ELEMENT_NOT_FOUND")
    else for moving in #(a,b) do for axisIndex=1 to 3 do for angle in angles where (classOf angle==Integer or classOf angle==Float) and angle!=0 do (
     local axis=if axisIndex==1 then [1,0,0] else if axisIndex==2 then [0,1,0] else [0,0,1]
-    local pivot=moving.nodeRef.transform.row4
+    local pivot=moving.nodeRef.pivot
     local c=AT_CoordinationActionCandidate()
     c.actionId="ROT_"+moving.elementId+"_"+clash.clashId+"_"+(axisIndex as string)+"_"+(angle as string)
     c.description="Rotate "+moving.nodeName+" by "+(angle as string)+" degrees around world axis "+(axisIndex as string)
