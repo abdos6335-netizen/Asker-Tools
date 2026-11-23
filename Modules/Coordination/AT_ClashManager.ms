@@ -19,9 +19,9 @@ struct AT_ClashManagerStruct (
  ),
  fn load clashes = (AT_ClashManager.clashes=clashes; selectedIndex=if clashes.count>0 then 1 else 0; lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#(); true),
  fn trackingFor clashId = (
-  for t in tracking where t.clashId==clashId do return t
   local severity="INFORMATION"
   for clash in clashes where clash.clashId==clashId do severity=severityFor clash
+  for t in tracking where t.clashId==clashId do (t.severity=severity; return t)
   local record=AT_ClashTrackingRecord clashId:clashId severity:severity
   append tracking record
   record
