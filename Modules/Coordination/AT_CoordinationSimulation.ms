@@ -14,7 +14,8 @@ struct AT_CoordinationSimulationStruct (
  fn cloneTranslatedMesh source offset = (
   local copy=AT_ExactMeshRecord()
   copy.nodeRef=source.nodeRef; copy.sourceTransform=source.sourceTransform; copy.sourcePivot=source.sourcePivot; copy.elementId=source.elementId; copy.nodeName=source.nodeName
-  copy.faceCount=source.faceCount; copy.requiredClearance=source.requiredClearance
+  copy.faceCount=source.faceCount; copy.validFaceCount=source.validFaceCount; copy.invalidFaceCount=source.invalidFaceCount
+  copy.requiredClearance=source.requiredClearance; copy.isClosed=source.isClosed; copy.isManifold=source.isManifold; copy.topologyChecked=source.topologyChecked
   copy.minimum=source.minimum+offset; copy.maximum=source.maximum+offset
   for t in source.triangles do append copy.triangles (AT_ExactTriangle a:(translatedPoint t.a offset) b:(translatedPoint t.b offset) c:(translatedPoint t.c offset) minimum:(t.minimum+offset) maximum:(t.maximum+offset) faceIndex:t.faceIndex)
   copy
