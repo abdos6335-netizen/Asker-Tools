@@ -8,7 +8,7 @@ struct AT_ClashManagerStruct (
  fn severityFor clash = (
   if clash.status=="EXACT_MESH_INTERFERENCE" or clash.status=="SOLID_CONTAINMENT_INTERFERENCE" then "HIGH"
   else if clash.status=="CLEARANCE_VIOLATION" then "MEDIUM"
-  else if clash.status=="CONTAINMENT_UNVERIFIED" then "INFORMATION"
+  else if clash.status=="CONTAINMENT_UNVERIFIED" then "HIGH"
   else "INFORMATION"
  ),
  fn clashLabel clash = (
@@ -19,6 +19,7 @@ struct AT_ClashManagerStruct (
  fn trackingFor clashId = (for t in tracking where t.clashId==clashId do return t; local t=AT_ClashTrackingRecord clashId:clashId; append tracking t; t),
  fn setTracking clashId owner:"" status:"OPEN" dueDate:"" note:"" = (
   local t=trackingFor clashId
+  if (findItem #("OPEN","IN_PROGRESS","UNDER_REVIEW","RESOLVED","WONT_FIX") status)==0 then return false
   t.owner=owner; t.status=status; t.dueDate=dueDate; t.note=note; true
  ),
  fn getTracking clashId = (trackingFor clashId),
@@ -64,7 +65,8 @@ struct AT_ClashManagerStruct (
   local simulation=AT_CoordinationSimulation.simulateAction AT_ExactGeometryEngine.lastMeshes action.affectedElementIds[1] actionType:action.actionType offset:action.offset rotationAxis:action.rotationAxis angleDegrees:action.angleDegrees pivot:action.pivot targetClashId:clash.clashId ruleChecks:checks simulationId:action.actionId
   local candidate=AT_CoordinationSimulation.toProposalCandidate simulation action.description
   local ranked=AT_SolutionEngine.generateAndRank #(candidate)
-  append lastSimulations simulation; append lastSimulationCandidates candidate; append lastSimulationResults ranked
+  while lastSimulations.count<index do (append lastSimulations undefined; append lastSimulationCandidates undefined; append lastSimulationResults undefined)
+  lastSimulations[index]=simulation; lastSimulationCandidates[index]=candidate; lastSimulationResults[index]=ranked
   #(simulation,candidate,ranked)
  ),
  fn approveAlternative index approver reason approvalDate = (
@@ -84,6 +86,7 @@ struct AT_ClashManagerStruct (
   AT_SolutionEngine.generateAndRank candidates
  ),
  fn scan requiredClearance:0.0 = (
+  lastSimulations=#(); lastSimulationCandidates=#(); lastSimulationResults=#()
   AT_DisciplineAdapter.inspect()
   AT_ExactGeometryEngine.inspect()
   for meshRecord in AT_ExactGeometryEngine.lastMeshes do for element in AT_DisciplineAdapter.lastInventory where element.elementId==meshRecord.elementId do meshRecord.requiredClearance=element.requiredClearance
@@ -112,6 +115,9 @@ struct AT_ClashManagerStruct (
     editText edtApprover "Approver" text:"" width:300
     editText edtApprovalDate "Approval date" text:"" width:300
     editText edtApprovalReason "Approval reason" text:"" width:580
+    editText edtJurisdiction "Project jurisdiction" text:"" width:300
+    editText edtRequiredChecks "Required check types (; separated)" text:"" width:580
+    button btnSetChecks "Set required project checks" width:220 height:26
     button btnApprove "Approve Selected Simulation" width:220 height:26
     editText edtTransactionId "Transaction ID" text:"" width:300
     button btnApply "Apply Approved Action" width:180 height:26
@@ -137,13 +143,18 @@ struct AT_ClashManagerStruct (
     lblSummary.text=actions.count as string+" alternatives generated; all await exact simulation and engineering approval"
    )
    on btnSimulate pressed do (
-    local result=AT_ClashManager.simulateAlternative lbSolutions.selection
+    local result=AT_ClashManager.simulateAlternative lbSolutions.selection jurisdiction:edtJurisdiction.text
     if result==undefined then lblSummary.text="Simulation could not start; configure required rule checks and select an alternative"
     else (
      local simulation=result[1]
-     lblSummary.text=simulation.status+" | resolved "+simulation.resolvedClashIds.count as string+" | new "+simulation.introducedClashIds.count as string
-     if lbSolutions.selection<=lbSolutions.items.count do lbSolutions.items[lbSolutions.selection]=simulation.status+" | "+result[3][1].reasons as string
+     lblSummary.text=simulation.status+" | resolved "+(simulation.resolvedClashIds.count as string)+" | new "+(simulation.introducedClashIds.count as string)
+     if lbSolutions.selection<=lbSolutions.items.count do lbSolutions.items[lbSolutions.selection]=simulation.status+" | "+(result[3][1].reasons as string)
     )
+   )
+   on btnSetChecks pressed do (
+    local checkTypes=filterString edtRequiredChecks.text ";"
+    local ok=AT_RuleEngine.setRequiredCheckTypes checkTypes
+    lblSummary.text=if ok then "Required project checks configured" else "Invalid required check type list"
    )
    on btnApprove pressed do (
     local ok=AT_ClashManager.approveAlternative lbSolutions.selection edtApprover.text edtApprovalReason.text edtApprovalDate.text
