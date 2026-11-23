@@ -38,3 +38,10 @@
 
 ## 0.1.0 - Foundation
 - Added bootstrap, logging, persistent settings, compatibility reporting, and environment diagnostics.
+
+
+## Unreleased — Coordination Engine Part 1
+- Added a read-only triangle-mesh geometry engine for exact surface-intersection checks using separating-axis tests, including coplanar axes.
+- Added minimum triangle-surface distance evaluation and explicit required-clearance shortfall reporting.
+- Added result classification and face-level diagnostics; no scene edits or automatic approvals are performed.
+- MAXScript runtime and 3ds Max version validation remain pending.
