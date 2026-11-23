@@ -111,3 +111,6 @@ This is triangle-surface intersection for the mesh snapshot supplied by 3ds Max,
 
 ## Closed-mesh containment extension (0.2.0)
 The geometry snapshot now records undirected edge incidence to distinguish closed two-manifold meshes from open or non-manifold surfaces. When two mesh AABBs are nested and their triangle surfaces do not intersect, a three-direction ray-parity check tests whether a representative inner-mesh vertex lies inside the outer closed mesh. Confirmed containment is reported as `SOLID_CONTAINMENT_INTERFERENCE`; nested AABBs involving open/non-manifold meshes are reported as `CONTAINMENT_UNVERIFIED`. The simulation blocks when an unverified-containment condition is present before or after a proposed move. This remains a triangle-mesh method, not a certified B-rep solid kernel; nested shells, self-intersections, inconsistent topology, and pathological tessellation still require in-host test scenes.
+
+
+Degenerate zero-area triangles are excluded from distance/intersection calculations and counted. A mesh with no valid triangles is rejected from the geometry inventory; any mesh with skipped faces is not considered closed/manifold for containment validation.
