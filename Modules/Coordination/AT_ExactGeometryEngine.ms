@@ -308,6 +308,9 @@ struct AT_ExactGeometryEngineStruct (
   if (classOf defaultClearance!=Integer and classOf defaultClearance!=Float) or defaultClearance<0 then (
    append lastErrors #("","INVALID_DEFAULT_CLEARANCE"); return results
   )
+  if (classOf epsilon!=Integer and classOf epsilon!=Float) or epsilon<0 then (
+   append lastErrors #("","INVALID_GEOMETRY_TOLERANCE"); return results
+  )
   for i=1 to source.count do for j=i+1 to source.count do (
    local a=source[i]; local b=source[j]
    local clearance=pairClearance a b inventory defaultClearance pairOverrides:pairOverrides
@@ -325,6 +328,9 @@ struct AT_ExactGeometryEngineStruct (
   local results=#(); lastErrors=#()
   if (classOf requiredClearance!=Integer and classOf requiredClearance!=Float) or requiredClearance<0 then (
    append lastErrors #("","INVALID_CLEARANCE_VALUE"); return results
+  )
+  if (classOf epsilon!=Integer and classOf epsilon!=Float) or epsilon<0 then (
+   append lastErrors #("","INVALID_GEOMETRY_TOLERANCE"); return results
   )
   for i=1 to source.count do for j=i+1 to source.count where j<=source.count do (
    local a=source[i]; local b=source[j]
