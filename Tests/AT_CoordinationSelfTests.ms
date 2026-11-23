@@ -136,6 +136,10 @@ struct AT_CoordinationSelfTestsStruct (
    addResult results "POINT_TO_SEGMENT_PERPENDICULAR_DISTANCE" (abs(pointOnSegment-1.0)<=1.0e-8) pointOnSegment 1.0
    addResult results "POINT_TO_DEGENERATE_SEGMENT_DISTANCE" (abs(pointOnDegenerate-1.0)<=1.0e-8) pointOnDegenerate 1.0
    addResult results "SKEW_SEGMENT_INTERIOR_DISTANCE" (abs(skewDistance-1.0)<=1.0e-8) skewDistance 1.0
+   local tinyPointDistance=AT_ExactGeometryEngine.pointSegmentDistanceSquared [0.000001,0.000001,0] [0,0,0] [0.000002,0,0]
+   local tinyParallelOverlap=AT_ExactGeometryEngine.segmentDistanceSquared [0,0,0] [0.000002,0,0] [0.000001,0,0] [0.000003,0,0]
+   addResult results "TINY_SEGMENT_POINT_DISTANCE_SCALE" (abs(tinyPointDistance-1.0e-12)<=1.0e-18) tinyPointDistance 1.0e-12
+   addResult results "TINY_PARALLEL_SEGMENT_OVERLAP_ZERO" (tinyParallelOverlap<=1.0e-24) tinyParallelOverlap 0.0
 
    local unitResult=AT_UnitConversionEngine.toSystemUnits 100.0 "mm"
    addResult results "MILLIMETER_TO_MASTER_UNIT_CONVERSION" (unitResult.valid and abs(unitResult.systemValue-3.937007874)<0.001) unitResult.systemValue 3.937007874
