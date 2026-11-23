@@ -3,7 +3,7 @@
 */
 global AT_CoordinationSimulation
 struct AT_CoordinationSimulationResult (
- simulationId="", movingElementId="", offset=[0,0,0], targetClashIds=#(), validated=false, status="NOT_RUN",
+ simulationId="", movingElementId="", offset=[0,0,0], targetClashIds=#(), baselineClashIds=#(), validated=false, status="NOT_RUN",
  resolvedClashIds=#(), introducedClashIds=#(), remainingClashIds=#(),
  ruleMissingIds=#(), criticalViolationIds=#(), affectedElementIds=#(),
  beforeCount=0, afterCount=0, diagnostics=#()
@@ -45,7 +45,7 @@ struct AT_CoordinationSimulationStruct (
   )
   if not found then (result.status="BLOCKED_ELEMENT_NOT_FOUND"; append lastErrors #(movingElementId,"ELEMENT_NOT_FOUND"); append lastResults result; return result)
   local after=collectClashes simulated requiredClearance 1.0e-6
-  result.beforeCount=before.count; result.afterCount=after.count
+  result.beforeCount=before.count; result.afterCount=after.count; result.baselineClashIds=before
   for id in before where (findItem after id)==0 do append result.resolvedClashIds id
   for id in after where (findItem before id)==0 do append result.introducedClashIds id
   for id in after do append result.remainingClashIds id
@@ -61,7 +61,7 @@ struct AT_CoordinationSimulationStruct (
  fn toProposalCandidate simulation description:"Exact geometry simulation result" risk:0.0 = (
   local c=AT_CoordinationActionCandidate()
   c.actionId=simulation.simulationId; c.description=description
-  c.targetClashIds=simulation.targetClashIds
+  c.targetClashIds=simulation.baselineClashIds
   c.resolvedClashIds=simulation.resolvedClashIds
   c.introducedClashIds=simulation.introducedClashIds
   c.criticalViolationIds=simulation.criticalViolationIds
