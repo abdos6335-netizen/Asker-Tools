@@ -219,6 +219,7 @@ struct AT_ClashManagerStruct (
    group "CSV reports" (
     editText edtReportPath "CSV output path" text:"" width:580
     button btnExportClashes "Export Clash Report" width:180 height:26
+    button btnExportGeometryErrors "Export Geometry Errors" width:200 height:26
     button btnExportMissing "Export Missing Rules" width:180 height:26
     button btnExportTracking "Export Tracking" width:180 height:26
     button btnExportAudit "Export Audit History" width:200 height:26
@@ -241,6 +242,11 @@ struct AT_ClashManagerStruct (
     local rows=AT_CoordinationReports.buildClashRows AT_ClashManager.clashes
     local ok=AT_CoordinationReports.exportCSV rows edtReportPath.text
     lblSummary.text=if ok then "Clash CSV exported" else "Clash CSV export failed"
+   )
+   on btnExportGeometryErrors pressed do (
+    local rows=AT_CoordinationReports.buildGeometryErrorRows AT_ClashManager.lastGeometryErrors
+    local ok=AT_CoordinationReports.exportCSV rows edtReportPath.text
+    lblSummary.text=if ok then "Geometry error CSV exported" else "Geometry error CSV export failed"
    )
    on btnExportMissing pressed do (
     local rows=AT_CoordinationReports.buildRuleMissingRows AT_ClashManager.lastRuleMissingPairs
