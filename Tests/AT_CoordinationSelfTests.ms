@@ -101,6 +101,10 @@ struct AT_CoordinationSelfTestsStruct (
    addResult results "SEPARATED_BOXES" (found.count==0) found.count 0
    local invalidToleranceResults=AT_ExactGeometryEngine.detectClashes records:records epsilon:-1.0
    addResult results "NEGATIVE_GEOMETRY_TOLERANCE_REJECTED" (invalidToleranceResults.count==0 and AT_ExactGeometryEngine.lastErrors.count>0 and AT_ExactGeometryEngine.lastErrors[1][2]=="INVALID_GEOMETRY_TOLERANCE") AT_ExactGeometryEngine.lastErrors "INVALID_GEOMETRY_TOLERANCE"
+   local connectedFaceEdges=#(#("e12",2,1,2,#(1,2)),#("e23",2,2,3,#(2,3)),#("e31",2,3,1,#(3,1)))
+   local disconnectedFaceEdges=#(#("e12",2,1,2,#(1,2)),#("e34",2,3,4,#(3,4)))
+   addResult results "CLOSED_SHELL_FACE_CONNECTIVITY" (AT_ExactGeometryEngine.faceConnectivity connectedFaceEdges 3) true true
+   addResult results "DISCONNECTED_SHELLS_NOT_SINGLE_SOLID" (not AT_ExactGeometryEngine.faceConnectivity disconnectedFaceEdges 4) false false
    local sharedEdgeTriA=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,0,0] [1,1,0] 1
    local sharedEdgeTriB=AT_ExactGeometryEngine.makeTriangle [0,0,0] [1,1,0] [0,1,0] 2
    local sharedEdgeHitA=AT_ExactGeometryEngine.rayHitDistance [0.5,0.5,-1] [0,0,1] sharedEdgeTriA
