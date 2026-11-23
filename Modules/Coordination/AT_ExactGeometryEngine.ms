@@ -135,7 +135,7 @@ struct AT_ExactGeometryEngineStruct (
   if meshValue==undefined then throw "MESH_SNAPSHOT_FAILED"
   local faceTotal=getNumFaces meshValue; record.faceCount=faceTotal
   if faceTotal<=0 then throw "NO_TRIANGLE_FACES"
-  local bounds=nodeGetBoundingBox node node.transform
+  local bounds=nodeGetBoundingBox node node.objectTransform
   record.minimum=bounds[1]; record.maximum=bounds[2]
   local edgeCounts=#()
   for faceIndex=1 to faceTotal do (
