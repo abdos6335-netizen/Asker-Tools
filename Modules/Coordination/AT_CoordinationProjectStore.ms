@@ -142,6 +142,11 @@ struct AT_CoordinationProjectStoreStruct (
    AT_ClashManager.lastSimulations=#()
    AT_ClashManager.lastSimulationCandidates=#()
    AT_ClashManager.lastSimulationResults=#()
+   AT_ClashManager.lastPairClearances=#()
+   AT_ClashManager.lastRuleMissingPairs=#()
+   AT_ClashManager.lastScanRuleRevision=-1
+   AT_ClashManager.lastScanJurisdiction=""
+   AT_ClashManager.lastScanRequiredChecks=#()
    AT_CoordinationSolutionGenerator.clear()
    AT_SolutionEngine.clearResults()
    AT_CoordinationSimulation.clear()
