@@ -7,10 +7,11 @@
 - Added closed-manifold mesh containment detection, open/non-manifold containment warnings, and degenerate-face handling.
 - Added per-element and rule-derived pair clearances with explicit conversion to 3ds Max master units.
 - Added jurisdiction-required rule resolution, same-priority conflict detection, and rule-revision invalidation of stale scans/approvals.
-- Added a project Rule Manager UI, Clash Manager simulation/approval/apply workflow, XML project persistence, and an in-host self-test harness.
-- Added clash review/tracking, explicit approval gates, translation apply and rollback transaction records.
+- Added project Rule and Discipline Manager UIs, per-element clearance/envelope metadata, severity/discipline/text filters, stale scan/simulation/approval/apply revalidation, XML persistence for rules/mappings/envelopes/tracking/integration tokens/audit history, and an in-host self-test runner.
+- Added single-use named engineering approvals, translation/pivot-rotation apply, guarded rollback, immutable target/action snapshots and transaction audit records.
+- Added explicit NOT_ASSESSED risk status; unassessed risk is excluded from ranking penalties instead of being represented as zero risk.
 - Added revision-aware integration contracts and expanded clash, clearance, discipline, tracking, approval, audit and critical-issue CSV report builders.
-- Added source-level validation markers and an in-host QA matrix; MAXScript runtime validation remains pending.
+- Added UTF-8 CSV export, geometry/discipline/rule-missing reports, source-level validation markers and expanded in-host QA matrix; MAXScript runtime validation remains pending.
 - Updated core version to 0.6.0.
 
 ## 0.5.0 - Coordination Solution Engine foundation
