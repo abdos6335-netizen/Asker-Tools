@@ -189,7 +189,9 @@ struct AT_CoordinationProjectStoreStruct (
     if elementId=="" then throw "INVALID_STORED_DISCIPLINE_OVERRIDE_ID"
     if clearance!=undefined and clearance<0 then throw "INVALID_STORED_DISCIPLINE_CLEARANCE"
     for existing in loadedOverrides where existing.elementId==elementId do throw "DUPLICATE_STORED_DISCIPLINE_OVERRIDE"
-    append loadedOverrides (AT_DisciplineEnvelopeOverride elementId:(getAttribute node "elementId") requiredClearance:clearance serviceEnvelope:(getAttribute node "serviceEnvelope") installationEnvelope:(getAttribute node "installationEnvelope"))
+    local serviceText=getAttribute node "serviceEnvelope"
+    local installationText=getAttribute node "installationEnvelope"
+    append loadedOverrides (AT_DisciplineEnvelopeOverride elementId:elementId requiredClearance:clearance serviceEnvelope:(if serviceText=="" then undefined else serviceText) installationEnvelope:(if installationText=="" then undefined else installationText))
    )
    local loadedTracking=#()
    local trackingNodes=xml.SelectNodes "/AskerToolsCoordinationProject/ClashTracking/Clash"
