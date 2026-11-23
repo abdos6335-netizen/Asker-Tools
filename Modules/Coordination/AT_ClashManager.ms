@@ -283,7 +283,7 @@ struct AT_ClashManagerStruct (
    on btnLoadProject pressed do (
     local ok=AT_CoordinationProjectStore.load edtStorePath.text
     lblSummary.text=if ok then "Project data loaded; rule and tracking state restored" else "Project load failed; prior state retained"
-    if ok then (lbClashes.items=#(); lbSolutions.items=#(); lblCounts.text=AT_ClashManager.countsLabel(); lblRuleMissing.text="Missing rule checks: 0")
+    if ok then (lbClashes.items=#(); lbSolutions.items=#(); lblCounts.text=AT_ClashManager.countsLabel(); lblRuleMissing.text="Missing rule checks: 0"; lblGeometryErrors.text="Geometry inspection errors: 0"; lblDisciplineErrors.text="Discipline inspection errors: 0")
    )
    on btnRules pressed do AT_RuleManager.show()
    on btnDisciplines pressed do AT_DisciplineManager.show()
