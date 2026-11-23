@@ -1,3 +1,8 @@
+# Coordination geometry — 2026-11-23
+- Fixed the parallel-segment distance degeneracy in the exact mesh narrow phase. The prior closest-point calculation could miss an interior overlap when parallel segment projections overlapped but the first endpoint projected outside the opposite segment, overstating mesh clearance.
+- Added a dedicated point-to-segment distance primitive and a stable parallel fallback using all four endpoint projections; retained the interior closest-point solution for non-parallel segments.
+- Added in-host regression cases for collinear overlapping segments and parallel separated segments, plus static validator markers. Runtime MAXScript validation remains pending inside 3ds Max.
+
 ### Coordination governance hardening — 2026-11-23
 - Approval now verifies the complete simulation-derived clash/rule/affected-element identity sets, not only action ID and transform parameters.
 - Added in-host regression cases for order-independent identity matching and tampered resolved/introduced clash sets.
