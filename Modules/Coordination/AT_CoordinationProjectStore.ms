@@ -5,7 +5,7 @@
 global AT_CoordinationProjectStore
 struct AT_CoordinationProjectStoreStruct (
  version="0.2.0", lastPath="", lastErrors=#(), pendingIntegrationTokens=#(),
- fn setAttribute xmlNode attributeName value = (xmlNode.SetAttribute attributeName (if value==undefined then "" else value as string); true),
+ fn setAttribute xmlNode attributeName value = (xmlNode.SetAttribute attributeName (if value==undefined then "" else (value as string)); true),
  fn getAttribute xmlNode attributeName = (xmlNode.GetAttribute attributeName as string),
  fn addChild xmlDoc parent name = (
   local child=xmlDoc.CreateElement name
@@ -45,7 +45,7 @@ struct AT_CoordinationProjectStoreStruct (
   for i=pendingIntegrationTokens.count to 1 by -1 do (
    local token=pendingIntegrationTokens[i]
    if token[1]==integrationId and token[3]==revision then (
-    local value=token[4]
+    local value=#(token[4],token[5])
     deleteItem pendingIntegrationTokens i
     return value
    )
@@ -223,7 +223,7 @@ struct AT_CoordinationProjectStoreStruct (
    pendingIntegrationTokens=loadedIntegrationTokens
    for record in AT_CoordinationIntegrations.registry do (
     local restored=restoreIntegrationToken record.integrationId record.revision
-    if restored!=undefined then record.lastSyncToken=restored
+    if restored!=undefined then (record.lastSyncToken=restored[1]; record.enabled=restored[2])
    )
    AT_CoordinationGovernance.auditLog=loadedAudit
    AT_CoordinationGovernance.approvals=#()
