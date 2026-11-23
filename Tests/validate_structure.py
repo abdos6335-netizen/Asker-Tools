@@ -10,9 +10,11 @@ required = [
     'Modules/Assets/AT_AssetManager.ms',
     'Modules/Cleanup/AT_Cleanup.ms',
     'Modules/Materials/AT_MaterialManager.ms',
+    'Modules/Coordination/AT_SolutionEngine.ms',
     'Documentation/Modules/MATERIAL_MANAGER.md',
     'Documentation/Modules/SCENE_MANAGER.md',
     'Documentation/Modules/ASSET_MANAGER.md',
+    'Documentation/Modules/COORDINATION_SOLUTION_ENGINE.md',
 ]
 for rel in required:
     path = ROOT / rel
@@ -30,8 +32,9 @@ checks = {
     'Modules/SceneManager/AT_SceneManager.ms': ['fn inventory', 'fn selectByClass', 'fn selectByLayer', 'fn isolateNodes'],
     'Modules/Assets/AT_AssetManager.ms': ['fn scan', 'doesFileExist', 'fn missing'],
     'Modules/Cleanup/AT_Cleanup.ms': ['UNASSIGNED_MATERIAL_CANDIDATE', 'HIDDEN_NODE', 'fn scan'],
-    'Core/AT_Core.ms': ['version = "0.4.0"'],
+    'Core/AT_Core.ms': ['version = "0.5.0"'],
     'Modules/Materials/AT_MaterialManager.ms': ['#filePostMerge', '#postImport', 'SHA256', 'AutoCollect', 'REV(?:ISION)?', 'centralizeBitmap', 'changeMapsFolder'],
+    'Modules/Coordination/AT_SolutionEngine.ms': ['fn validateProposal', 'fn evaluateProposal', 'fn evaluate', 'fn setWeights', 'CRITICAL_RULE_VIOLATION', 'REQUIRED_RULE_MISSING', 'INTRODUCES_NEW_CLASHES'],
 }
 for rel, tokens in checks.items():
     source = (ROOT / rel).read_text(encoding='utf-8')
